@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { backendUrl, currency } from "../App";
+import { backendUrl } from "../App";
 import { toast } from "react-toastify";
 import { assets } from "../assets/assets";
 
@@ -79,6 +79,25 @@ const Orders = ({ token, searchQuery }) => {
     }
   };
 
+  const getColorClass = (colorName) => {
+    const colorMap = {
+      Black: "bg-black",
+      White: "bg-white border border-gray-300",
+      Gray: "bg-gray-500",
+      Navy: "bg-blue-900",
+      Red: "bg-red-500",
+      Blue: "bg-blue-500",
+      Green: "bg-green-500",
+      Yellow: "bg-yellow-400",
+      Purple: "bg-purple-500",
+      Pink: "bg-pink-500",
+      Orange: "bg-orange-500",
+      Brown: "bg-amber-800",
+      Beige: "bg-[#F5F5DC]",
+    };
+    return colorMap[colorName] || "bg-gray-200";
+  };
+
   useEffect(() => {
     fetchAllOrders();
   }, [token]);
@@ -116,14 +135,33 @@ const Orders = ({ token, searchQuery }) => {
               onClick={() => viewProducts(order)}
             />
             <div>
-              <div>
-                {order.items.map((item, index) => (
-                  <p className="py-0.5" key={index}>
-                    {item.name} x {item.quantity} <span> {item.size} </span>
-                    {index !== order.items.length - 1 && ","}
-                  </p>
-                ))}
-              </div>
+              {order.items.map((item, index) => (
+                <p
+                  key={index}
+                  className="flex items-center gap-2 py-0.5 flex-wrap"
+                >
+                  <span>{item.name}</span>
+                  <span className="text-gray-500">จำนวน {item.quantity}</span>
+                  <span className="text-gray-500">ไซส์ {item.size}</span>
+                  {item.colors && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-500">สี</span>
+                      {item.colors.map((color, colorIdx) => (
+                        <div
+                          key={colorIdx}
+                          className={`w-4 h-4 rounded-full ${getColorClass(
+                            color
+                          )}`}
+                          title={color}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {index !== order.items.length - 1 && (
+                    <span className="text-gray-300">,</span>
+                  )}
+                </p>
+              ))}
               <p className="mt-3 mb-2 font-medium">
                 {order.address.firstName + " " + order.address.lastName}
               </p>
@@ -143,42 +181,39 @@ const Orders = ({ token, searchQuery }) => {
             </div>
             <div>
               <p className="text-sm sm:text-[15px]">
-                Items : {order.items.length}
+                จำนวนรายการ: {order.items.length}
               </p>
-              <p className="mt-3">Method : {order.paymentMethod}</p>
-              <p>Payment : {order.payment ? "Done" : "Pending"}</p>
+              <p className="mt-3">วิธีชำระเงิน: {order.paymentMethod}</p>
+              <p>สถานะการชำระเงิน: {order.payment ? "ชำระแล้ว" : "รอชำระ"}</p>
               {order.paymentMethod === "QR Code" && (
                 <button
                   onClick={() => viewQRProof(order)}
                   className="mt-2 bg-blue-500 text-white px-2 py-1 rounded text-xs"
                 >
-                  View QR Proof
+                  ดูสลิป
                 </button>
               )}
-              <p>Date : {new Date(order.date).toLocaleDateString()}</p>
+              <p>วันที่: {new Date(order.date).toLocaleDateString()}</p>
             </div>
-            <p className="text-sm sm:text-[15px]">
-              {currency}
-              {order.amount}
-            </p>
+            <p className="text-sm sm:text-[15px]">฿{order.amount}</p>
             <div className="flex flex-col gap-2">
               <select
                 onChange={(event) => statusHandler(event, order._id)}
                 value={order.status}
                 className="p-2 font-semibold w-full"
               >
-                <option value="Panding">Panding</option>
-                <option value="Order Placed">Order Placed</option>
-                <option value="Invalid slip">Invalid slip</option>
-                <option value="Packing">Packing</option>
-                <option value="Out for delivery">Out for delivery</option>
-                <option value="Delivered">Delivered</option>
+                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
+                <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
+                <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
+                <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
+                <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
               </select>
               <button
                 onClick={() => deleteOrder(order._id)}
                 className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded w-full text-sm"
               >
-                Delete Order
+                ลบออเดอร์
               </button>
             </div>
           </div>
@@ -194,7 +229,7 @@ const Orders = ({ token, searchQuery }) => {
       {showQRProof && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
-            <h2 className="text-xl font-bold mb-4">View QR Proof</h2>
+            <h2 className="text-xl font-bold mb-4">สลิปการโอนเงิน</h2>
             <div className="flex justify-center items-center h-[500px]">
               <img
                 src={`${selectedOrder.paymentProof}`}
@@ -207,7 +242,7 @@ const Orders = ({ token, searchQuery }) => {
                 onClick={() => setShowQRProof(false)}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded"
               >
-                Close
+                ปิด
               </button>
             </div>
           </div>
@@ -231,12 +266,25 @@ const Orders = ({ token, searchQuery }) => {
                   />
                   <div>
                     <p className="font-medium">{item.name}</p>
-                    <p>ขนาด: {item.size}</p>
                     <p>จำนวน: {item.quantity}</p>
-                    <p>
-                      ราคา: {currency}
-                      {item.price}
-                    </p>
+                    <p>ไซส์: {item.size}</p>
+                    {item.colors && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <span>สี:</span>
+                        <div className="flex gap-1">
+                          {item.colors.map((color, colorIdx) => (
+                            <div
+                              key={colorIdx}
+                              className={`w-5 h-5 rounded-full ${getColorClass(
+                                color
+                              )}`}
+                              title={color}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <p className="mt-1">ราคา: ฿{item.price}</p>
                   </div>
                 </div>
               ))}

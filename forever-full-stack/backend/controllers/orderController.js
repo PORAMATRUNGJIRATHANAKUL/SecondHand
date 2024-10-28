@@ -65,6 +65,7 @@ const placeOrder = async (req, res) => {
       paymentMethod,
       payment: paymentMethod === "QR Code",
       paymentProof,
+      status: "รอดำเนินการ",
       date: Date.now(),
     };
 
