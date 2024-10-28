@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { assets } from "../assets/assets";
 import axios from "axios";
 import { backendUrl } from "../App";
@@ -14,10 +14,122 @@ const Add = ({ token }) => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("Men");
-  const [subCategory, setSubCategory] = useState("Topwear");
+  const [subCategory, setSubCategory] = useState("Clothing");
   const [bestseller, setBestseller] = useState(false);
   const [sizes, setSizes] = useState([]);
-  const [colors, setColors] = useState([]); // State for colors
+  const [colors, setColors] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
+
+  const sizeData = {
+    clothing: {
+      tops: ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"],
+      bottoms: {
+        waist: [
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31",
+          "32",
+          "33",
+          "34",
+          "35",
+          "36",
+          "38",
+          "40",
+          "42",
+        ],
+        length: ["Short", "Regular", "Long"],
+      },
+    },
+    shoes: {
+      men: [
+        "39",
+        "39.5",
+        "40",
+        "40.5",
+        "41",
+        "41.5",
+        "42",
+        "42.5",
+        "43",
+        "43.5",
+        "44",
+        "44.5",
+        "45",
+        "45.5",
+        "46",
+      ],
+      women: [
+        "35",
+        "35.5",
+        "36",
+        "36.5",
+        "37",
+        "37.5",
+        "38",
+        "38.5",
+        "39",
+        "39.5",
+        "40",
+        "40.5",
+        "41",
+      ],
+    },
+    noSize: ["Free Size", "One Size"],
+  };
+
+  const colorData = [
+    { name: "Black", class: "bg-black" },
+    { name: "White", class: "bg-white border border-gray-300" },
+    { name: "Gray", class: "bg-gray-500" },
+    { name: "Navy", class: "bg-blue-900" },
+    { name: "Red", class: "bg-red-500" },
+    { name: "Blue", class: "bg-blue-500" },
+    { name: "Green", class: "bg-green-500" },
+    { name: "Yellow", class: "bg-yellow-400" },
+    { name: "Purple", class: "bg-purple-500" },
+    { name: "Pink", class: "bg-pink-500" },
+    { name: "Orange", class: "bg-orange-500" },
+    { name: "Brown", class: "bg-amber-800" },
+    { name: "Beige", class: "bg-[#F5F5DC]" },
+  ];
+
+  const updateAvailableSizes = (productType) => {
+    switch (productType) {
+      case "Clothing":
+        setAvailableSizes(sizeData.clothing.tops);
+        break;
+      case "Pants":
+        setAvailableSizes(sizeData.clothing.bottoms.waist);
+        break;
+      case "Shoes":
+        if (category === "Men") {
+          setAvailableSizes(sizeData.shoes.men);
+        } else if (category === "Women") {
+          setAvailableSizes(sizeData.shoes.women);
+        } else {
+          setAvailableSizes(sizeData.shoes.women);
+        }
+        break;
+      case "Hats":
+      case "Glasses":
+      case "Accessories":
+        setAvailableSizes(sizeData.noSize);
+        break;
+      default:
+        setAvailableSizes([]);
+    }
+    setSizes([]);
+  };
+
+  useEffect(() => {
+    updateAvailableSizes(subCategory);
+  }, [subCategory, category]);
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -31,7 +143,7 @@ const Add = ({ token }) => {
       formData.append("subCategory", subCategory);
       formData.append("bestseller", bestseller);
       formData.append("sizes", JSON.stringify(sizes));
-      formData.append("colors", JSON.stringify(colors)); // Add colors to form data
+      formData.append("colors", JSON.stringify(colors));
 
       image1 && formData.append("image1", image1);
       image2 && formData.append("image2", image2);
@@ -55,7 +167,7 @@ const Add = ({ token }) => {
         setImage4(false);
         setPrice("");
         setSizes([]);
-        setColors([]); // Reset colors
+        setColors([]);
       } else {
         toast.error(response.data.message);
       }
@@ -64,6 +176,38 @@ const Add = ({ token }) => {
       toast.error(error.message);
     }
   };
+
+  // ส่วนแสดงผลสี
+  const ColorSelector = () => (
+    <div>
+      <p className="mb-2">Product Colors</p>
+      <div className="flex flex-wrap gap-3">
+        {colorData.map((color) => (
+          <div
+            key={color.name}
+            onClick={() =>
+              setColors((prev) =>
+                prev.includes(color.name)
+                  ? prev.filter((item) => item !== color.name)
+                  : [...prev, color.name]
+              )
+            }
+            className={`w-8 h-8 rounded-full cursor-pointer ${color.class} ${
+              colors.includes(color.name)
+                ? "ring-2 ring-blue-500 ring-offset-2"
+                : ""
+            }`}
+            title={color.name}
+          />
+        ))}
+      </div>
+      {colors.length > 0 && (
+        <p className="text-sm text-gray-500 mt-2">
+          Selected colors: {colors.join(", ")}
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <form
@@ -178,6 +322,7 @@ const Add = ({ token }) => {
             <option value="Shoes">Shoes</option>
             <option value="Hats">Hats</option>
             <option value="Glasses">Glasses</option>
+            <option value="Accessories">Accessories</option>
           </select>
         </div>
 
@@ -189,212 +334,47 @@ const Add = ({ token }) => {
             className="w-full px-3 py-2 sm:w-[120px]"
             type="Number"
             placeholder=""
+            required
           />
         </div>
       </div>
 
       {/* Product Sizes */}
-      <div>
+      <div className="w-full">
         <p className="mb-2">Product Sizes</p>
-        <div className="flex gap-3">
-          <div
-            onClick={() =>
-              setSizes((prev) =>
-                prev.includes("S")
-                  ? prev.filter((item) => item !== "S")
-                  : [...prev, "S"]
-              )
-            }
-          >
-            <p
-              className={`${
-                sizes.includes("S") ? "bg-pink-100" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
+        <div className="flex flex-wrap gap-2">
+          {availableSizes.map((size) => (
+            <div
+              key={size}
+              onClick={() =>
+                setSizes((prev) =>
+                  prev.includes(size)
+                    ? prev.filter((item) => item !== size)
+                    : [...prev, size]
+                )
+              }
             >
-              S
-            </p>
-          </div>
-          <div
-            onClick={() =>
-              setSizes((prev) =>
-                prev.includes("M")
-                  ? prev.filter((item) => item !== "M")
-                  : [...prev, "M"]
-              )
-            }
-          >
-            <p
-              className={`${
-                sizes.includes("M") ? "bg-pink-100" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              M
-            </p>
-          </div>
-          <div
-            onClick={() =>
-              setSizes((prev) =>
-                prev.includes("L")
-                  ? prev.filter((item) => item !== "L")
-                  : [...prev, "L"]
-              )
-            }
-          >
-            <p
-              className={`${
-                sizes.includes("L") ? "bg-pink-100" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              L
-            </p>
-          </div>
-          <div
-            onClick={() =>
-              setSizes((prev) =>
-                prev.includes("XL")
-                  ? prev.filter((item) => item !== "XL")
-                  : [...prev, "XL"]
-              )
-            }
-          >
-            <p
-              className={`${
-                sizes.includes("XL") ? "bg-pink-100" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              XL
-            </p>
-          </div>
-          <div
-            onClick={() =>
-              setSizes((prev) =>
-                prev.includes("XXL")
-                  ? prev.filter((item) => item !== "XXL")
-                  : [...prev, "XXL"]
-              )
-            }
-          >
-            <p
-              className={`${
-                sizes.includes("XXL") ? "bg-pink-100" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              XXL
-            </p>
-          </div>
-          <div
-            onClick={() =>
-              setSizes((prev) =>
-                prev.includes("No-Size")
-                  ? prev.filter((item) => item !== "No-Size")
-                  : [...prev, "No-Size"]
-              )
-            }
-          >
-            <p
-              className={`${
-                sizes.includes("No-Size") ? "bg-pink-100" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              No-Size
-            </p>
-          </div>
+              <p
+                className={`${
+                  sizes.includes(size)
+                    ? "bg-blue-200 ring-2 ring-blue-500"
+                    : "bg-slate-200"
+                } px-4 py-2 cursor-pointer rounded hover:bg-blue-100`}
+              >
+                {size}
+              </p>
+            </div>
+          ))}
         </div>
+        {sizes.length > 0 && (
+          <p className="text-sm text-gray-500 mt-2">
+            Selected sizes: {sizes.join(", ")}
+          </p>
+        )}
       </div>
 
-      {/* Product Colors */}
-      <div>
-        <p className="mb-2">Product Colors</p>
-        <div className="flex gap-3">
-          <div
-            onClick={() =>
-              setColors((prev) =>
-                prev.includes("Red")
-                  ? prev.filter((item) => item !== "Red")
-                  : [...prev, "Red"]
-              )
-            }
-          >
-            <p
-              className={`${
-                colors.includes("Red") ? "bg-red-200" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              Red
-            </p>
-          </div>
-          <div
-            onClick={() =>
-              setColors((prev) =>
-                prev.includes("Blue")
-                  ? prev.filter((item) => item !== "Blue")
-                  : [...prev, "Blue"]
-              )
-            }
-          >
-            <p
-              className={`${
-                colors.includes("Blue") ? "bg-blue-200" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              Blue
-            </p>
-          </div>
-          <div
-            onClick={() =>
-              setColors((prev) =>
-                prev.includes("Green")
-                  ? prev.filter((item) => item !== "Green")
-                  : [...prev, "Green"]
-              )
-            }
-          >
-            <p
-              className={`${
-                colors.includes("Green") ? "bg-green-200" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              Green
-            </p>
-          </div>
-          <div
-            onClick={() =>
-              setColors((prev) =>
-                prev.includes("Black")
-                  ? prev.filter((item) => item !== "Black")
-                  : [...prev, "Black"]
-              )
-            }
-          >
-            <p
-              className={`${
-                colors.includes("Black")
-                  ? "bg-black text-white"
-                  : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              Black
-            </p>
-          </div>
-          <div
-            onClick={() =>
-              setColors((prev) =>
-                prev.includes("White")
-                  ? prev.filter((item) => item !== "White")
-                  : [...prev, "White"]
-              )
-            }
-          >
-            <p
-              className={`${
-                colors.includes("White") ? "bg-white" : "bg-slate-200"
-              } px-3 py-1 cursor-pointer`}
-            >
-              White
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Colors */}
+      <ColorSelector />
 
       {/* Bestseller Option */}
       <div className="flex gap-2 mt-2">

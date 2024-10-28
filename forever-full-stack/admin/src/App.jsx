@@ -27,8 +27,9 @@ const App = () => {
     localStorage.setItem("token", token);
   }, [token]);
 
+  // แก้ไขฟังก์ชันนี้ โดยลบ qrcode ออกจากเงื่อนไข
   const shouldShowSearchBar = () => {
-    return location.pathname !== "/add" && location.pathname !== "/qrcode";
+    return location.pathname !== "/add";
   };
 
   return (
@@ -63,7 +64,10 @@ const App = () => {
                   path="/review"
                   element={<Review token={token} searchQuery={searchQuery} />}
                 />
-                <Route path="/qrcode" element={<Qrcode token={token} />} />
+                <Route
+                  path="/qrcode"
+                  element={<Qrcode token={token} searchQuery={searchQuery} />}
+                />
               </Routes>
             </div>
           </div>
