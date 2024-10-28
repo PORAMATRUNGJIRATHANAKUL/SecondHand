@@ -5,7 +5,7 @@ import { backendUrl, currency } from "../App";
 import { toast } from "react-toastify";
 import { assets } from "../assets/assets";
 
-const Orders = ({ token }) => {
+const Orders = ({ token, searchQuery }) => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showQRProof, setShowQRProof] = useState(false);
@@ -52,15 +52,56 @@ const Orders = ({ token }) => {
     setShowQRProof(true);
   };
 
+  const deleteOrder = async (orderId) => {
+    if (window.confirm("คุณแน่ใจหรือไม่ที่จะลบออเดอร์นี้?")) {
+      try {
+        const response = await axios.delete(
+          `${backendUrl}/api/order/delete/${orderId}`,
+          { headers: { token } }
+        );
+
+        if (response.data.success) {
+          toast.success("ลบออเดอร์สำเร็จ");
+          await fetchAllOrders();
+        } else {
+          toast.error(response.data.message);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("ไม่สามารถลบออเดอร์ได้");
+      }
+    }
+  };
+
   useEffect(() => {
     fetchAllOrders();
   }, [token]);
+
+  // เพิ่มฟังก์ชันกรองข้อมูล
+  const filteredOrders = orders.filter((order) => {
+    if (!searchQuery) return true;
+
+    const searchLower = searchQuery.toLowerCase().trim();
+
+    // ค้นหาจากชื่อ-นามสกุล
+    const fullName =
+      `${order.address.firstName} ${order.address.lastName}`.toLowerCase();
+    if (fullName.includes(searchLower)) return true;
+
+    // ค้นหาจากชื่อสินค้า
+    const hasMatchingItem = order.items.some((item) =>
+      item.name.toLowerCase().includes(searchLower)
+    );
+    if (hasMatchingItem) return true;
+
+    return false;
+  });
 
   return (
     <div>
       <h3>Order Page</h3>
       <div>
-        {orders.map((order, index) => (
+        {filteredOrders.map((order, index) => (
           <div
             className="grid grid-cols-1 sm:grid-cols-[0.5fr_2fr_1fr] lg:grid-cols-[0.5fr_2fr_1fr_1fr_1fr] gap-3 items-start border-2 border-gray-200 p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700"
             key={index}
@@ -112,36 +153,55 @@ const Orders = ({ token }) => {
               {currency}
               {order.amount}
             </p>
-            <select
-              onChange={(event) => statusHandler(event, order._id)}
-              value={order.status}
-              className="p-2 font-semibold"
-            >
-              <option value="Order Placed">Order Placed</option>
-              <option value="Invalid slip">Invalid slip</option>
-              <option value="Packing">Packing</option>
-              <option value="Out for delivery">Out for delivery</option>
-              <option value="Delivered">Delivered</option>
-            </select>
+            <div className="flex flex-col gap-2">
+              <select
+                onChange={(event) => statusHandler(event, order._id)}
+                value={order.status}
+                className="p-2 font-semibold w-full"
+              >
+                <option value="Panding">Panding</option>
+                <option value="Order Placed">Order Placed</option>
+                <option value="Invalid slip">Invalid slip</option>
+                <option value="Packing">Packing</option>
+                <option value="Out for delivery">Out for delivery</option>
+                <option value="Delivered">Delivered</option>
+              </select>
+              <button
+                onClick={() => deleteOrder(order._id)}
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded w-full text-sm"
+              >
+                Delete Order
+              </button>
+            </div>
           </div>
         ))}
+
+        {filteredOrders.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            ไม่พบรายการที่ค้นหา
+          </div>
+        )}
       </div>
 
       {showQRProof && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">QR Code Payment Proof</h2>
-            <img
-              src={`${backendUrl}/${selectedOrder.paymentProof}`}
-              alt="QR Code Payment Proof"
-              className="w-full mb-4"
-            />
-            <button
-              onClick={() => setShowQRProof(false)}
-              className="px-4 py-2 bg-gray-200 rounded"
-            >
-              Close
-            </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
+            <h2 className="text-xl font-bold mb-4">View QR Proof</h2>
+            <div className="flex justify-center items-center h-[500px]">
+              <img
+                src={`${selectedOrder.paymentProof}`}
+                alt="QR Code Payment Proof"
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            </div>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowQRProof(false)}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

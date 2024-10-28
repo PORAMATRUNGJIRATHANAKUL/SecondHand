@@ -9,6 +9,33 @@ import productModel from "../models/productModel.js";
 const currency = "thb";
 const deliveryCharge = 10;
 
+const deleteOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    const result = await orderModel.findByIdAndDelete(orderId);
+
+    if (result) {
+      res.json({
+        success: true,
+        message: "Order deleted successfully",
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+  } catch (error) {
+    console.error("Delete order error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete order",
+      error: error.message,
+    });
+  }
+};
+
 // Set up multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -205,4 +232,5 @@ export {
   userOrders,
   updateStatus,
   getQRCodePaymentList,
+  deleteOrder,
 };

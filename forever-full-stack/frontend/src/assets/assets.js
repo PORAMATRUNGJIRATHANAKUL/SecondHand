@@ -54,6 +54,7 @@ import p_img50 from "./p_img50.png";
 import p_img51 from "./p_img51.png";
 import p_img52 from "./p_img52.png";
 import rating from "./rating.png";
+import glasses1 from "./glasses1.png";
 
 import logo from "./logo.png";
 import logo_white from "./logo_white.png";

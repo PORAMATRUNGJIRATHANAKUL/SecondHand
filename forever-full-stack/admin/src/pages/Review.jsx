@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { backendUrl, currency } from "../App";
 import { toast } from "react-toastify";
 
-const Review = ({ token }) => {
+const Review = ({ token, searchQuery }) => {
+  // เพิ่ม searchQuery prop
   const [list, setList] = useState([]);
 
   const fetchList = async () => {
@@ -42,6 +43,18 @@ const Review = ({ token }) => {
     fetchList();
   }, []);
 
+  // เพิ่มฟังก์ชันกรองข้อมูล
+  const filteredList = list.filter((item) => {
+    if (!searchQuery) return true;
+
+    const searchLower = searchQuery.toLowerCase().trim();
+
+    return (
+      item.name.toLowerCase().includes(searchLower) ||
+      item.comment.toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <>
       <p className="mb-2">All Comment List</p>
@@ -57,7 +70,7 @@ const Review = ({ token }) => {
             </tr>
           </thead>
           <tbody>
-            {list.map((item, index) => (
+            {filteredList.map((item, index) => (
               <tr key={index} className="hover:bg-gray-50">
                 <td className="py-2 px-4 border-b">{item.name}</td>
                 <td className="py-2 px-4 border-b">{item.rating}</td>
@@ -75,6 +88,13 @@ const Review = ({ token }) => {
             ))}
           </tbody>
         </table>
+
+        {/* เพิ่มข้อความเมื่อไม่พบข้อมูล */}
+        {filteredList.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            ไม่พบรายการที่ค้นหา
+          </div>
+        )}
       </div>
     </>
   );

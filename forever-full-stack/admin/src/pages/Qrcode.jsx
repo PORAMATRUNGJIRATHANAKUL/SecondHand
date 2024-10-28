@@ -2,10 +2,13 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { backendUrl, currency } from "../App";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
-const Qrcode = ({ token }) => {
+const Qrcode = ({ token, searchQuery }) => {
+  // เพิ่ม searchQuery prop
   const [payments, setPayments] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const navigate = useNavigate();
 
   const fetchPayments = async () => {
     try {
@@ -27,6 +30,7 @@ const Qrcode = ({ token }) => {
   };
 
   const verifyPayment = async (id) => {
+    navigate("/orders");
     try {
       const response = await axios.post(
         backendUrl + `/api/order/verify-qr/${id}`,
@@ -36,7 +40,6 @@ const Qrcode = ({ token }) => {
 
       if (response.data.success) {
         toast.success(response.data.message);
-        await fetchPayments();
       } else {
         toast.error(response.data.message);
       }
@@ -52,6 +55,24 @@ const Qrcode = ({ token }) => {
   const viewPaymentProof = (payment) => {
     setSelectedPayment(payment);
   };
+
+  // เพิ่มฟังก์ชันกรองข้อมูล
+  const filteredPayments = payments.filter((payment) => {
+    if (!searchQuery) return true;
+
+    const searchLower = searchQuery.toLowerCase().trim();
+
+    // ค้นหาจากชื่อผู้ซื้อ
+    if (payment.buyer.toLowerCase().includes(searchLower)) return true;
+
+    // ค้นหาจากชื่อสินค้า
+    const hasMatchingProduct = payment.productNames.some((name) =>
+      name.toLowerCase().includes(searchLower)
+    );
+    if (hasMatchingProduct) return true;
+
+    return false;
+  });
 
   useEffect(() => {
     fetchPayments();
@@ -72,7 +93,7 @@ const Qrcode = ({ token }) => {
             </tr>
           </thead>
           <tbody>
-            {payments.map((payment, index) => (
+            {filteredPayments.map((payment, index) => (
               <tr key={index} className="hover:bg-gray-50">
                 <td className="py-2 px-4 border-b">{payment.buyer}</td>
                 <td className="py-2 px-4 border-b">
@@ -84,16 +105,16 @@ const Qrcode = ({ token }) => {
                 <td className="py-2 px-4 border-b">
                   <button
                     onClick={() => viewPaymentProof(payment)}
-                    className="bg-black  text-white font-bold py-1 px-2 rounded mr-2"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2"
                   >
-                    View Slip
+                    View QR Proof
                   </button>
                 </td>
                 <td className="py-2 px-4 border-b text-center">
                   {!payment.payment && (
                     <button
                       onClick={() => verifyPayment(payment._id)}
-                      className="bg-black  text-white font-bold py-1 px-2 rounded"
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-2 rounded"
                     >
                       Verify
                     </button>
@@ -103,6 +124,13 @@ const Qrcode = ({ token }) => {
             ))}
           </tbody>
         </table>
+
+        {/* เพิ่มข้อความเมื่อไม่พบข้อมูล */}
+        {filteredPayments.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            ไม่พบรายการที่ค้นหา
+          </div>
+        )}
       </div>
 
       {selectedPayment && (
@@ -138,12 +166,12 @@ const Qrcode = ({ token }) => {
             <img
               src={`${selectedPayment.paymentProof}`}
               alt="Payment Proof"
-              className="w-full mb-4"
+              className="max-w-[500px] max-h-[600px] object-contain mx-auto mb-4"
             />
-            <div className="flex justify-end">
+            <div className="flex justify-end mt-4 mr-4">
               <button
                 onClick={() => setSelectedPayment(null)}
-                className="bg-black hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded"
               >
                 Close
               </button>
