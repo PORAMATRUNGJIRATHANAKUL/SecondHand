@@ -18,6 +18,8 @@ function ProfilePage() {
   const [newImageFile, setNewImageFile] = useState(null);
   const fileInputRef = useRef(null);
 
+  const [imageTimestamp, setImageTimestamp] = useState(Date.now());
+
   const handleEdit = () => {
     setIsEditing(!isEditing);
   };
@@ -58,11 +60,22 @@ function ProfilePage() {
   const updateProfile = async () => {
     setIsLoading(true);
     try {
+      const updatePromises = [];
+
       if (newImageFile) {
-        await updateProfileImage();
+        updatePromises.push(updateProfileImage());
       }
-      if (newName) {
-        await updateProfileName();
+      if (newName !== user.name) {
+        updatePromises.push(updateProfileName());
+      }
+
+      await Promise.all(updatePromises);
+
+      const updatedUser = await fetchUserProfile();
+      if (updatedUser) {
+        setUser(updatedUser);
+        setNewName(updatedUser.name);
+        setImageTimestamp(Date.now());
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -70,6 +83,8 @@ function ProfilePage() {
     } finally {
       setIsEditing(false);
       setIsLoading(false);
+      setPreviewImage(null);
+      setNewImageFile(null);
     }
   };
 
@@ -81,7 +96,7 @@ function ProfilePage() {
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <div className="flex flex-col items-center mb-6">
         <img
-          src={previewImage || user?.profileImage}
+          src={previewImage || `${user?.profileImage}?t=${imageTimestamp}`}
           alt="Profile"
           className="w-32 h-32 rounded-full mb-4 cursor-pointer"
           onClick={handleImageClick}
