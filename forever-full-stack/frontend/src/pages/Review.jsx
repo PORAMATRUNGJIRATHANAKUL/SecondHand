@@ -43,16 +43,23 @@ const calculateAverageRating = (reviews) => {
 };
 
 const Review = () => {
-  const { shopReviews, fetchShopReviews, submitShopReview } =
+  const { shopReviews, fetchShopReviews, submitShopReview, user } =
     useContext(ShopContext);
   const [newReview, setNewReview] = useState({
     rating: 0,
     comment: "",
+    name: user?.name || "",
   });
 
   const ratingData = useMemo(() => {
     if (shopReviews.length === 0) return null;
     return calculateAverageRating(shopReviews);
+  }, [shopReviews]);
+
+  const sortedReviews = useMemo(() => {
+    return [...shopReviews].sort((a, b) => {
+      return new Date(b.date) - new Date(a.date);
+    });
   }, [shopReviews]);
 
   useEffect(() => {
@@ -136,16 +143,21 @@ const Review = () => {
 
       {/* Review List Section */}
       <div className="my-8">
-        {shopReviews.map((review, index) => (
+        {sortedReviews.map((review, index) => (
           <div key={index} className="border-b py-4">
             <div className="flex items-center gap-2">
               <img
-                src={`https://avatar.iran.liara.run/public/boy`}
-                alt={`${review.name}'s avatar`}
+                src={
+                  user?.profileImage ||
+                  `https://avatar.iran.liara.run/public/boy`
+                }
+                alt={`${user?.name}'s avatar`}
                 className="w-10 h-10 rounded-full"
               />
               <div className="flex flex-col">
-                <span className="font-semibold">{review.name}</span>
+                <span className="font-semibold">
+                  {user?.name || "Anonymous"}
+                </span>
                 <div className="text-yellow-500">
                   {renderStars(review.rating)}
                 </div>
