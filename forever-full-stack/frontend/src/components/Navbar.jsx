@@ -2,19 +2,11 @@ import React, { useContext, useState, useEffect } from "react";
 import { assets } from "../assets/assets";
 import { Link, NavLink } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
-import {
-  BiBell,
-  BiSearch,
-  BiShoppingBag,
-  BiUser,
-  BiMenu,
-} from "react-icons/bi";
+import { BiSearch, BiShoppingBag, BiUser, BiMenu } from "react-icons/bi";
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
   const [profileImage, setProfileImage] = useState("");
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const {
     setShowSearch,
     getCartCount,
@@ -38,37 +30,6 @@ const Navbar = () => {
       setProfileImage(user.profileImage);
     }
   }, [user]);
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!token) return;
-
-      try {
-        const response = await fetch(`${backendUrl}/api/notifications`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setNotifications(data);
-          const unread = data.filter(
-            (notification) => !notification.isRead
-          ).length;
-          setUnreadCount(unread);
-        }
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-        setNotifications([]);
-        setUnreadCount(0);
-      }
-    };
-
-    if (token) {
-      fetchNotifications();
-    }
-  }, [token, backendUrl]);
 
   const logout = () => {
     navigate("/login");
@@ -125,49 +86,6 @@ const Navbar = () => {
         >
           <BiSearch className="w-5 h-5" />
         </button>
-
-        {/* Notification Icon */}
-        {token && (
-          <div className="group relative">
-            <button className="p-1.5 hover:bg-gray-100 rounded-full transition-colors">
-              <div className="relative">
-                <BiBell className="w-5 h-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 text-center leading-4 bg-red-500 text-white text-[10px] rounded-full">
-                    {unreadCount}
-                  </span>
-                )}
-              </div>
-            </button>
-
-            <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-2 z-50">
-              <div className="flex flex-col w-72 max-h-96 overflow-y-auto py-2 bg-white text-gray-500 rounded-lg shadow-lg border border-gray-100">
-                <div className="px-4 py-2 border-b border-gray-100 font-medium">
-                  การแจ้งเตือน
-                </div>
-                {notifications.length > 0 ? (
-                  notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${
-                        !notification.isRead ? "bg-blue-50" : ""
-                      }`}
-                    >
-                      <div className="text-sm">{notification.message}</div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        {new Date(notification.createdAt).toLocaleString()}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-4 py-8 text-center text-gray-500">
-                    ไม่มีการแจ้งเตือน
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Cart Icon */}
         <Link

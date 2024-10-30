@@ -51,11 +51,59 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Placing orders using COD Method
 const placeOrder = async (req, res) => {
   try {
     const { userId, items, amount, address, paymentMethod, paymentProof } =
       req.body;
+
+    // Update stock for each item
+    for (const item of items) {
+      const product = await productModel.findById(item._id);
+      if (!product) {
+        throw new Error(`Product not found: ${item._id}`);
+      }
+
+      // Find the specific size and color combination
+      const stockIndex = product.stockItems.findIndex(
+        (s) => s.size === item.size && s.color === item.colors[0]
+      );
+
+      if (stockIndex === -1) {
+        throw new Error(
+          `Size ${item.size} and color ${item.colors[0]} combination not found`
+        );
+      }
+
+      console.log("Before stock update:", product.stockItems[stockIndex].stock);
+      const newStock = product.stockItems[stockIndex].stock - item.quantity;
+      console.log("Calculated new stock:", newStock);
+
+      // Update using findByIdAndUpdate
+      const updatedProduct = await productModel.findByIdAndUpdate(
+        item._id,
+        {
+          $set: {
+            [`stockItems.${stockIndex}.stock`]: newStock,
+          },
+        },
+        { new: true }
+      );
+
+      console.log("After update - stockItems:", updatedProduct.stockItems);
+
+      // Verify the update with a separate query
+      const verifyProduct = await productModel.findById(item._id);
+      console.log("Verification query - stockItems:", verifyProduct.stockItems);
+
+      // If stock is 0, remove that item
+      if (newStock <= 0) {
+        await productModel.findByIdAndUpdate(item._id, {
+          $pull: {
+            stockItems: { size: item.size, color: item.colors[0] },
+          },
+        });
+      }
+    }
 
     const orderData = {
       userId,

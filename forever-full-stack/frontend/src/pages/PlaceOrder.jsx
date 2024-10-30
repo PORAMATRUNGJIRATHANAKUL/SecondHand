@@ -7,6 +7,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import qrcodePaymentImage from "../assets/qrcode_payment.png";
 import { v4 as uuidv4 } from "uuid";
+import { useEffect } from "react";
 
 const PlaceOrder = () => {
   const [method, setMethod] = useState("cod");
@@ -14,6 +15,7 @@ const PlaceOrder = () => {
   const [paymentProof, setPaymentProof] = useState(null);
   const [paymentProofFileName, setPaymentProofFileName] = useState(null);
   const fileInputRef = useRef(null);
+
   const {
     navigate,
     backendUrl,

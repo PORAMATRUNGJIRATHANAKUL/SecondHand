@@ -1,22 +1,27 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
-import { assets } from "../assets/assets";
 import RelatedProducts from "../components/RelatedProducts";
 
 const Product = () => {
   const { productId } = useParams();
-  const { products, currency, addToCart } = useContext(ShopContext);
+  const { products, addToCart, getProductsData } = useContext(ShopContext);
   const [productData, setProductData] = useState(false);
   const [image, setImage] = useState("");
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [stockCount, setStockCount] = useState(0);
 
   const fetchProductData = async () => {
     products.map((item) => {
       if (item._id === productId) {
         setProductData(item);
         setImage(item.image[0]);
+        const uniqueSizes = [
+          ...new Set(item.stockItems.map((stock) => stock.size)),
+        ];
+        setAvailableSizes(uniqueSizes);
         return null;
       }
     });
@@ -41,9 +46,17 @@ const Product = () => {
     return colorMap[colorName] || "bg-gray-200";
   };
 
+  const handleSizeSelect = (selectedSize) => {
+    setSize(selectedSize);
+    const stockItem = productData.stockItems.find(
+      (item) => item.size === selectedSize
+    );
+    setStockCount(stockItem?.stock || 0);
+  };
+
   useEffect(() => {
     fetchProductData();
-  }, [productId, products]);
+  }, [productId, getProductsData]);
 
   return productData ? (
     <div className="border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100">
@@ -78,9 +91,9 @@ const Product = () => {
             <div>
               <p className="mb-2">Select Size</p>
               <div className="flex gap-2">
-                {productData.sizes.map((item, index) => (
+                {availableSizes.map((item, index) => (
                   <button
-                    onClick={() => setSize(item)}
+                    onClick={() => handleSizeSelect(item)}
                     className={`border py-2 px-4 bg-gray-100 hover:border-orange-500 transition-colors
                       ${
                         item === size ? "border-orange-500" : "border-gray-300"
@@ -91,6 +104,11 @@ const Product = () => {
                   </button>
                 ))}
               </div>
+              {size && (
+                <p className="mt-2 text-sm text-gray-600">
+                  เหลือ {stockCount} ชิ้น
+                </p>
+              )}
             </div>
             <div>
               <p className="mb-2">Select Color</p>

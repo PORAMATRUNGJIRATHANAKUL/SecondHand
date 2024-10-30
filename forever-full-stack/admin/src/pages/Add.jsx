@@ -20,6 +20,8 @@ const Add = ({ token }) => {
   const [colors, setColors] = useState([]);
   const [availableSizes, setAvailableSizes] = useState([]);
 
+  const [stockItems, setStockItems] = useState([]);
+
   const sizeData = {
     clothing: {
       tops: ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"],
@@ -144,6 +146,7 @@ const Add = ({ token }) => {
       formData.append("bestseller", bestseller);
       formData.append("sizes", JSON.stringify(sizes));
       formData.append("colors", JSON.stringify(colors));
+      formData.append("stockItems", JSON.stringify(stockItems));
 
       image1 && formData.append("image1", image1);
       image2 && formData.append("image2", image2);
@@ -168,6 +171,7 @@ const Add = ({ token }) => {
         setPrice("");
         setSizes([]);
         setColors([]);
+        setStockItems([]);
       } else {
         toast.error(response.data.message);
       }
@@ -204,6 +208,63 @@ const Add = ({ token }) => {
       {colors.length > 0 && (
         <p className="text-sm text-gray-500 mt-2">
           Selected colors: {colors.join(", ")}
+        </p>
+      )}
+    </div>
+  );
+
+  const StockManager = () => (
+    <div className="w-full">
+      <p className="mb-2">Product Stock</p>
+      {sizes.length > 0 && colors.length > 0 ? (
+        <div className="grid gap-4">
+          <div className="grid grid-cols-3 gap-4 font-semibold">
+            <p>Size</p>
+            <p>Color</p>
+            <p>Stock</p>
+          </div>
+          {sizes.map((size) =>
+            colors.map((color) => (
+              <div
+                key={`${size}-${color}`}
+                className="grid grid-cols-3 gap-4 items-center"
+              >
+                <p>{size}</p>
+                <p>{color}</p>
+                <input
+                  type="number"
+                  min="0"
+                  className="w-24 px-3 py-2"
+                  placeholder="0"
+                  value={
+                    stockItems.find(
+                      (item) => item.size === size && item.color === color
+                    )?.stock || ""
+                  }
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    setStockItems((prev) => {
+                      const existing = prev.find(
+                        (item) => item.size === size && item.color === color
+                      );
+                      if (existing) {
+                        return prev.map((item) =>
+                          item.size === size && item.color === color
+                            ? { ...item, stock: value }
+                            : item
+                        );
+                      }
+                      return [...prev, { size, color, stock: value }];
+                    });
+                  }}
+                />
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500">
+          Please select sizes and colors first to manage stock
         </p>
       )}
     </div>
@@ -375,6 +436,9 @@ const Add = ({ token }) => {
 
       {/* Colors */}
       <ColorSelector />
+
+      {/* Stock Manager */}
+      <StockManager />
 
       {/* Bestseller Option */}
       <div className="flex gap-2 mt-2">

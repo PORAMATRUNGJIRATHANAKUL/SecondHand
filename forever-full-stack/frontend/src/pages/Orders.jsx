@@ -4,7 +4,7 @@ import Title from "../components/Title";
 import axios from "axios";
 
 const Orders = () => {
-  const { backendUrl, token } = useContext(ShopContext);
+  const { backendUrl, token, getProductsData } = useContext(ShopContext);
   const [orders, setOrders] = useState([]);
 
   const loadOrderData = async () => {
@@ -49,6 +49,10 @@ const Orders = () => {
   useEffect(() => {
     loadOrderData();
   }, [token]);
+
+  useEffect(() => {
+    getProductsData();
+  }, []);
 
   return (
     <div className="border-t pt-16">

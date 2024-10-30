@@ -231,6 +231,7 @@ const ShopContextProvider = (props) => {
     submitShopReview,
     fetchUserProfile,
     updateUserProfileImage,
+    getProductsData,
   };
 
   return (
