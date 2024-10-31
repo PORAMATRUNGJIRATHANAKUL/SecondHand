@@ -1,5 +1,5 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useContext } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Collection from "./pages/Collection";
 import Review from "./pages/Review";
@@ -20,6 +20,21 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ReturnPolicy from "./pages/ReturnPolicy";
 import ReportProblem from "./pages/ReportProblem";
+import Add from "./pages/Add";
+import MyShop from "./pages/MyShop";
+
+import { ShopContext } from "./context/ShopContext";
+
+const ProtectedRoute = ({ children }) => {
+  const { token } = useContext(ShopContext);
+
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 const App = () => {
   return (
     <>
@@ -43,6 +58,22 @@ const App = () => {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/return-policy" element={<ReturnPolicy />} />
           <Route path="/report-problem" element={<ReportProblem />} />
+          <Route
+            path="/add"
+            element={
+              <ProtectedRoute>
+                <Add />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/myshop"
+            element={
+              <ProtectedRoute>
+                <MyShop />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
       <Footer />

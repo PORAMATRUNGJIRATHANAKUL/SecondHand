@@ -123,6 +123,7 @@ const Navbar = () => {
             </button>
           )}
 
+          {/* Profile Dropdown Menu */}
           {token && (
             <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-2 z-50">
               <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-white text-gray-500 rounded-lg shadow-lg border border-gray-100">
@@ -131,6 +132,12 @@ const Navbar = () => {
                   className="cursor-pointer hover:text-black transition-colors"
                 >
                   My Profile
+                </NavLink>
+                <NavLink
+                  to="/myshop"
+                  className="cursor-pointer hover:text-black transition-colors"
+                >
+                  ร้านค้าของฉัน
                 </NavLink>
                 <p
                   onClick={() => navigate("/orders")}
@@ -148,6 +155,16 @@ const Navbar = () => {
             </div>
           )}
         </div>
+
+        {/* Sell Product Button */}
+        {token && (
+          <NavLink
+            to="/add"
+            className="hidden sm:block px-3 py-1.5 bg-black text-white rounded-full text-sm hover:bg-gray-800 transition-colors"
+          >
+            ลงขายสินค้า
+          </NavLink>
+        )}
 
         {/* Mobile Menu Icon */}
         <button
