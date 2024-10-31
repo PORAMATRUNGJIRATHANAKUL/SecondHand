@@ -12,7 +12,8 @@ const productSchema = new mongoose.Schema({
   bestseller: { type: Boolean },
   date: { type: Number, required: true },
   stockItems: { type: Array, required: true },
-  owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+  isApproved: { type: Boolean, default: false },
 });
 
 const productModel =

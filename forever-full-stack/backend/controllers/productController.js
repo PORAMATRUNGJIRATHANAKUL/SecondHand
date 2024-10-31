@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import productModel from "../models/productModel.js";
-
+import userModel from "../models/userModel.js";
 // function for add product
 const addProduct = async (req, res) => {
   try {
@@ -15,6 +15,8 @@ const addProduct = async (req, res) => {
       bestseller,
       stockItems,
     } = req.body;
+
+    const owner = req.user.id;
 
     const image1 = req.files.image1 && req.files.image1[0];
     const image2 = req.files.image2 && req.files.image2[0];
@@ -47,6 +49,7 @@ const addProduct = async (req, res) => {
       image: imagesUrl,
       date: Date.now(),
       stockItems: JSON.parse(stockItems),
+      owner,
     };
 
     const product = new productModel(productData);
@@ -59,10 +62,20 @@ const addProduct = async (req, res) => {
   }
 };
 
+const getProductsByOwner = async (req, res) => {
+  const owner = req.user._id;
+  const products = await productModel.find({ owner });
+  res.json({ success: true, products });
+};
+
 // function for list product
 const listProducts = async (req, res) => {
   try {
-    const products = await productModel.find({});
+    let products = await productModel.find({}).populate({
+      path: "owner",
+      select: "name email",
+    });
+
     res.json({ success: true, products });
   } catch (error) {
     console.log(error);
@@ -93,4 +106,24 @@ const singleProduct = async (req, res) => {
   }
 };
 
-export { listProducts, addProduct, removeProduct, singleProduct };
+const getApprovedProducts = async (req, res) => {
+  const products = await productModel.find({ isApproved: true });
+  res.json({ success: true, products });
+};
+
+// function for approve product
+const approveProduct = async (req, res) => {
+  const { productId } = req.body;
+  await productModel.findByIdAndUpdate(productId, { isApproved: true });
+  res.json({ success: true, message: "Product Approved" });
+};
+
+export {
+  listProducts,
+  addProduct,
+  removeProduct,
+  singleProduct,
+  approveProduct,
+  getProductsByOwner,
+  getApprovedProducts,
+};
