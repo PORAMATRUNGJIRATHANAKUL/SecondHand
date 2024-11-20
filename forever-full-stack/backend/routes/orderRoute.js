@@ -8,6 +8,7 @@ import {
   updateStatus,
   getQRCodePaymentList,
   deleteOrder,
+  getOrdersByUserId,
 } from "../controllers/orderController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
@@ -16,7 +17,7 @@ import upload from "../middleware/multer.js";
 const orderRouter = express.Router();
 
 // Admin Features
-orderRouter.post("/list", adminAuth, allOrders);
+orderRouter.post("/list", allOrders);
 orderRouter.post("/status", adminAuth, updateStatus);
 orderRouter.delete("/delete/:id", adminAuth, deleteOrder);
 
@@ -32,6 +33,7 @@ orderRouter.post(
 
 // User Feature
 orderRouter.post("/userorders", authUser, userOrders);
+orderRouter.get("/my-orders", authUser, getOrdersByUserId);
 
 // QR Code Payment List
 orderRouter.get("/qr-payment-list", adminAuth, getQRCodePaymentList);

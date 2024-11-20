@@ -131,7 +131,7 @@ const placeOrder = async (req, res) => {
 
 const confirmQRPayment = async (req, res) => {
   try {
-    // โค้ดสำหรับยืนยันการชำระเงิน QR
+    // โค้ดสำหรับยืนยันกา��ชำระเงิน QR
     res.json({ success: true, message: "QR payment confirmed" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -273,6 +273,30 @@ const getQRCodePaymentList = async (req, res) => {
   }
 };
 
+// เพิ่มฟังก์ชันใหม่
+const getOrdersByUserId = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const orders = await orderModel
+      .find({ userId })
+      .populate({
+        path: "items.product",
+        select: "name image price",
+      })
+      .populate({
+        path: "userId",
+        select: "name email profileImage",
+      })
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, orders });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   placeOrder,
   placeOrderQRCode,
@@ -282,4 +306,5 @@ export {
   updateStatus,
   getQRCodePaymentList,
   deleteOrder,
+  getOrdersByUserId,
 };

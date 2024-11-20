@@ -17,11 +17,9 @@ const Ordershopme = ({ searchQuery }) => {
     }
 
     try {
-      const response = await axios.post(
-        backendUrl + "/api/order/list",
-        {},
-        { headers: { token } }
-      );
+      const response = await axios.get(backendUrl + "/api/order/my-orders", {
+        headers: { token },
+      });
       if (response.data.success) {
         setOrders(response.data.orders.reverse());
       } else {
@@ -130,7 +128,7 @@ const Ordershopme = ({ searchQuery }) => {
           >
             <img
               className="w-12 cursor-pointer hover:opacity-80"
-              src={assets.parcel_icon}
+              src={order.items[0].image[0]}
               alt=""
               onClick={() => viewProducts(order)}
             />
