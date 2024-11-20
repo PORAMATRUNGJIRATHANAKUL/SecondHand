@@ -57,16 +57,16 @@ const Review = ({ token, searchQuery }) => {
 
   return (
     <>
-      <p className="mb-2">All Comment List</p>
+      <p className="mb-2">รายการรีวิวทั้งหมด</p>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <th className="py-2 px-4 border-b text-left">Name</th>
-              <th className="py-2 px-4 border-b text-left">Rating</th>
-              <th className="py-2 px-4 border-b text-left">Comment</th>
-              <th className="py-2 px-4 border-b text-left">Date</th>
-              <th className="py-2 px-4 border-b text-center">Action</th>
+              <th className="py-2 px-4 border-b text-left">ชื่อผู้รีวิว</th>
+              <th className="py-2 px-4 border-b text-left">คะแนน</th>
+              <th className="py-2 px-4 border-b text-left">ความคิดเห็น</th>
+              <th className="py-2 px-4 border-b text-left">วันที่</th>
+              <th className="py-2 px-4 border-b text-center">จัดการ</th>
             </tr>
           </thead>
           <tbody>
@@ -78,10 +78,28 @@ const Review = ({ token, searchQuery }) => {
                 <td className="py-2 px-4 border-b">{item.date}</td>
                 <td className="py-2 px-4 border-b text-center">
                   <button
-                    onClick={() => removeReview(item._id)}
-                    className="text-red-500 hover:text-red-700 cursor-pointer"
+                    onClick={() => {
+                      if (window.confirm("คุณต้องการลบรีวิวนี้ใช่หรือไม่?")) {
+                        removeReview(item._id);
+                      }
+                    }}
+                    className="p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
+                    title="ลบรีวิว"
                   >
-                    X
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
                   </button>
                 </td>
               </tr>
@@ -89,7 +107,6 @@ const Review = ({ token, searchQuery }) => {
           </tbody>
         </table>
 
-        {/* เพิ่มข้อความเมื่อไม่พบข้อมูล */}
         {filteredList.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             ไม่พบรายการที่ค้นหา

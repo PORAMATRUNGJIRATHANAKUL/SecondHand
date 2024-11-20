@@ -138,119 +138,153 @@ const Ordershopme = ({ searchQuery }) => {
 
   return (
     <div>
-      <h3>รายการสั่งซื้อ</h3>
-      <div>
-        {filteredOrders.map((order, index) => (
-          <div
-            className="grid grid-cols-1 sm:grid-cols-[0.5fr_2fr_1fr] lg:grid-cols-[0.5fr_2fr_1fr_1fr_1fr] gap-3 items-start border-2 border-gray-200 p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700"
-            key={index}
-          >
-            <img
-              className="w-12 cursor-pointer hover:opacity-80"
-              src={order.items[0].image[0]}
-              alt="รูปสินค้า"
-              onClick={() => viewProducts(order)}
-            />
-            <div>
-              {order.items.map((item, index) => (
-                <p
-                  key={index}
-                  className="flex items-center gap-2 py-0.5 flex-wrap"
-                >
-                  <span>{item.name}</span>
-                  <span className="text-gray-500">จำนวน {item.quantity}</span>
-                  <span className="text-gray-500">ไซส์ {item.size}</span>
-                  {item.colors && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-gray-500">สี</span>
-                      {item.colors.map((color, colorIdx) => (
-                        <div
-                          key={colorIdx}
-                          className={`w-4 h-4 rounded-full ${getColorClass(
-                            color
-                          )}`}
-                          title={color}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {index !== order.items.length - 1 && (
-                    <span className="text-gray-300">,</span>
-                  )}
-                </p>
-              ))}
-              <p className="mt-3 mb-2 font-medium">
-                {order.address.firstName + " " + order.address.lastName}
-              </p>
-              <div>
-                <p>{order.address.street + ","}</p>
-                <p>
-                  {order.address.city +
-                    ", " +
-                    order.address.state +
-                    ", " +
-                    order.address.country +
-                    ", " +
-                    order.address.zipcode}
-                </p>
+      <div className="p-4">
+        <h3 className="text-xl font-semibold mb-4">รายการสั่งซื้อ</h3>
+        <div className="space-y-4">
+          {filteredOrders.map((order, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-md p-4 relative"
+            >
+              {/* ส่วนหัวของการ์ด */}
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-4">
+                  <img
+                    className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
+                    src={order.items[0].image[0]}
+                    alt="รูปสินค้า"
+                    onClick={() => viewProducts(order)}
+                  />
+                  <div>
+                    <p className="font-medium text-lg">
+                      {order.address.firstName} {order.address.lastName}
+                    </p>
+                    <p className="text-gray-600">{order.address.phone}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <p className="text-lg font-semibold">
+                    ฿{order.amount.toLocaleString()}
+                  </p>
+                  <button
+                    onClick={() => {
+                      if (window.confirm("คุณต้องการลบออเดอร์นี้ใช่หรือไม่?")) {
+                        deleteOrder(order._id);
+                      }
+                    }}
+                    className="text-gray-400 hover:text-red-500 transition-colors p-2"
+                    title="ลบออเดอร์"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <p>{order.address.phone}</p>
-            </div>
-            <div>
-              <p className="text-sm sm:text-[15px]">
-                จำนวนรายการ: {order.items.length}
-              </p>
-              <p className="mt-3">
-                วิธีชำระเงิน:{" "}
-                {order.paymentMethod === "QR Code"
-                  ? "โอนเงิน"
-                  : order.paymentMethod === "cod"
-                  ? "เก็บเงินปลายทาง"
-                  : order.paymentMethod}
-              </p>
-              <p>สถานะการชำระเงิน: {order.payment ? "ชำระแล้ว" : "รอชำระ"}</p>
-              {order.paymentMethod === "QR Code" && (
-                <button
-                  onClick={() => viewQRProof(order)}
-                  className="mt-2 bg-blue-500 text-white px-2 py-1 rounded text-xs"
-                >
-                  ดูสลิป
-                </button>
-              )}
-              <p>วันที่: {new Date(order.date).toLocaleDateString("th-TH")}</p>
-            </div>
-            <p className="text-sm sm:text-[15px]">
-              ฿{order.amount.toLocaleString()}
-            </p>
-            <p className="text-sm sm:text-[15px]">฿{order.amount}</p>
-            <div className="flex flex-col gap-2">
-              <select
-                onChange={(event) => statusHandler(event, order._id)}
-                value={order.status}
-                className="p-2 font-semibold w-full"
-              >
-                <option value="รอดำเนินการ">รอดำเนินการ</option>
-                <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
-                <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
-                <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
-                <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
-                <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
-              </select>
-              <button
-                onClick={() => deleteOrder(order._id)}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded w-full text-sm"
-              >
-                ลบออเดอร์
-              </button>
-            </div>
-          </div>
-        ))}
 
-        {filteredOrders.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            ไม่พบรายการที่ค้นหา
-          </div>
-        )}
+              {/* รายการสินค้า */}
+              <div className="mb-4">
+                {order.items.map((item, index) => (
+                  <p
+                    key={index}
+                    className="flex items-center gap-2 py-1 flex-wrap"
+                  >
+                    <span className="font-medium">{item.name}</span>
+                    <span className="text-gray-500">x{item.quantity}</span>
+                    <span className="text-gray-500">ไซส์ {item.size}</span>
+                    {item.colors && (
+                      <div className="flex items-center gap-1">
+                        <span className="text-gray-500">สี:</span>
+                        {item.colors.map((color, colorIdx) => (
+                          <div
+                            key={colorIdx}
+                            className={`w-4 h-4 rounded-full ${getColorClass(
+                              color
+                            )}`}
+                            title={getColorName(color)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </p>
+                ))}
+              </div>
+
+              {/* ข้อมูลการจัดส่งและการชำระเงิน */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-600 mb-1">ที่อยู่จัดส่ง:</p>
+                  <p>{order.address.street}</p>
+                  <p>
+                    {order.address.city} {order.address.state}{" "}
+                    {order.address.country} {order.address.zipcode}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>วันที่สั่งซื้อ:</span>
+                    <span>
+                      {new Date(order.date).toLocaleDateString("th-TH")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>วิธีชำระเงิน:</span>
+                    <span>
+                      {order.paymentMethod === "QR Code"
+                        ? "โอนเงิน"
+                        : "เก็บเงินปลายทาง"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>สถานะการชำระเงิน:</span>
+                    <span>{order.payment ? "ชำระแล้ว" : "รอชำระ"}</span>
+                  </div>
+                  {order.paymentMethod === "QR Code" && (
+                    <button
+                      onClick={() => viewQRProof(order)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-sm w-full transition-colors"
+                    >
+                      ดูสลิป
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* สถานะการจัดส่ง */}
+              <div className="mt-4 border-t pt-4">
+                <select
+                  onChange={(event) => statusHandler(event, order._id)}
+                  value={order.status}
+                  className="w-full p-2 border rounded bg-gray-50 font-medium"
+                >
+                  <option value="รอดำเนินการ">รอดำเนินการ</option>
+                  <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
+                  <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
+                  <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
+                  <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
+                  <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
+                </select>
+              </div>
+            </div>
+          ))}
+
+          {filteredOrders.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              ไม่พบรายการที่ค้นหา
+            </div>
+          )}
+        </div>
       </div>
 
       {showQRProof && selectedOrder && (

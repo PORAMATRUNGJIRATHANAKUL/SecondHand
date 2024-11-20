@@ -102,58 +102,104 @@ const List = ({ searchQuery }) => {
     <>
       <p className="mb-2">รายการสินค้าของฉัน</p>
       <div className="flex flex-col gap-2">
-        {/* หัวข้อตาราง */}
-        <div className="hidden md:grid grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
-          <b>รูปภาพ</b>
-          <b>ชื่อสินค้า</b>
-          <b>หมวดหมู่</b>
-          <b>ราคา</b>
-          <b>ไซส์</b>
-          <b>สี</b>
-          <b className="text-center">จัดการ</b>
+        {/* หัวตาราง */}
+        <div className="hidden md:grid grid-cols-[1fr_3fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center py-3 px-4 bg-gray-100 rounded-t-lg font-semibold text-gray-700">
+          <div>รูปภาพ</div>
+          <div>ชื่อร้าน</div>
+          <div>ชื่อสินค้า</div>
+          <div>หมวดหมู่</div>
+          <div className="text-right">ราคา</div>
+          <div className="text-center">ไซส์</div>
+          <div className="text-center">สี</div>
+          <div className="text-center">คงเหลือ</div>
+          <div className="text-center">จัดการ</div>
         </div>
 
         {/* รายการสินค้า */}
         {filteredList.map((item, index) => (
           <div
-            className="grid grid-cols-[1fr_3fr_1fr] md:grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr_1fr] items-center gap-2 py-1 px-2 border text-sm"
             key={index}
+            className={`grid grid-cols-[1fr_3fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center py-3 px-4 border-b hover:bg-gray-50 transition-colors ${
+              index % 2 === 0 ? "bg-white" : "bg-gray-50"
+            }`}
           >
-            <img
-              className="w-12"
-              src={item.image[0]}
-              alt={`รูปสินค้า ${item.name}`}
-            />
-            <p>{item.name}</p>
-            <p>{item.category}</p>
-            <p>
+            {/* รูปภาพ */}
+            <div className="flex items-center">
+              <img
+                className="w-12 h-12 object-cover rounded-lg shadow-sm"
+                src={item.image[0]}
+                alt={`รูปสินค้า ${item.name}`}
+              />
+            </div>
+
+            {/* ชื่อร้าน */}
+            <div className="text-gray-600">{item.owner?.name || "ไม่ระบุ"}</div>
+
+            {/* ชื่อสินค้า */}
+            <div className="font-medium text-gray-800">{item.name}</div>
+
+            {/* หมวดหมู่ */}
+            <div className="text-gray-600">{item.category}</div>
+
+            {/* ราคา */}
+            <div className="text-right font-medium text-gray-800">
               {currency}
               {item.price.toLocaleString()}
-            </p>
+            </div>
+
             {/* ไซส์ */}
-            <div className="hidden md:block">{item.sizes.join(", ")}</div>
+            <div className="hidden md:flex items-center justify-center">
+              <span className="bg-gray-100 px-3 py-1 rounded-full text-sm">
+                {item.sizes.join(", ")}
+              </span>
+            </div>
+
             {/* สี */}
-            <div className="hidden md:flex flex-wrap gap-1">
+            <div className="hidden md:flex items-center justify-center gap-1">
               {item.colors.map((color, idx) => (
                 <div
                   key={idx}
-                  className={`w-6 h-6 rounded-full ${getColorClass(color)}`}
+                  className={`w-6 h-6 rounded-full ${getColorClass(
+                    color
+                  )} shadow-sm hover:scale-110 transition-transform`}
                   title={getColorName(color)}
                 />
               ))}
             </div>
-            <button
-              onClick={() => {
-                if (window.confirm("คุณต้องการลบสินค้านี้ใช่หรือไม่?")) {
-                  removeProduct(item._id);
-                }
-              }}
-              className="text-right md:text-center cursor-pointer text-lg hover:text-red-500"
-              title="ลบสินค้า"
-              aria-label={`ลบสินค้า ${item.name}`}
-            >
-              ✕
-            </button>
+
+            {/* คงเหลือ */}
+            <div className="text-center font-medium text-gray-800">
+              {item.stockItems.reduce((stock, item) => stock + item.stock, 0)}
+            </div>
+
+            {/* ปุ่มลบ */}
+            <div className="flex justify-center">
+              <button
+                onClick={() => {
+                  if (window.confirm("คุณต้องการลบสินค้านี้ใช่หรือไม่?")) {
+                    removeProduct(item._id);
+                  }
+                }}
+                className="p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
+                title="ลบสินค้า"
+                aria-label={`ลบสินค้า ${item.name}`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         ))}
 

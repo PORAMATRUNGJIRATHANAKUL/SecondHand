@@ -132,21 +132,38 @@ const Review = () => {
       </div>
 
       {/* การกระจายของคะแนน */}
-      <div className="mb-8">
+      <div className="mb-8 space-y-2">
         {[5, 4, 3, 2, 1].map((star) => (
-          <div key={star} className="flex items-center gap-2 my-2">
-            <span>{star} ดาว</span>
-            <div className="bg-gray-300 flex-1 h-4 rounded-md overflow-hidden">
+          <div key={star} className="flex items-center gap-2">
+            {/* ส่วนแสดงดาวและคำอธิบาย */}
+            <div className="w-32 flex items-center">
+              <div className="w-14 font-medium">{star} ดาว</div>
+              <span className="text-sm text-gray-600 whitespace-nowrap">
+                {star === 5 && "(ดีมาก)"}
+                {star === 4 && "(ดี)"}
+                {star === 3 && "(ปานกลาง)"}
+                {star === 2 && "(แย่)"}
+                {star === 1 && "(แย่มาก)"}
+              </span>
+            </div>
+
+            {/* แถบแสดงสัดส่วน */}
+            <div className="bg-gray-200 flex-1 h-4 rounded-md overflow-hidden">
               <div
-                className="bg-black h-full"
+                className="h-full bg-black transition-all duration-300"
                 style={{
                   width: `${ratingData?.progress[star]}%`,
                 }}
               ></div>
             </div>
-            <span className="text-gray-500 w-20 text-right">
-              {ratingData?.separateCount[star]} รีวิว
-            </span>
+
+            {/* จำนวนรีวิว */}
+            <div className="w-20 text-right text-gray-600">
+              <span className="font-medium">
+                {ratingData?.separateCount[star]}
+              </span>
+              <span className="ml-1">รีวิว</span>
+            </div>
           </div>
         ))}
       </div>
@@ -183,7 +200,7 @@ const Review = () => {
 
       {/* ส่วนสำหรับส่งความเห็นใหม่ */}
       <div className="my-8 pt-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-2">
           {[...Array(5)].map((_, i) => (
             <span
               key={i}
@@ -193,10 +210,28 @@ const Review = () => {
               onClick={() =>
                 setNewReview((prev) => ({ ...prev, rating: i + 1 }))
               }
+              title={
+                i === 4
+                  ? "ดีมาก"
+                  : i === 3
+                  ? "ดี"
+                  : i === 2
+                  ? "ปานกลาง"
+                  : i === 1
+                  ? "แย่"
+                  : "แย่มาก"
+              }
             >
               ★
             </span>
           ))}
+          <span className="text-sm text-gray-500 ml-2">
+            {newReview.rating === 5 && "(ดีมาก)"}
+            {newReview.rating === 4 && "(ดี)"}
+            {newReview.rating === 3 && "(ปานกลาง)"}
+            {newReview.rating === 2 && "(แย่)"}
+            {newReview.rating === 1 && "(แย่มาก)"}
+          </span>
         </div>
         <textarea
           name="comment"
