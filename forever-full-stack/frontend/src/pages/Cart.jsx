@@ -18,7 +18,7 @@ const Cart = () => {
             const productData = products.find(
               (product) => product._id === itemId
             );
-            const color = productData.colors[0]; // Assuming colors is an array in your product data
+            const color = productData.colors[0];
 
             tempData.push({
               _id: itemId,
@@ -36,7 +36,7 @@ const Cart = () => {
   return (
     <div className="border-t pt-14">
       <div className="text-2xl mb-3">
-        <p className="text-gray-500">YOUR CART</p>
+        <p className="text-gray-500">ตะกร้าสินค้า</p>
       </div>
 
       <div>
@@ -65,9 +65,9 @@ const Cart = () => {
                       {currency}
                       {productData.price}
                     </p>
-                    <p className="px-2 sm:px-3 sm:py-1 ">Size: {item.size}</p>
+                    <p className="px-2 sm:px-3 sm:py-1 ">ไซส์: {item.size}</p>
                     <div className="flex items-center gap-2">
-                      <p>Color:</p>
+                      <p>สี:</p>
                       <div
                         className="w-4 h-4 rounded-full border border-gray-300"
                         style={{ backgroundColor: item.color }}
@@ -86,12 +86,13 @@ const Cart = () => {
                 type="number"
                 min={1}
                 defaultValue={item.quantity}
+                aria-label="จำนวนสินค้า"
               />
               <img
                 onClick={() => updateQuantity(item._id, item.size, 0)}
                 className="w-4 mr-4 sm:w-5 cursor-pointer"
                 src={assets.bin_icon}
-                alt="Remove item"
+                alt="ลบสินค้า"
               />
             </div>
           );
@@ -106,7 +107,7 @@ const Cart = () => {
               onClick={() => navigate("/place-order")}
               className="bg-black text-white text-sm my-8 px-8 py-3"
             >
-              PROCEED TO CHECKOUT
+              ดำเนินการสั่งซื้อ
             </button>
           </div>
         </div>

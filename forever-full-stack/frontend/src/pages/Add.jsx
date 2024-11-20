@@ -161,7 +161,7 @@ const Add = () => {
       );
 
       if (response.data.success) {
-        toast.success(response.data.message);
+        toast.success("เพิ่มสินค้าสำเร็จ");
         // Reset all fields
         setName("");
         setDescription("");
@@ -174,11 +174,11 @@ const Add = () => {
         setColors([]);
         setStockItems([]);
       } else {
-        toast.error(response.data.message);
+        toast.error("ไม่สามารถเพิ่มสินค้าได้");
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาด: " + error.message);
     }
   };
 
@@ -268,9 +268,9 @@ const Add = () => {
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="Men">Men</option>
-                  <option value="Women">Women</option>
-                  <option value="Kids">Kids</option>
+                  <option value="Men">ผู้ชาย</option>
+                  <option value="Women">ผู้หญิง</option>
+                  <option value="Kids">เด็ก</option>
                 </select>
               </div>
 
@@ -283,12 +283,12 @@ const Add = () => {
                   onChange={(e) => setSubCategory(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="Clothing">Clothing</option>
-                  <option value="Pants">Pants</option>
-                  <option value="Shoes">Shoes</option>
-                  <option value="Hats">Hats</option>
-                  <option value="Glasses">Glasses</option>
-                  <option value="Accessories">Accessories</option>
+                  <option value="Clothing">เสื้อผ้า</option>
+                  <option value="Pants">กางเกง</option>
+                  <option value="Shoes">รองเท้า</option>
+                  <option value="Hats">หมวก</option>
+                  <option value="Glasses">แว่นตา</option>
+                  <option value="Accessories">เครื่องประดับ</option>
                 </select>
               </div>
 

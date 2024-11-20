@@ -54,6 +54,25 @@ const Product = () => {
     setStockCount(stockItem?.stock || 0);
   };
 
+  const getColorName = (colorName) => {
+    const colorNames = {
+      Black: "ดำ",
+      White: "ขาว",
+      Gray: "เทา",
+      Navy: "กรมท่า",
+      Red: "แดง",
+      Blue: "น้ำเงิน",
+      Green: "เขียว",
+      Yellow: "เหลือง",
+      Purple: "ม่วง",
+      Pink: "ชมพู",
+      Orange: "ส้ม",
+      Brown: "น้ำตาล",
+      Beige: "เบจ",
+    };
+    return colorNames[colorName] || colorName;
+  };
+
   useEffect(() => {
     fetchProductData();
   }, [productId, getProductsData]);
@@ -71,25 +90,31 @@ const Product = () => {
                 src={item}
                 key={index}
                 className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer"
-                alt=""
+                alt={`รูปสินค้า ${index + 1}`}
               />
             ))}
           </div>
           <div className="w-full sm:w-[80%]">
-            <img className="w-full h-auto" src={image} alt="" />
+            <img
+              className="w-full h-auto"
+              src={image}
+              alt={`รูปสินค้า ${productData.name}`}
+            />
           </div>
         </div>
 
         {/* -------- Product Info ---------- */}
         <div className="flex-1">
           <h1 className="font-medium text-2xl mt-2">{productData.name}</h1>
-          <p className="mt-5 text-3xl font-medium">฿{productData.price}</p>
+          <p className="mt-5 text-3xl font-medium">
+            ฿{productData.price.toLocaleString()}
+          </p>
           <p className="mt-5 text-gray-500 md:w-4/5">
             {productData.description}
           </p>
           <div className="flex flex-col gap-4 my-8">
             <div>
-              <p className="mb-2">Select Size</p>
+              <p className="mb-2">เลือกไซส์</p>
               <div className="flex gap-2">
                 {availableSizes.map((item, index) => (
                   <button
@@ -111,7 +136,7 @@ const Product = () => {
               )}
             </div>
             <div>
-              <p className="mb-2">Select Color</p>
+              <p className="mb-2">เลือกสี</p>
               <div className="flex gap-3">
                 {productData.colors.map((item, index) => (
                   <div
@@ -125,7 +150,7 @@ const Product = () => {
                           ? "ring-2 ring-orange-500 ring-offset-2"
                           : ""
                       }`}
-                    title={item}
+                    title={getColorName(item)}
                   />
                 ))}
               </div>
@@ -135,7 +160,7 @@ const Product = () => {
             onClick={() => addToCart(productData._id, size, color)}
             className="bg-black text-white px-8 py-3 text-sm active:bg-gray-700 hover:bg-gray-800 transition-colors"
           >
-            ADD TO CART
+            เพิ่มลงตะกร้า
           </button>
         </div>
       </div>
@@ -143,12 +168,12 @@ const Product = () => {
       {/* ---------- Description & Review Section ------------- */}
       <div className="mt-20">
         <div className="flex">
-          <b className="border px-5 py-3 text-sm">Description</b>
+          <b className="border px-5 py-3 text-sm">รายละเอียด</b>
         </div>
         <div className="flex flex-col gap-4 px-6 py-6 text-sm text-gray-500">
-          <p>100% Original product.</p>
-          <p>Cash on delivery is available on this product.</p>
-          <p>Easy return and exchange policy within 7 days.</p>
+          <p>สินค้าของแท้ 100%</p>
+          <p>รองรับการเก็บเงินปลายทาง</p>
+          <p>เปลี่ยนคืนสินค้าได้ภายใน 7 วัน</p>
         </div>
       </div>
 

@@ -7,8 +7,8 @@ const Collection = () => {
   const { products, search, showSearch } = useContext(ShopContext);
   const [showFilter, setShowFilter] = useState(false);
   const [filterProducts, setFilterProducts] = useState([]);
-  const [category, setCategory] = useState(""); // ใช้ string แทน array
-  const [subCategory, setSubCategory] = useState(""); // ใช้ string แทน array
+  const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const [sortType, setSortType] = useState("relevant");
 
   const applyFilter = () => {
@@ -61,81 +61,81 @@ const Collection = () => {
 
   return (
     <div className="flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t">
-      {/* Filter Options */}
+      {/* ส่วนตัวกรอง */}
       <div className="min-w-60">
         <p
           onClick={() => setShowFilter(!showFilter)}
           className="my-2 text-xl flex items-center cursor-pointer gap-2"
         >
-          FILTERS
+          ตัวกรอง
           <img
             className={`h-3 sm:hidden ${showFilter ? "rotate-90" : ""}`}
             src={assets.dropdown_icon}
             alt=""
           />
         </p>
-        {/* Category Filter */}
+        {/* ตัวกรองหมวดหมู่ */}
         <div
           className={`border border-gray-300 p-4 rounded-md my-5 ${
             showFilter ? "" : "hidden"
           } sm:block`}
         >
-          <p className="mb-3 text-sm font-medium">CATEGORIES</p>
+          <p className="mb-3 text-sm font-medium">หมวดหมู่</p>
           <div className="text-sm font-light text-gray-700">
             <select
               className="w-full p-2 border rounded-md"
               onChange={(e) => setCategory(e.target.value)}
               value={category}
             >
-              <option value="">Select Category</option>
-              <option value="Men">Men</option>
-              <option value="Women">Women</option>
-              <option value="Kids">Kids</option>
+              <option value="">เลือกหมวดหมู่</option>
+              <option value="Men">ผู้ชาย</option>
+              <option value="Women">ผู้หญิง</option>
+              <option value="Kids">เด็ก</option>
             </select>
           </div>
         </div>
-        {/* SubCategory Filter */}
+        {/* ตัวกรองประเภทย่อย */}
         <div
           className={`border border-gray-300 p-4 rounded-md my-5 ${
             showFilter ? "" : "hidden"
           } sm:block`}
         >
-          <p className="mb-3 text-sm font-medium">TYPE</p>
+          <p className="mb-3 text-sm font-medium">ประเภท</p>
           <div className="text-sm font-light text-gray-700">
             <select
               className="w-full p-2 border rounded-md"
               onChange={(e) => setSubCategory(e.target.value)}
               value={subCategory}
             >
-              <option value="">Select Type</option>
-              <option value="Clothing">Clothing</option>
-              <option value="Pants">Pants</option>
-              <option value="Shoes">Shoes</option>
-              <option value="Hats">Hats</option>
-              <option value="Glasses">Glasses</option>
+              <option value="">เลือกประเภท</option>
+              <option value="Clothing">เสื้อผ้า</option>
+              <option value="Pants">กางเกง</option>
+              <option value="Shoes">รองเท้า</option>
+              <option value="Hats">หมวก</option>
+              <option value="Glasses">แว่นตา</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Right Side */}
+      {/* ส่วนแสดงสินค้า */}
       <div className="flex-1">
         <div className="flex justify-between text-base sm:text-2xl mb-4">
           <div className="inline-flex gap-2 items-center mb-3">
-            <p className="text-gray-500">ALL COLLECTIONS</p>
+            <p className="text-gray-500">สินค้าทั้งหมด</p>
           </div>
-          {/* Product Sort */}
+          {/* ตัวเรียงลำดับ */}
           <select
             onChange={(e) => setSortType(e.target.value)}
             className="border-2 border-gray-300 text-sm px-2"
           >
-            <option value="relevant">Sort by: Relevant</option>
-            <option value="low-high">Sort by: Low to High</option>
-            <option value="high-low">Sort by: High to Low</option>
+            <option value="relevant">เรียงตาม: ที่เกี่ยวข้อง</option>
+            <option value="low-high">เรียงตาม: ราคาต่ำ-สูง</option>
+            <option value="high-low">เรียงตาม: ราคาสูง-ต่ำ</option>
           </select>
         </div>
 
-        {/* Map Products */}
+        {/* แสดงรายการสินค้า */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6">
           {filterProducts.map((item, index) => (
             <ProductItem

@@ -12,11 +12,11 @@ const List = ({ token, searchQuery }) => {
       if (response.data.success) {
         setList(response.data.products.reverse());
       } else {
-        toast.error(response.data.message);
+        toast.error("ไม่สามารถดึงข้อมูลสินค้าได้");
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาด: " + error.message);
     }
   };
 
@@ -29,14 +29,14 @@ const List = ({ token, searchQuery }) => {
       );
 
       if (response.data.success) {
-        toast.success(response.data.message);
+        toast.success("ลบสินค้าสำเร็จ");
         await fetchList();
       } else {
-        toast.error(response.data.message);
+        toast.error("ไม่สามารถลบสินค้าได้");
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาดในการลบสินค้า");
     }
   };
 
@@ -54,6 +54,26 @@ const List = ({ token, searchQuery }) => {
   useEffect(() => {
     fetchList();
   }, []);
+
+  // ฟังก์ชันแปลงชื่อสีเป็นภาษาไทย
+  const getColorName = (colorName) => {
+    const colorNames = {
+      Black: "ดำ",
+      White: "ขาว",
+      Gray: "เทา",
+      Navy: "กรมท่า",
+      Red: "แดง",
+      Blue: "น้ำเงิน",
+      Green: "เขียว",
+      Yellow: "เหลือง",
+      Purple: "ม่วง",
+      Pink: "ชมพู",
+      Orange: "ส้ม",
+      Brown: "น้ำตาล",
+      Beige: "เบจ",
+    };
+    return colorNames[colorName] || colorName;
+  };
 
   // ฟังก์ชันแปลงชื่อสีเป็น Tailwind class
   const getColorClass = (colorName) => {
@@ -77,17 +97,17 @@ const List = ({ token, searchQuery }) => {
 
   return (
     <>
-      <p className="mb-2">All Products List</p>
+      <p className="mb-2">รายการสินค้าทั้งหมด</p>
       <div className="flex flex-col gap-2">
-        {/* ------- List Table Title ---------- */}
+        {/* หัวข้อตาราง */}
         <div className="hidden md:grid grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
-          <b>Image</b>
-          <b>Name</b>
-          <b>Category</b>
-          <b>Price</b>
-          <b>Sizes</b>
-          <b>Colors</b>
-          <b className="text-center">Action</b>
+          <b>รูปภาพ</b>
+          <b>ชื่อสินค้า</b>
+          <b>หมวดหมู่</b>
+          <b>ราคา</b>
+          <b>ไซส์</b>
+          <b>สี</b>
+          <b className="text-center">จัดการ</b>
         </div>
 
         {/* ------ Product List ------ */}
@@ -111,7 +131,7 @@ const List = ({ token, searchQuery }) => {
                 <div
                   key={idx}
                   className={`w-6 h-6 rounded-full ${getColorClass(color)}`}
-                  title={color}
+                  title={getColorName(color)}
                 />
               ))}
             </div>

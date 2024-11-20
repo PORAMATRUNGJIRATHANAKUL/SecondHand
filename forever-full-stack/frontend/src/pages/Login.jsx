@@ -4,7 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 const Login = () => {
-  const [currentState, setCurrentState] = useState("Login");
+  const [currentState, setCurrentState] = useState("เข้าสู่ระบบ");
   const { token, setToken, navigate, backendUrl } = useContext(ShopContext);
 
   const [name, setName] = useState("");
@@ -14,7 +14,7 @@ const Login = () => {
   const onSubmitHandler = async (event) => {
     event.preventDefault();
     try {
-      if (currentState === "Sign Up") {
+      if (currentState === "สมัครสมาชิก") {
         const response = await axios.post(backendUrl + "/api/user/register", {
           name,
           email,
@@ -23,8 +23,9 @@ const Login = () => {
         if (response.data.success) {
           setToken(response.data.token);
           localStorage.setItem("token", response.data.token);
+          toast.success("สมัครสมาชิกสำเร็จ");
         } else {
-          toast.error(response.data.message);
+          toast.error(response.data.message || "ไม่สามารถสมัครสมาชิกได้");
         }
       } else {
         const response = await axios.post(backendUrl + "/api/user/login", {
@@ -34,13 +35,14 @@ const Login = () => {
         if (response.data.success) {
           setToken(response.data.token);
           localStorage.setItem("token", response.data.token);
+          toast.success("เข้าสู่ระบบสำเร็จ");
         } else {
-          toast.error(response.data.message);
+          toast.error(response.data.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
         }
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาด: " + error.message);
     }
   };
 
@@ -59,7 +61,7 @@ const Login = () => {
         <p className="prata-regular text-3xl">{currentState}</p>
         <hr className="border-none h-[1.5px] w-8 bg-gray-800" />
       </div>
-      {currentState === "Login" ? (
+      {currentState === "เข้าสู่ระบบ" ? (
         ""
       ) : (
         <input
@@ -67,7 +69,7 @@ const Login = () => {
           value={name}
           type="text"
           className="w-full px-3 py-2 border border-gray-800"
-          placeholder="Name"
+          placeholder="ชื่อ"
           required
         />
       )}
@@ -76,7 +78,7 @@ const Login = () => {
         value={email}
         type="email"
         className="w-full px-3 py-2 border border-gray-800"
-        placeholder="Email"
+        placeholder="อีเมล"
         required
       />
       <input
@@ -84,29 +86,29 @@ const Login = () => {
         value={password}
         type="password"
         className="w-full px-3 py-2 border border-gray-800"
-        placeholder="Password"
+        placeholder="รหัสผ่าน"
         required
       />
       <div className="w-full flex justify-between text-sm mt-[-8px]">
-        <p className=" cursor-pointer">Forgot your password?</p>
-        {currentState === "Login" ? (
+        <p className="cursor-pointer">ลืมรหัสผ่าน?</p>
+        {currentState === "เข้าสู่ระบบ" ? (
           <p
-            onClick={() => setCurrentState("Sign Up")}
-            className=" cursor-pointer"
+            onClick={() => setCurrentState("สมัครสมาชิก")}
+            className="cursor-pointer"
           >
-            Create account
+            สมัครสมาชิก
           </p>
         ) : (
           <p
-            onClick={() => setCurrentState("Login")}
-            className=" cursor-pointer"
+            onClick={() => setCurrentState("เข้าสู่ระบบ")}
+            className="cursor-pointer"
           >
-            Login Here
+            เข้า
           </p>
         )}
       </div>
       <button className="bg-black text-white font-light px-8 py-2 mt-4">
-        {currentState === "Login" ? "Sign In" : "Sign Up"}
+        {currentState === "เข้าสู่ระบบ" ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}
       </button>
     </form>
   );

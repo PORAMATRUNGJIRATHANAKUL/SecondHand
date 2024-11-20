@@ -43,7 +43,7 @@ function ProfilePage() {
   const updateProfileName = async () => {
     const response = await updateUserProfile(newName);
     if (!response.success) {
-      throw new Error("Failed to update profile");
+      throw new Error("ไม่สามารถอัพเดทโปรไฟล์ได้");
     }
   };
 
@@ -53,7 +53,7 @@ function ProfilePage() {
     formData.append("userId", user._id);
     const response = await updateUserProfileImage(formData);
     if (!response.success) {
-      throw new Error("Failed to update profile image");
+      throw new Error("ไม่สามารถอัพเดทรูปโปรไฟล์ได้");
     }
   };
 
@@ -78,8 +78,8 @@ function ProfilePage() {
         setImageTimestamp(Date.now());
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      // Handle error (e.g., show error message to user)
+      console.error("เกิดข้อผิดพลาดในการอัพเดทโปรไฟล์:", error);
+      // แสดงข้อความแจ้งเตือนความผิดพลาด
     } finally {
       setIsEditing(false);
       setIsLoading(false);
@@ -89,7 +89,7 @@ function ProfilePage() {
   };
 
   if (!user || isLoading) {
-    return <div>Loading...</div>;
+    return <div>กำลังโหลด...</div>;
   }
 
   return (
@@ -97,9 +97,10 @@ function ProfilePage() {
       <div className="flex flex-col items-center mb-6">
         <img
           src={previewImage || `${user?.profileImage}?t=${imageTimestamp}`}
-          alt="Profile"
+          alt="รูปโปรไฟล์"
           className="w-32 h-32 rounded-full mb-4 cursor-pointer"
           onClick={handleImageClick}
+          title={isEditing ? "คลิกเพื่อเปลี่ยนรูปโปรไฟล์" : ""}
         />
         {isEditing && (
           <input
@@ -108,6 +109,7 @@ function ProfilePage() {
             onChange={handleImageChange}
             accept="image/*"
             className="hidden"
+            aria-label="อัพโหลดรูปโปรไฟล์"
           />
         )}
         <button
@@ -117,12 +119,12 @@ function ProfilePage() {
           {isEditing ? (
             <>
               <CheckIcon className="w-4 h-4 mr-2" />
-              Save
+              บันทึก
             </>
           ) : (
             <>
               <PencilIcon className="w-4 h-4 mr-2" />
-              Edit Profile
+              แก้ไขโปรไฟล์
             </>
           )}
         </button>
@@ -133,7 +135,7 @@ function ProfilePage() {
             htmlFor="name"
             className="block text-sm font-medium text-gray-700"
           >
-            Name
+            ชื่อ
           </label>
           <input
             type="text"
@@ -141,6 +143,7 @@ function ProfilePage() {
             value={isEditing ? newName : user?.name}
             onChange={(e) => setNewName(e.target.value)}
             disabled={!isEditing}
+            placeholder="กรุณากรอกชื่อ"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500"
           />
         </div>
@@ -149,7 +152,7 @@ function ProfilePage() {
             htmlFor="email"
             className="block text-sm font-medium text-gray-700"
           >
-            Email
+            อีเมล
           </label>
           <input
             type="email"

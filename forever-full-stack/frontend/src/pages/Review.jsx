@@ -118,9 +118,9 @@ const Review = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-8">Review</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">รีวิวเว็บไซต์</h1>
 
-      {/* Overall Rating Section */}
+      {/* ส่วนคะแนนรวม */}
       <div className="flex items-center justify-center gap-4 mb-8">
         <span className="text-4xl font-bold">{ratingData?.overallRating}</span>
         <div className="flex text-2xl">
@@ -131,7 +131,7 @@ const Review = () => {
         </span>
       </div>
 
-      {/* Rating Distribution */}
+      {/* การกระจายของคะแนน */}
       <div className="mb-8">
         {[5, 4, 3, 2, 1].map((star) => (
           <div key={star} className="flex items-center gap-2 my-2">
@@ -151,7 +151,7 @@ const Review = () => {
         ))}
       </div>
 
-      {/* Review List Section */}
+      {/* รายการรีวิว */}
       <div className="my-8">
         {sortedReviews.map((review, index) => (
           <div key={index} className="border-b py-4">
@@ -181,7 +181,7 @@ const Review = () => {
         ))}
       </div>
 
-      {/* Submit New Review Section */}
+      {/* ส่วนสำหรับส่งความเห็นใหม่ */}
       <div className="my-8 pt-4">
         <div className="flex items-center gap-2">
           {[...Array(5)].map((_, i) => (

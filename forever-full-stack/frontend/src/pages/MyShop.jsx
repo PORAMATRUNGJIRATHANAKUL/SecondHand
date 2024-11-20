@@ -43,7 +43,7 @@ const MyShop = () => {
               : "text-gray-500"
           }`}
         >
-          สินค้าทั้งหมด
+          สินค้าทั้งหมดของฉัน
         </button>
         <button
           onClick={() => setActiveTab("orders")}

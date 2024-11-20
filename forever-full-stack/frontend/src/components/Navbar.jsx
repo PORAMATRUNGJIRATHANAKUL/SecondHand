@@ -42,7 +42,7 @@ const Navbar = () => {
   return (
     <div className="flex items-center justify-between py-5 font-medium">
       <Link to="/">
-        <img src={assets.logo} className="w-42" alt="Logo" />
+        <img src={assets.logo} className="w-42" alt="โลโก้" />
       </Link>
 
       <ul className="hidden sm:flex gap-5 text-sm text-gray-700">
@@ -52,7 +52,7 @@ const Navbar = () => {
             `flex flex-col items-center gap-1 ${isActive ? "text-black" : ""}`
           }
         >
-          <p>HOME</p>
+          <p>หน้าแรก</p>
           <hr className="w-1/4 border-none h-[1.5px] bg-gray-700 hidden" />
         </NavLink>
         <NavLink
@@ -61,7 +61,7 @@ const Navbar = () => {
             `flex flex-col items-center gap-1 ${isActive ? "text-black" : ""}`
           }
         >
-          <p>COLLECTION</p>
+          <p>สินค้า</p>
           <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden" />
         </NavLink>
         <NavLink
@@ -70,27 +70,29 @@ const Navbar = () => {
             `flex flex-col items-center gap-1 ${isActive ? "text-black" : ""}`
           }
         >
-          <p>REVIEW</p>
+          <p>รีวิว</p>
           <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden" />
         </NavLink>
       </ul>
 
       <div className="flex items-center gap-1 sm:gap-2">
-        {/* Search Icon */}
+        {/* ปุ่มค้นหา */}
         <button
           onClick={() => {
             setShowSearch(true);
             navigate("/collection");
           }}
           className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+          aria-label="ค้นหา"
         >
           <BiSearch className="w-5 h-5" />
         </button>
 
-        {/* Cart Icon */}
+        {/* ปุ่มตะกร้าสินค้า */}
         <Link
           to="/cart"
           className="relative group p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+          aria-label="ตะกร้าสินค้า"
         >
           <div className="relative">
             <BiShoppingBag className="w-5 h-5" />
@@ -102,15 +104,18 @@ const Navbar = () => {
           </div>
         </Link>
 
-        {/* Profile Icon */}
+        {/* ปุ่มโปรไฟล์ */}
         <div className="group relative">
           {token ? (
-            <button className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+            <button
+              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="เมนูผู้ใช้"
+            >
               <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-200">
                 <img
                   src={profileImage || assets.profile_icon}
                   className="w-full h-full object-cover"
-                  alt="Profile"
+                  alt="รูปโปรไฟล์"
                 />
               </div>
             </button>
@@ -118,12 +123,13 @@ const Navbar = () => {
             <button
               onClick={() => navigate("/login")}
               className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="เข้าสู่ระบบ"
             >
               <BiUser className="w-5 h-5" />
             </button>
           )}
 
-          {/* Profile Dropdown Menu */}
+          {/* เมนูผู้ใช้ */}
           {token && (
             <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-2 z-50">
               <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-white text-gray-500 rounded-lg shadow-lg border border-gray-100">
@@ -131,7 +137,7 @@ const Navbar = () => {
                   to="/profile"
                   className="cursor-pointer hover:text-black transition-colors"
                 >
-                  My Profile
+                  โปรไฟล์
                 </NavLink>
                 <NavLink
                   to="/myshop"
@@ -143,20 +149,20 @@ const Navbar = () => {
                   onClick={() => navigate("/orders")}
                   className="cursor-pointer hover:text-black transition-colors"
                 >
-                  Orders
+                  รายการสั่งซื้อ
                 </p>
                 <p
                   onClick={logout}
                   className="cursor-pointer hover:text-black transition-colors"
                 >
-                  Logout
+                  ออกจากระบบ
                 </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Sell Product Button */}
+        {/* ปุ่มลงขายสินค้า */}
         {token && (
           <NavLink
             to="/add"
@@ -166,16 +172,17 @@ const Navbar = () => {
           </NavLink>
         )}
 
-        {/* Mobile Menu Icon */}
+        {/* ปุ่มเมนูมือถือ */}
         <button
           onClick={() => setVisible(true)}
           className="p-1.5 hover:bg-gray-100 rounded-full transition-colors sm:hidden ml-1"
+          aria-label="เมนูมือถือ"
         >
           <BiMenu className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Sidebar menu for small screens */}
+      {/* เมนูด้านข้างสำหรับหน้าจอขนาดเล็ก */}
       <div
         className={`fixed top-0 right-0 bottom-0 z-50 overflow-hidden bg-white shadow-xl transition-all duration-300 ${
           visible ? "w-64" : "w-0"
@@ -189,9 +196,9 @@ const Navbar = () => {
             <img
               className="h-4 rotate-180"
               src={assets.dropdown_icon}
-              alt="Back"
+              alt="ย้อนกลับ"
             />
-            <p>Back</p>
+            <p>ย้อนกลับ</p>
           </div>
           <NavLink
             onClick={() => setVisible(false)}

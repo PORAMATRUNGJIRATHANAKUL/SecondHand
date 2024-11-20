@@ -15,11 +15,11 @@ const List = ({ searchQuery }) => {
       if (response.data.success) {
         setList(response.data.products.reverse());
       } else {
-        toast.error(response.data.message);
+        toast.error("ไม่สามารถดึงข้อมูลสินค้าได้");
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาด: " + error.message);
     }
   };
 
@@ -32,18 +32,18 @@ const List = ({ searchQuery }) => {
       );
 
       if (response.data.success) {
-        toast.success(response.data.message);
+        toast.success("ลบสินค้าสำเร็จ");
         await fetchList();
       } else {
-        toast.error(response.data.message);
+        toast.error("ไม่สามารถลบสินค้าได้");
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาด: " + error.message);
     }
   };
 
-  // เพิ่มฟังก์ชันกรองข้อมูล
+  // ฟังก์ชันกรองข้อมูล
   const filteredList = list.filter((item) => {
     if (!searchQuery) return true;
 
@@ -57,6 +57,26 @@ const List = ({ searchQuery }) => {
   useEffect(() => {
     fetchList();
   }, []);
+
+  // ฟังก์ชันแปลงชื่อสีเป็นภาษาไทย
+  const getColorName = (colorName) => {
+    const colorNames = {
+      Black: "ดำ",
+      White: "ขาว",
+      Gray: "เทา",
+      Navy: "กรมท่า",
+      Red: "แดง",
+      Blue: "น้ำเงิน",
+      Green: "เขียว",
+      Yellow: "เหลือง",
+      Purple: "ม่วง",
+      Pink: "ชมพู",
+      Orange: "ส้ม",
+      Brown: "น้ำตาล",
+      Beige: "เบจ",
+    };
+    return colorNames[colorName] || colorName;
+  };
 
   // ฟังก์ชันแปลงชื่อสีเป็น Tailwind class
   const getColorClass = (colorName) => {
@@ -80,50 +100,60 @@ const List = ({ searchQuery }) => {
 
   return (
     <>
-      <p className="mb-2">All Products List</p>
+      <p className="mb-2">รายการสินค้าของฉัน</p>
       <div className="flex flex-col gap-2">
-        {/* ------- List Table Title ---------- */}
+        {/* หัวข้อตาราง */}
         <div className="hidden md:grid grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
-          <b>Image</b>
-          <b>Name</b>
-          <b>Category</b>
-          <b>Price</b>
-          <b>Sizes</b>
-          <b>Colors</b>
-          <b className="text-center">Action</b>
+          <b>รูปภาพ</b>
+          <b>ชื่อสินค้า</b>
+          <b>หมวดหมู่</b>
+          <b>ราคา</b>
+          <b>ไซส์</b>
+          <b>สี</b>
+          <b className="text-center">จัดการ</b>
         </div>
 
-        {/* ------ Product List ------ */}
+        {/* รายการสินค้า */}
         {filteredList.map((item, index) => (
           <div
             className="grid grid-cols-[1fr_3fr_1fr] md:grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr_1fr] items-center gap-2 py-1 px-2 border text-sm"
             key={index}
           >
-            <img className="w-12" src={item.image[0]} alt="" />
+            <img
+              className="w-12"
+              src={item.image[0]}
+              alt={`รูปสินค้า ${item.name}`}
+            />
             <p>{item.name}</p>
             <p>{item.category}</p>
             <p>
               {currency}
-              {item.price}
+              {item.price.toLocaleString()}
             </p>
-            {/* Sizes */}
+            {/* ไซส์ */}
             <div className="hidden md:block">{item.sizes.join(", ")}</div>
-            {/* Colors */}
+            {/* สี */}
             <div className="hidden md:flex flex-wrap gap-1">
               {item.colors.map((color, idx) => (
                 <div
                   key={idx}
                   className={`w-6 h-6 rounded-full ${getColorClass(color)}`}
-                  title={color}
+                  title={getColorName(color)}
                 />
               ))}
             </div>
-            <p
-              onClick={() => removeProduct(item._id)}
-              className="text-right md:text-center cursor-pointer text-lg"
+            <button
+              onClick={() => {
+                if (window.confirm("คุณต้องการลบสินค้านี้ใช่หรือไม่?")) {
+                  removeProduct(item._id);
+                }
+              }}
+              className="text-right md:text-center cursor-pointer text-lg hover:text-red-500"
+              title="ลบสินค้า"
+              aria-label={`ลบสินค้า ${item.name}`}
             >
-              X
-            </p>
+              ✕
+            </button>
           </div>
         ))}
 

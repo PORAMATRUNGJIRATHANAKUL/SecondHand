@@ -117,9 +117,28 @@ const Ordershopme = ({ searchQuery }) => {
     return false;
   });
 
+  const getColorName = (colorName) => {
+    const colorNames = {
+      Black: "ดำ",
+      White: "ขาว",
+      Gray: "เทา",
+      Navy: "กรมท่า",
+      Red: "แดง",
+      Blue: "น้ำเงิน",
+      Green: "เขียว",
+      Yellow: "เหลือง",
+      Purple: "ม่วง",
+      Pink: "ชมพู",
+      Orange: "ส้ม",
+      Brown: "น้ำตาล",
+      Beige: "เบจ",
+    };
+    return colorNames[colorName] || colorName;
+  };
+
   return (
     <div>
-      <h3>Order Page</h3>
+      <h3>รายการสั่งซื้อ</h3>
       <div>
         {filteredOrders.map((order, index) => (
           <div
@@ -129,7 +148,7 @@ const Ordershopme = ({ searchQuery }) => {
             <img
               className="w-12 cursor-pointer hover:opacity-80"
               src={order.items[0].image[0]}
-              alt=""
+              alt="รูปสินค้า"
               onClick={() => viewProducts(order)}
             />
             <div>
@@ -181,7 +200,14 @@ const Ordershopme = ({ searchQuery }) => {
               <p className="text-sm sm:text-[15px]">
                 จำนวนรายการ: {order.items.length}
               </p>
-              <p className="mt-3">วิธีชำระเงิน: {order.paymentMethod}</p>
+              <p className="mt-3">
+                วิธีชำระเงิน:{" "}
+                {order.paymentMethod === "QR Code"
+                  ? "โอนเงิน"
+                  : order.paymentMethod === "cod"
+                  ? "เก็บเงินปลายทาง"
+                  : order.paymentMethod}
+              </p>
               <p>สถานะการชำระเงิน: {order.payment ? "ชำระแล้ว" : "รอชำระ"}</p>
               {order.paymentMethod === "QR Code" && (
                 <button
@@ -191,8 +217,11 @@ const Ordershopme = ({ searchQuery }) => {
                   ดูสลิป
                 </button>
               )}
-              <p>วันที่: {new Date(order.date).toLocaleDateString()}</p>
+              <p>วันที่: {new Date(order.date).toLocaleDateString("th-TH")}</p>
             </div>
+            <p className="text-sm sm:text-[15px]">
+              ฿{order.amount.toLocaleString()}
+            </p>
             <p className="text-sm sm:text-[15px]">฿{order.amount}</p>
             <div className="flex flex-col gap-2">
               <select

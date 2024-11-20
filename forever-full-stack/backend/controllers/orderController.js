@@ -253,13 +253,11 @@ const getQRCodePaymentList = async (req, res) => {
 
     const orders = await orderModel
       .find({
-        userId: userId,
+        "items.owner._id": userId,
         paymentMethod: "QR Code",
       })
       .populate("userId", "name")
       .lean();
-
-    console.log(orders);
 
     const paymentList = await Promise.all(
       orders.map(async (order) => {
@@ -267,8 +265,11 @@ const getQRCodePaymentList = async (req, res) => {
           return item.name;
         });
 
+        const buyer = await userModel.findById(order.userId);
+
         return {
-          buyer: order.address.firstName + " " + order.address.lastName,
+          // buyer: order.address.firstName + " " + order.address.lastName,
+          buyer: buyer.name,
           productNames: productNames,
           price: order.amount,
           paymentProof: order.paymentProof,
@@ -284,13 +285,17 @@ const getQRCodePaymentList = async (req, res) => {
   }
 };
 
-// เพิ่มฟังก์ชันใหม่
+// เพิ่มฟังก์ชันใหม่ แก้ในนี้
 const getOrdersByUserId = async (req, res) => {
   try {
     const userId = req.userId;
 
+    console.log(userId);
+
     const orders = await orderModel
-      .find({ userId })
+      .find({
+        "items.owner._id": userId,
+      })
       .populate({
         path: "items.product",
         select: "name image price",

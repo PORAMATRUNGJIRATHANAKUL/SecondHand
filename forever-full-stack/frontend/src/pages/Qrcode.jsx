@@ -6,7 +6,6 @@ import { ShopContext } from "../context/ShopContext";
 
 const Qrcode = ({ searchQuery }) => {
   const { backendUrl, token, currency } = useContext(ShopContext);
-  // เพิ่ม searchQuery prop
   const [payments, setPayments] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const navigate = useNavigate();
@@ -22,11 +21,11 @@ const Qrcode = ({ searchQuery }) => {
       if (response.data.success) {
         setPayments(response.data.paymentList.reverse());
       } else {
-        toast.error(response.data.message);
+        toast.error("ไม่สามารถดึงข้อมูลการชำระเงินได้");
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาด: " + error.message);
     }
   };
 
@@ -40,15 +39,14 @@ const Qrcode = ({ searchQuery }) => {
       );
 
       if (response.data.success) {
-        toast.success(response.data.message);
+        toast.success("ยืนยันการชำระเงินสำเร็จ");
       } else {
-        toast.error(response.data.message);
+        toast.error("ไม่สามารถยืนยันการชำระเงินได้");
       }
     } catch (error) {
       console.log(error);
       toast.error(
-        error.response?.data?.message ||
-          "An error occurred while verifying the payment"
+        error.response?.data?.message || "เกิดข้อผิดพลาดในการยืนยันการชำระเงิน"
       );
     }
   };
@@ -81,62 +79,62 @@ const Qrcode = ({ searchQuery }) => {
 
   return (
     <>
-      <h2 className="text-2xl font-bold mb-4">QR Code Payment List</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="py-2 px-4 border-b text-left">Buyer</th>
-              <th className="py-2 px-4 border-b text-left">Product Name</th>
-              <th className="py-2 px-4 border-b text-left">Price</th>
-              <th className="py-2 px-4 border-b text-left">Payment Slip</th>
-              <th className="py-2 px-4 border-b text-center">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPayments.map((payment, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="py-2 px-4 border-b">{payment.buyer}</td>
-                <td className="py-2 px-4 border-b">
-                  {payment.productNames.join(", ")}
-                </td>
-                <td className="py-2 px-4 border-b">
-                  {currency} {payment.price}
-                </td>
-                <td className="py-2 px-4 border-b">
-                  <button
-                    onClick={() => viewPaymentProof(payment)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2"
-                  >
-                    View QR Proof
-                  </button>
-                </td>
-                <td className="py-2 px-4 border-b text-center">
-                  {!payment.payment && (
-                    <button
-                      onClick={() => verifyPayment(payment._id)}
-                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-2 rounded"
-                    >
-                      Verify
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <p className="mb-2">รายการชำระเงินผ่าน QR Code</p>
+      <div className="flex flex-col gap-2">
+        {/* หัวข้อตาราง */}
+        <div className="hidden md:grid grid-cols-[2fr_3fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
+          <b>ผู้ซื้อ</b>
+          <b>ชื่อสินค้า</b>
+          <b>ราคา</b>
+          <b>สลิป</b>
+          <b className="text-center">จัดการ</b>
+        </div>
 
-        {/* เพิ่มข้อความเมื่อไม่พบข้อมูล */}
+        {/* รายการการชำระเงิน */}
+        {filteredPayments.map((payment, index) => (
+          <div
+            key={index}
+            className="grid grid-cols-[2fr_3fr_1fr_1fr_1fr] items-center gap-2 py-1 px-2 border text-sm hover:bg-gray-50"
+          >
+            <p>{payment.buyer}</p>
+            <p>{payment.productNames.join(", ")}</p>
+            <p>
+              {currency} {payment.price.toLocaleString()}
+            </p>
+            <div>
+              <button
+                onClick={() => viewPaymentProof(payment)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm"
+                title="ดูสลิปการโอนเงิน"
+              >
+                ดูสลิป
+              </button>
+            </div>
+            <div className="text-center">
+              {!payment.payment && (
+                <button
+                  onClick={() => verifyPayment(payment._id)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm"
+                  title="ยืนยันการชำระเงิน"
+                >
+                  ยืนยัน
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+
         {filteredPayments.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-4 text-gray-500">
             ไม่พบรายการที่ค้นหา
           </div>
         )}
       </div>
 
+      {/* Modal แสดงสลิป */}
       {selectedPayment && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
           onClick={() => setSelectedPayment(null)}
         >
           <div
@@ -146,6 +144,8 @@ const Qrcode = ({ searchQuery }) => {
             <button
               onClick={() => setSelectedPayment(null)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              title="ปิด"
+              aria-label="ปิดหน้าต่างแสดงสลิป"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -163,18 +163,18 @@ const Qrcode = ({ searchQuery }) => {
               </svg>
             </button>
 
-            <h2 className="text-xl font-bold mb-4">Slip Payment</h2>
+            <h2 className="text-xl font-bold mb-4">สลิปการชำระเงิน</h2>
             <img
               src={`${selectedPayment.paymentProof}`}
-              alt="Payment Proof"
+              alt="หลักฐานการชำระเงิน"
               className="max-w-[500px] max-h-[600px] object-contain mx-auto mb-4"
             />
-            <div className="flex justify-end mt-4 mr-4">
+            <div className="flex justify-end mt-4">
               <button
                 onClick={() => setSelectedPayment(null)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded text-sm"
               >
-                Close
+                ปิด
               </button>
             </div>
           </div>
