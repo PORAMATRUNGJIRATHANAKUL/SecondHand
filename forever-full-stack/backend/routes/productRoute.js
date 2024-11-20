@@ -7,8 +7,7 @@ import {
   getProductsByOwner,
 } from "../controllers/productController.js";
 import upload from "../middleware/multer.js";
-import adminAuth from "../middleware/adminAuth.js";
-import userAuth from "../middleware/userAuth.js";
+import userAuth from "../middleware/auth.js";
 const productRouter = express.Router();
 
 productRouter.post(
@@ -22,9 +21,8 @@ productRouter.post(
   ]),
   addProduct
 );
-productRouter.post("/remove", adminAuth, removeProduct);
+productRouter.post("/remove", userAuth, removeProduct);
 productRouter.post("/single", singleProduct);
 productRouter.get("/list", listProducts);
 productRouter.get("/owner", userAuth, getProductsByOwner);
-
 export default productRouter;

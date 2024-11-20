@@ -12,25 +12,31 @@ const deliveryCharge = 10;
 const deleteOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
+    const userId = req.userId;
 
-    const result = await orderModel.findByIdAndDelete(orderId);
+    console.log(orderId, userId);
+
+    const result = await orderModel.findOneAndDelete({
+      _id: orderId,
+      userId: userId,
+    });
 
     if (result) {
       res.json({
         success: true,
-        message: "Order deleted successfully",
+        message: "ลบออเดอร์สำเร็จ",
       });
     } else {
       res.status(404).json({
         success: false,
-        message: "Order not found",
+        message: "ไม่พบออเดอร์ หรือคุณไม่มีสิทธิ์ลบออเดอร์นี้",
       });
     }
   } catch (error) {
     console.error("Delete order error:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to delete order",
+      message: "เกิดข้อผิดพลาดในการลบออเดอร์",
       error: error.message,
     });
   }
@@ -131,7 +137,7 @@ const placeOrder = async (req, res) => {
 
 const confirmQRPayment = async (req, res) => {
   try {
-    // โค้ดสำหรับยืนยันกา��ชำระเงิน QR
+    // โค้ดสำหรับยืนยันกาชำระเงิน QR
     res.json({ success: true, message: "QR payment confirmed" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -243,8 +249,13 @@ const updateStatus = async (req, res) => {
 // QR Code Payment List
 const getQRCodePaymentList = async (req, res) => {
   try {
+    const userId = req.userId;
+
     const orders = await orderModel
-      .find({ paymentMethod: "QR Code" })
+      .find({
+        userId: userId,
+        paymentMethod: "QR Code",
+      })
       .populate("userId", "name")
       .lean();
 

@@ -19,7 +19,7 @@ const orderRouter = express.Router();
 // Admin Features
 orderRouter.post("/list", allOrders);
 orderRouter.post("/status", adminAuth, updateStatus);
-orderRouter.delete("/delete/:id", adminAuth, deleteOrder);
+orderRouter.delete("/delete/:id", authUser, deleteOrder);
 
 // Payment Features
 orderRouter.post("/place", authUser, placeOrder);
@@ -36,6 +36,6 @@ orderRouter.post("/userorders", authUser, userOrders);
 orderRouter.get("/my-orders", authUser, getOrdersByUserId);
 
 // QR Code Payment List
-orderRouter.get("/qr-payment-list", adminAuth, getQRCodePaymentList);
+orderRouter.get("/qr-payment-list", authUser, getQRCodePaymentList);
 
 export default orderRouter;

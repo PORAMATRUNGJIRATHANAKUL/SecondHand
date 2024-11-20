@@ -162,7 +162,25 @@ const ShopContextProvider = (props) => {
 
   const getProductsData = async () => {
     try {
-      const response = await axios.get(backendUrl + "/api/product/list");
+      const response = await axios.get(backendUrl + "/api/product/list", {
+        headers: { token },
+      });
+      if (response.data.success) {
+        setProducts(response.data.products.reverse());
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
+  const getOwnerProducts = async () => {
+    try {
+      const response = await axios.get(backendUrl + "/api/product/owner", {
+        headers: { token },
+      });
       if (response.data.success) {
         setProducts(response.data.products.reverse());
       } else {
@@ -232,6 +250,7 @@ const ShopContextProvider = (props) => {
     fetchUserProfile,
     updateUserProfileImage,
     getProductsData,
+    getOwnerProducts,
   };
 
   return (

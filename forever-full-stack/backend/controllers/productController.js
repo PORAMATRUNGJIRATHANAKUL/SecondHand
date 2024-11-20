@@ -16,7 +16,7 @@ const addProduct = async (req, res) => {
       stockItems,
     } = req.body;
 
-    const owner = req.user.id;
+    const owner = req.userId;
 
     const image1 = req.files.image1 && req.files.image1[0];
     const image2 = req.files.image2 && req.files.image2[0];
@@ -62,18 +62,40 @@ const addProduct = async (req, res) => {
   }
 };
 
+// get products by owner id
 const getProductsByOwner = async (req, res) => {
-  const owner = req.user._id;
-  const products = await productModel.find({ owner });
+  try {
+    const userId = req.userId;
+
+    let products = await productModel.find({ owner: userId }).populate({
+      path: "owner",
+      select: "name email profileImage",
+    });
+
+    res.json({ success: true, products });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// get all products
+const listProducts = async (req, res) => {
+  const products = await productModel.find({}).populate({
+    path: "owner",
+    select: "name email profileImage",
+  });
   res.json({ success: true, products });
 };
 
-// function for list product
-const listProducts = async (req, res) => {
+// get products by user id
+const getProductsByUserId = async (req, res) => {
   try {
-    let products = await productModel.find({}).populate({
+    const userId = req.userId;
+
+    let products = await productModel.find({ owner: userId }).populate({
       path: "owner",
-      select: "name email",
+      select: "name email profileImage",
     });
 
     res.json({ success: true, products });
@@ -86,8 +108,23 @@ const listProducts = async (req, res) => {
 // function for removing product
 const removeProduct = async (req, res) => {
   try {
-    await productModel.findByIdAndDelete(req.body.id);
-    res.json({ success: true, message: "Product Removed" });
+    const userId = req.userId;
+    const productId = req.body.id;
+
+    const product = await productModel.findOne({
+      _id: productId,
+      owner: userId,
+    });
+
+    if (!product) {
+      return res.status(403).json({
+        success: false,
+        message: "คุณไม่มีสิทธิ์ลบสินค้านี้หรือไม่พบสินค้า",
+      });
+    }
+
+    await productModel.findByIdAndDelete(productId);
+    res.json({ success: true, message: "ลบสินค้าสำเร็จ" });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
