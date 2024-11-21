@@ -200,6 +200,10 @@ const Review = () => {
 
       {/* ส่วนสำหรับส่งความเห็นใหม่ */}
       <div className="my-8 pt-4">
+        {/* ข้อความแนะนำการให้คะแนน */}
+        <p className="text-sm text-gray-600 mb-2">คะแนนคุณภาพเว็ปไซต์</p>
+
+        {/* ส่วนให้คะแนนดาว */}
         <div className="flex items-center gap-2 mb-2">
           {[...Array(5)].map((_, i) => (
             <span
