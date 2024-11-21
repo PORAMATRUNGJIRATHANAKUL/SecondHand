@@ -76,7 +76,6 @@ const App = () => {
             }
           />
           <Route path="/ordershopme" element={<Ordershopme />} />
-          <Route path="/Ordershopme" element={<Ordershopme />} />
         </Routes>
       </div>
       <Footer />
