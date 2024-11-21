@@ -14,11 +14,11 @@ const deleteOrder = async (req, res) => {
     const orderId = req.params.id;
     const userId = req.userId;
 
-    console.log(orderId, userId);
+    console.log("OrderId:", orderId, "UserId:", userId);
 
     const result = await orderModel.findOneAndDelete({
       _id: orderId,
-      userId: userId,
+      "items.owner._id": userId,
     });
 
     if (result) {

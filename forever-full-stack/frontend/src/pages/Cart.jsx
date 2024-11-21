@@ -60,6 +60,9 @@ const Cart = () => {
                   <p className="text-xs sm:text-lg font-medium">
                     {productData.name}
                   </p>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    ร้านค้า : {productData.owner.name || "ไม่ระบุชื่อร้าน"}
+                  </p>
                   <div className="flex items-center gap-5 mt-2">
                     <p>
                       {currency}
