@@ -139,7 +139,7 @@ const Ordershopme = ({ searchQuery }) => {
   return (
     <div>
       <div className="p-4">
-        <h3 className="text-xl font-semibold mb-4">รายการสั่งซื้อ</h3>
+        <h3 className="text-xl font-semibold mb-4">รายการสั่งซื้อลูกค้า</h3>
         <div className="space-y-4">
           {filteredOrders.map((order, index) => (
             <div
@@ -263,18 +263,29 @@ const Ordershopme = ({ searchQuery }) => {
 
               {/* สถานะการจัดส่ง */}
               <div className="mt-4 border-t pt-4">
-                <select
-                  onChange={(event) => statusHandler(event, order._id)}
-                  value={order.status}
-                  className="w-full p-2 border rounded bg-gray-50 font-medium"
-                >
-                  <option value="รอดำเนินการ">รอดำเนินการ</option>
-                  <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
-                  <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
-                  <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
-                  <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
-                  <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
-                </select>
+                <div className="flex justify-between items-center">
+                  <select
+                    onChange={(event) => statusHandler(event, order._id)}
+                    value={order.status}
+                    className="w-full p-2 border rounded bg-gray-50 font-medium"
+                    disabled={order.status === "ได้รับสินค้าแล้ว"}
+                  >
+                    <option value="รอดำเนินการ">รอดำเนินการ</option>
+                    <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
+                    <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
+                    <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
+                    <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
+                    <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
+                    <option value="ได้รับสินค้าแล้ว">ได้รับสินค้าแล้ว</option>
+                  </select>
+                </div>
+
+                {/* แสดงสถานะเมื่อลูกค้าได้รับสินค้าแล้ว */}
+                {order.status === "ได้รับสินค้าแล้ว" && (
+                  <div className="mt-4 text-green-600 font-medium text-sm">
+                    ✓ ลูกค้าได้รับสินค้าแล้ว
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -345,7 +356,7 @@ const Ordershopme = ({ searchQuery }) => {
                         </div>
                       </div>
                     )}
-                    <p className="mt-1">ราคา: ฿{item.price}</p>
+                    <p className="mt-1">ราคา: ฿{item.price + 50}</p>
                   </div>
                 </div>
               ))}

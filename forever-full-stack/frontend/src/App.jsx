@@ -22,6 +22,7 @@ import ReturnPolicy from "./pages/ReturnPolicy";
 import ReportProblem from "./pages/ReportProblem";
 import Add from "./pages/Add";
 import MyShop from "./pages/MyShop";
+import Ordershopme from "./pages/Ordershopme";
 
 import { ShopContext } from "./context/ShopContext";
 
@@ -74,6 +75,8 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/ordershopme" element={<Ordershopme />} />
+          <Route path="/Ordershopme" element={<Ordershopme />} />
         </Routes>
       </div>
       <Footer />

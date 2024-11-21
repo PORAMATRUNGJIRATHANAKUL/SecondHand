@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const Orders = () => {
   const { backendUrl, token, getProductsData } = useContext(ShopContext);
@@ -51,16 +52,27 @@ const Orders = () => {
   const updateOrderStatus = async (orderId) => {
     try {
       const response = await axios.post(
-        `${backendUrl}/api/order/update-status`,
-        { orderId, status: "ได้รับสินค้าแล้ว" },
+        `${backendUrl}/api/order/status`,
+        {
+          orderId,
+          status: "ได้รับสินค้าแล้ว",
+          confirmedByCustomer: true,
+        },
         { headers: { token } }
       );
+
       if (response.data.success) {
-        loadOrderData();
+        toast.success("ยืนยันการรับสินค้าสำเร็จ");
         setShowTrackingModal(false);
+        loadOrderData();
+      } else {
+        toast.error("ไม่สามารถอัพเดทสถานะได้");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error updating status:", error);
+      toast.error(
+        error.response?.data?.message || "เกิดข้อผิดพลาดในการอัพเดทสถานะ"
+      );
     }
   };
 
@@ -186,6 +198,18 @@ const Orders = () => {
                   />
                   <div className="flex-1">
                     <p className="font-medium">{item.name}</p>
+                    <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                      {item.owner?.profileImage ? (
+                        <img
+                          src={item.owner.profileImage}
+                          alt="Profile"
+                          className="w-4 h-4 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                      )}
+                      <span>{item.owner?.name || "ไม่ระบุชื่อร้าน"}</span>
+                    </div>
                     <p className="text-gray-600">฿{item.price}</p>
                     <p className="text-gray-600">
                       สถานะ: {selectedOrder.status}
@@ -198,9 +222,9 @@ const Orders = () => {
             {selectedOrder.status !== "ได้รับสินค้าแล้ว" && (
               <button
                 onClick={() => updateOrderStatus(selectedOrder._id)}
-                className="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
+                className="mt-4 w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800"
               >
-                ยืนยันการรับสินค้า
+                ได้รับสินค้าแล้ว
               </button>
             )}
           </div>

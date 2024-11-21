@@ -30,16 +30,20 @@ const Qrcode = ({ searchQuery }) => {
   };
 
   const verifyPayment = async (id) => {
-    navigate("/orders");
     try {
       const response = await axios.post(
-        backendUrl + `/api/order/verify-qr/${id}`,
-        {},
+        backendUrl + "/api/order/status",
+        {
+          orderId: id,
+          status: "รับออเดอร์แล้ว",
+          payment: true,
+        },
         { headers: { token } }
       );
 
       if (response.data.success) {
         toast.success("ยืนยันการชำระเงินสำเร็จ");
+        window.location.href = "/Ordershopme";
       } else {
         toast.error("ไม่สามารถยืนยันการชำระเงินได้");
       }
