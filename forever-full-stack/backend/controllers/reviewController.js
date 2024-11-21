@@ -1,27 +1,27 @@
 import reviewModel from "../models/reviewModel.js";
 
-// Add a new review or update an existing review
+// เพิ่มรีวิวใหม่หรืออัพเดทรีวิวที่มีอยู่
 const addReview = async (req, res) => {
   try {
-    const { name, rating, comment } = req.body;
+    const { name, rating, comment, userId } = req.body;
 
-    // Create new review
+    // สร้างรีวิวใหม่
     const newReview = new reviewModel({
       name,
       rating,
       comment,
-      date: new Date().toLocaleString(),
+      date: new Date().toLocaleString("th-TH"), // เพิ่มการแสดงวันที่แบบไทย
     });
 
     await newReview.save();
     res.status(200).json(newReview);
   } catch (error) {
-    console.error("Error adding review:", error);
-    res.status(500).json({ message: "Failed to add review" });
+    console.error("เกิดข้อผิดพลาดในการเพิ่มรีวิว:", error);
+    res.status(500).json({ message: "ไม่สามารถเพิ่มรีวิวได้" });
   }
 };
 
-// Get all reviews
+// ดึงรีวิวทั้งหมด
 const getAllReviews = async (req, res) => {
   try {
     const reviews = await reviewModel.find({});
@@ -31,12 +31,12 @@ const getAllReviews = async (req, res) => {
       reviews,
     });
   } catch (error) {
-    console.error("Error fetching reviews:", error);
-    res.status(500).json({ message: "Failed to fetch reviews" });
+    console.error("เกิดข้อผิดพลาดในการดึงรีวิว:", error);
+    res.status(500).json({ message: "ไม่สามารถดึงข้อมูลรีวิวได้" });
   }
 };
 
-// Update a review by ID
+// อัพเดทรีวิวตาม ID
 const updateReview = async (req, res) => {
   try {
     const { reviewId, rating, comment } = req.body;
@@ -48,17 +48,17 @@ const updateReview = async (req, res) => {
     );
 
     if (!updatedReview) {
-      return res.status(404).json({ message: "Review not found" });
+      return res.status(404).json({ message: "ไม่พบรีวิวที่ต้องการแก้ไข" });
     }
 
     res.status(200).json(updatedReview);
   } catch (error) {
-    console.error("Error updating review:", error);
-    res.status(500).json({ message: "Failed to update review" });
+    console.error("เกิดข้อผิดพลาดในการอัพเดทรีวิว:", error);
+    res.status(500).json({ message: "ไม่สามารถอัพเดทรีวิวได้" });
   }
 };
 
-// Delete a review by ID
+// ลบรีวิวตาม ID
 const deleteReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
@@ -66,23 +66,23 @@ const deleteReview = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Review deleted successfully",
+      message: "ลบรีวิวสำเร็จ",
       deletedReview,
     });
   } catch (error) {
-    console.error("Error deleting review:", error);
-    res.status(500).json({ message: "Failed to delete review" });
+    console.error("เกิดข้อผิดพลาดในการลบรีวิว:", error);
+    res.status(500).json({ message: "ไม่สามารถลบรีวิวได้" });
   }
 };
 
-// Like a review
+// กดถูกใจรีวิว
 const likeReview = async (req, res) => {
   try {
     const { reviewId } = req.body;
 
     const review = await reviewModel.findById(reviewId);
     if (!review) {
-      return res.status(404).json({ message: "Review not found" });
+      return res.status(404).json({ message: "ไม่พบรีวิวที่ต้องการกดถูกใจ" });
     }
 
     review.like.count += 1;
@@ -90,8 +90,8 @@ const likeReview = async (req, res) => {
 
     res.status(200).json(review);
   } catch (error) {
-    console.error("Error liking review:", error);
-    res.status(500).json({ message: "Failed to like review" });
+    console.error("เกิดข้อผิดพลาดในการกดถูกใจรีวิว:", error);
+    res.status(500).json({ message: "ไม่สามารถกดถูกใจรีวิวได้" });
   }
 };
 

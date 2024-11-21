@@ -14,7 +14,7 @@ const deleteOrder = async (req, res) => {
     const orderId = req.params.id;
     const userId = req.userId;
 
-    console.log("OrderId:", orderId, "UserId:", userId);
+    console.log("รหัสออเดอร์:", orderId, "รหัสผู้ใช้:", userId);
 
     const result = await orderModel.findOneAndDelete({
       _id: orderId,
@@ -33,7 +33,7 @@ const deleteOrder = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Delete order error:", error);
+    console.error("เกิดข้อผิดพลาดในการลบออเดอร์:", error);
     res.status(500).json({
       success: false,
       message: "เกิดข้อผิดพลาดในการลบออเดอร์",
@@ -66,7 +66,7 @@ const placeOrder = async (req, res) => {
     for (const item of items) {
       const product = await productModel.findById(item._id);
       if (!product) {
-        throw new Error(`Product not found: ${item._id}`);
+        throw new Error(`ไม่พบสินค้ารหัส: ${item._id}`);
       }
 
       // Find the specific size and color combination
@@ -75,14 +75,15 @@ const placeOrder = async (req, res) => {
       );
 
       if (stockIndex === -1) {
-        throw new Error(
-          `Size ${item.size} and color ${item.colors[0]} combination not found`
-        );
+        throw new Error(`ไม่พบไซส์ ${item.size} และสี ${item.colors[0]}`);
       }
 
-      console.log("Before stock update:", product.stockItems[stockIndex].stock);
+      console.log(
+        "จำนวนสต็อกก่อนอัพเดท:",
+        product.stockItems[stockIndex].stock
+      );
       const newStock = product.stockItems[stockIndex].stock - item.quantity;
-      console.log("Calculated new stock:", newStock);
+      console.log("จำนวนสต็อกใหม่:", newStock);
 
       // Update using findByIdAndUpdate
       const updatedProduct = await productModel.findByIdAndUpdate(
@@ -95,11 +96,11 @@ const placeOrder = async (req, res) => {
         { new: true }
       );
 
-      console.log("After update - stockItems:", updatedProduct.stockItems);
+      console.log("สต็อกหลังอัพเดท:", updatedProduct.stockItems);
 
       // Verify the update with a separate query
       const verifyProduct = await productModel.findById(item._id);
-      console.log("Verification query - stockItems:", verifyProduct.stockItems);
+      console.log("ยืนยันจำนวนสต็อก:", verifyProduct.stockItems);
 
       // If stock is 0, remove that item
       if (newStock <= 0) {
@@ -128,7 +129,7 @@ const placeOrder = async (req, res) => {
 
     await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
-    res.json({ success: true, message: "Order Placed" });
+    res.json({ success: true, message: "สร้างออเดอร์สำเร็จ" });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
@@ -237,12 +238,19 @@ const userOrders = async (req, res) => {
 // update order status from Admin Panel
 const updateStatus = async (req, res) => {
   try {
-    const { orderId, status } = req.body;
-    await orderModel.findByIdAndUpdate(orderId, { status });
-    res.json({ success: true, message: "Status Updated" });
+    const { orderId, status, payment } = req.body; // เพิ่ม payment
+
+    // อัพเดททั้งสถานะและการชำระเงิน
+    const updateData = {
+      status,
+      ...(payment !== undefined && { payment }), // เพิ่ม payment ถ้ามีการส่งมา
+    };
+
+    await orderModel.findByIdAndUpdate(orderId, updateData);
+    res.json({ success: true, message: "อัพเดทสถานะสำเร็จ" });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({ success: false, message: "เกิดข้อผิดพลาดในการอัพเดทสถานะ" });
   }
 };
 

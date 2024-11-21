@@ -1,7 +1,8 @@
 import { v2 as cloudinary } from "cloudinary";
 import productModel from "../models/productModel.js";
 import userModel from "../models/userModel.js";
-// function for add product
+
+// ฟังก์ชันเพิ่มสินค้า
 const addProduct = async (req, res) => {
   try {
     const {
@@ -18,6 +19,7 @@ const addProduct = async (req, res) => {
 
     const owner = req.userId;
 
+    // ดึงข้อมูลรูปภาพ
     const image1 = req.files.image1 && req.files.image1[0];
     const image2 = req.files.image2 && req.files.image2[0];
     const image3 = req.files.image3 && req.files.image3[0];
@@ -27,6 +29,7 @@ const addProduct = async (req, res) => {
       .flat()
       .filter((item) => item !== undefined);
 
+    // อัพโหลดรูปภาพไปยัง Cloudinary
     let imagesUrl = await Promise.all(
       images.map(async (item) => {
         let result = await cloudinary.uploader.upload(item.path, {
@@ -37,6 +40,7 @@ const addProduct = async (req, res) => {
       })
     );
 
+    // สร้างข้อมูลสินค้า
     const productData = {
       name,
       description,
@@ -55,14 +59,14 @@ const addProduct = async (req, res) => {
     const product = new productModel(productData);
     await product.save();
 
-    res.json({ success: true, message: "Product Added" });
+    res.json({ success: true, message: "เพิ่มสินค้าสำเร็จ" });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
   }
 };
 
-// get products by owner id
+// ดึงสินค้าตามเจ้าของ
 const getProductsByOwner = async (req, res) => {
   try {
     const userId = req.userId;
@@ -75,37 +79,24 @@ const getProductsByOwner = async (req, res) => {
     res.json({ success: true, products });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({ success: false, message: "ไม่สามารถดึงข้อมูลสินค้าได้" });
   }
 };
 
-// get all products
+// ดึงสินค้าทั้งหมด
 const listProducts = async (req, res) => {
-  const products = await productModel.find({}).populate({
-    path: "owner",
-    select: "name email profileImage",
-  });
-  res.json({ success: true, products });
-};
-
-// get products by user id
-const getProductsByUserId = async (req, res) => {
   try {
-    const userId = req.userId;
-
-    let products = await productModel.find({ owner: userId }).populate({
+    const products = await productModel.find({}).populate({
       path: "owner",
       select: "name email profileImage",
     });
-
     res.json({ success: true, products });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({ success: false, message: "ไม่สามารถดึงข้อมูลสินค้าได้" });
   }
 };
 
-// function for removing product
+// ลบสินค้า
 const removeProduct = async (req, res) => {
   try {
     const userId = req.userId;
@@ -127,11 +118,11 @@ const removeProduct = async (req, res) => {
     res.json({ success: true, message: "ลบสินค้าสำเร็จ" });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({ success: false, message: "เกิดข้อผิดพลาดในการลบสินค้า" });
   }
 };
 
-// function for single product info
+// ดึงข้อมูลสินค้าเดี่ยว
 const singleProduct = async (req, res) => {
   try {
     const { productId } = req.body;
@@ -139,20 +130,32 @@ const singleProduct = async (req, res) => {
     res.json({ success: true, product });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({ success: false, message: "ไม่สามารถดึงข้อมูลสินค้าได้" });
   }
 };
 
+// ดึงสินค้าที่ได้รับการอนุมัติ
 const getApprovedProducts = async (req, res) => {
-  const products = await productModel.find({ isApproved: true });
-  res.json({ success: true, products });
+  try {
+    const products = await productModel.find({ isApproved: true });
+    res.json({ success: true, products });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: "ไม่สามารถดึงข้อมูลสินค้าที่อนุมัติได้",
+    });
+  }
 };
 
-// function for approve product
+// อนุมัติสินค้า
 const approveProduct = async (req, res) => {
-  const { productId } = req.body;
-  await productModel.findByIdAndUpdate(productId, { isApproved: true });
-  res.json({ success: true, message: "Product Approved" });
+  try {
+    const { productId } = req.body;
+    await productModel.findByIdAndUpdate(productId, { isApproved: true });
+    res.json({ success: true, message: "อนุมัติสินค้าสำเร็จ" });
+  } catch (error) {
+    res.json({ success: false, message: "เกิดข้อผิดพลาดในการอนุมัติสินค้า" });
+  }
 };
 
 export {

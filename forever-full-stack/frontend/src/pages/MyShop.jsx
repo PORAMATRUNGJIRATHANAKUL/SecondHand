@@ -53,7 +53,7 @@ const MyShop = () => {
               : "text-gray-500"
           }`}
         >
-          รายการสั่งซื้อ
+          รายการสั่งซื้อลูกค้า
         </button>
         <button
           onClick={() => setActiveTab("payments")}

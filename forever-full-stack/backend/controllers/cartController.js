@@ -1,18 +1,18 @@
 import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
 
-// add products to user cart
+// เพิ่มสินค้าลงตะกร้า
 const addToCart = async (req, res) => {
   try {
     const { userId, productId, size, color, quantity } = req.body;
 
-    // First, find the product to check stock
+    // ค้นหาสินค้าเพื่อตรวจสอบสต็อก
     const product = await productModel.findById(productId);
     if (!product) {
-      return res.json({ success: false, message: "Product not found" });
+      return res.json({ success: false, message: "ไม่พบสินค้า" });
     }
 
-    // Find the specific stock item
+    // ค้นหาสต็อกตามไซส์และสีที่เลือก
     const stockItem = product.stockItems.find(
       (item) => item.size === size && item.color === color
     );
@@ -20,24 +20,24 @@ const addToCart = async (req, res) => {
     if (!stockItem) {
       return res.json({
         success: false,
-        message: "This size and color combination is not available",
+        message: "ไม่มีสินค้าในไซส์และสีที่เลือก",
       });
     }
 
     if (stockItem.stock < quantity) {
       return res.json({
         success: false,
-        message: "Not enough stock available",
+        message: "สินค้าในสต็อกไม่เพียงพอ",
       });
     }
 
-    // Find or create cart for user
+    // ค้นหาหรือสร้างตะกร้าสินค้าสำหรับผู้ใช้
     let cart = await userModel.findOne({ userId });
     if (!cart) {
       cart = new userModel({ userId, cartData: [] });
     }
 
-    // Add or update item in cart
+    // เพิ่มหรืออัพเดทสินค้าในตะกร้า
     const cartItemIndex = cart.cartData.findIndex(
       (item) =>
         item.productId.toString() === productId &&
@@ -53,14 +53,17 @@ const addToCart = async (req, res) => {
 
     await cart.save();
 
-    res.json({ success: true, message: "Item added to cart" });
+    res.json({ success: true, message: "เพิ่มสินค้าลงตะกร้าเรียบร้อย" });
   } catch (error) {
     console.error(error);
-    res.json({ success: false, message: error.message });
+    res.json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการเพิ่มสินค้าลงตะกร้า",
+    });
   }
 };
 
-// update user cart
+// อัพเดทตะกร้าสินค้า
 const updateCart = async (req, res) => {
   try {
     const { userId, itemId, size, color, quantity } = req.body;
@@ -71,14 +74,17 @@ const updateCart = async (req, res) => {
     cartData[itemId][size][color] = quantity;
 
     await userModel.findByIdAndUpdate(userId, { cartData });
-    res.json({ success: true, message: "Cart Updated" });
+    res.json({ success: true, message: "อัพเดทตะกร้าสินค้าเรียบร้อย" });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการอัพเดทตะกร้าสินค้า",
+    });
   }
 };
 
-// get user cart data
+// ดึงข้อมูลตะกร้าสินค้าของผู้ใช้
 const getUserCart = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -89,7 +95,10 @@ const getUserCart = async (req, res) => {
     res.json({ success: true, cartData });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการดึงข้อมูลตะกร้าสินค้า",
+    });
   }
 };
 

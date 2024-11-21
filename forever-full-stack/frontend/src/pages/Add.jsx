@@ -190,6 +190,11 @@ const Add = () => {
         {/* Image Upload Section */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-medium mb-4">รูปภาพสินค้า</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            <p>• ขนาดไฟล์: ไม่เกิน 5MB ต่อรูป</p>
+            <p>• ไฟล์ที่รองรับ: JPG, PNG, WEBP</p>
+          </p>
+
           <div className="flex flex-wrap gap-4">
             {[
               { state: image1, setState: setImage1 },
