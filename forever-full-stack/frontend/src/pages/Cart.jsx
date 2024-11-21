@@ -60,9 +60,18 @@ const Cart = () => {
                   <p className="text-xs sm:text-lg font-medium">
                     {productData.name}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                    ร้านค้า : {productData.owner.name || "ไม่ระบุชื่อร้าน"}
-                  </p>
+                  <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-500 mt-1">
+                    {productData.owner?.profileImage ? (
+                      <img
+                        src={productData.owner.profileImage}
+                        alt="Profile"
+                        className="w-4 h-4 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                    )}
+                    <span>{productData.owner.name || "ไม่ระบุชื่อร้าน"}</span>
+                  </div>
                   <div className="flex items-center gap-5 mt-2">
                     <p>
                       {currency}
@@ -76,6 +85,13 @@ const Cart = () => {
                         style={{ backgroundColor: item.color }}
                       />
                     </div>
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-500 mt-2">
+                    สินค้าคงเหลือ:{" "}
+                    {productData.stockItems.find(
+                      (stock) =>
+                        stock.size === item.size && stock.color === item.color
+                    )?.stock || 0}
                   </div>
                 </div>
               </div>

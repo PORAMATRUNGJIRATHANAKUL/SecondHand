@@ -116,7 +116,7 @@ const Orders = () => {
                   <div className="flex-1">
                     <p className="sm:text-base font-medium">{item.name}</p>
                     <p className="text-sm text-gray-500">
-                      ร้านค้า: {item.owner?.name || "ไม่ระบุ"}
+                      ผู้ขาย: {item.owner?.name || "ไม่ระบุ"}
                     </p>
                     <div className="flex flex-wrap items-center gap-3 mt-1 text-base text-gray-700">
                       <p>฿{item.price}</p>

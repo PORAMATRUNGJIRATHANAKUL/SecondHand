@@ -23,7 +23,18 @@ const ProductItem = ({ id, image, name, price, owner }) => {
         {currency}
         {price}
       </p>
-      <p className="text-xs text-gray-500">{owner.name}</p>
+      <div className="flex items-center gap-1 text-sm text-gray-500">
+        {owner?.profileImage ? (
+          <img
+            src={owner.profileImage}
+            alt="Profile"
+            className="w-4 h-4 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+        )}
+        <span>{owner?.name || "ไม่ระบุร้านค้า"}</span>
+      </div>
     </Link>
   );
 };
