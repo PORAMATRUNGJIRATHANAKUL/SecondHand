@@ -1,12 +1,17 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const reportSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   reporterName: {
     type: String,
     required: [true, "กรุณาระบุชื่อผู้แจ้งปัญหา"],
   },
   problemImage: {
-    type: String, // เก็บ URL ของรูปภาพ
+    type: String,
     required: [true, "กรุณาแนบรูปภาพปัญหา"],
   },
   description: {
@@ -24,4 +29,4 @@ const reportSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("ReportProblem", reportSchema);
+export default mongoose.model("ReportProblem", reportSchema);

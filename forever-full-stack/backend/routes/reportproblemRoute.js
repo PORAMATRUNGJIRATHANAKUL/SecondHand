@@ -1,21 +1,27 @@
-const express = require("express");
-const router = express.Router();
-const {
+import express from "express";
+import {
   createReport,
   getAllReports,
   getReport,
   updateReportStatus,
-} = require("../controllers/reportProblemController");
-const adminAuth = require("../middleware/adminAuth");
-const authUser = require("../middleware/auth");
-const upload = require("../middleware/multer");
+} from "../controllers/reportProblemController.js";
+import adminAuth from "../middleware/adminAuth.js";
+import authUser from "../middleware/auth.js";
+import upload from "../middleware/multer.js";
+
+const router = express.Router();
 
 // Public route - สำหรับผู้ใช้ทั่วไป
-router.post("/", authUser, upload.single("problemImage"), createReport); // เพิ่ม upload middleware
+router.post(
+  "/",
+  authUser,
+  upload.fields([{ name: "problemImage", maxCount: 1 }]),
+  createReport
+);
 
 // Admin routes - เฉพาะแอดมิน
 router.get("/", adminAuth, getAllReports);
 router.get("/:id", adminAuth, getReport);
 router.patch("/:id/status", adminAuth, updateReportStatus);
 
-module.exports = router;
+export default router;

@@ -43,7 +43,16 @@ const ReportProblem = () => {
       formDataToSend.append("problemImage", formData.problemImage);
       formDataToSend.append("description", formData.description);
 
-      await axios.post("http://localhost:4000/api/report", formDataToSend);
+      await axios.post(
+        "http://localhost:4000/api/reportproblem",
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
+      );
       alert("ส่งรายงานปัญหาเรียบร้อยแล้ว");
       // รีเซ็ตฟอร์ม
       setFormData({ problemImage: null, description: "" });

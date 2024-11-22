@@ -32,6 +32,21 @@ const Sidebar = () => {
           <img className="w-5 h-5" src={assets.review_icon} alt="ไอคอนรีวิว" />
           <p className="hidden md:block">รีวิว</p>
         </NavLink>
+        <NavLink
+          className={({ isActive }) => `
+            flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l
+            hover:bg-gray-50 transition-colors
+            ${isActive ? "bg-gray-100" : ""}
+          `}
+          to="/issues"
+        >
+          <img
+            className="w-5 h-5"
+            src={assets.issue_icon}
+            alt="ไอคอนแจ้งปัญหา"
+          />
+          <p className="hidden md:block">แจ้งปัญหา</p>
+        </NavLink>
       </div>
     </div>
   );

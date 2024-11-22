@@ -1,16 +1,17 @@
-const ReportProblem = require("../models/reportProblemModel");
+import ReportProblem from "../models/reportProblemModel.js";
+import User from "../models/userModel.js";
 
 // สร้างรายงานปัญหาใหม่
-const createReport = async (req, res) => {
+export const createReport = async (req, res) => {
   try {
-    const userId = req.userId;
-
-    const user = await userModel.findById(userId);
+    const userId = req.user._id;
+    const user = await User.findById(userId);
 
     const report = await ReportProblem.create({
       ...req.body,
       user: userId,
       reporterName: user.name,
+      problemImage: req.files.problemImage[0].path,
     });
     res.status(201).json(report);
   } catch (error) {
@@ -19,7 +20,7 @@ const createReport = async (req, res) => {
 };
 
 // ดึงข้อมูลรายงานทั้งหมด
-const getAllReports = async (req, res) => {
+export const getAllReports = async (req, res) => {
   try {
     const reports = await ReportProblem.find({}).sort({ reportedAt: -1 });
     res.status(200).json(reports);
@@ -29,7 +30,7 @@ const getAllReports = async (req, res) => {
 };
 
 // ดึงข้อมูลรายงานเดี่ยว
-const getReport = async (req, res) => {
+export const getReport = async (req, res) => {
   try {
     const report = await ReportProblem.findById(req.params.id);
     if (!report) {
@@ -42,7 +43,7 @@ const getReport = async (req, res) => {
 };
 
 // อัพเดทสถานะรายงาน
-const updateReportStatus = async (req, res) => {
+export const updateReportStatus = async (req, res) => {
   try {
     const report = await ReportProblem.findByIdAndUpdate(
       req.params.id,
@@ -56,11 +57,4 @@ const updateReportStatus = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
-};
-
-module.exports = {
-  createReport,
-  getAllReports,
-  getReport,
-  updateReportStatus,
 };
