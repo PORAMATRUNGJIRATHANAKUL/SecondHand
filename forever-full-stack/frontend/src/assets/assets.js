@@ -54,8 +54,8 @@ import p_img50 from "./p_img50.png";
 import p_img51 from "./p_img51.png";
 import p_img52 from "./p_img52.png";
 import rating from "./rating.png";
-import glasses1 from "./glasses1.png";
 
+import userAvatar from "./user-avatar.png";
 import logo from "./logo.png";
 import logo_white from "./logo_white.png";
 import hero_img from "./hero_img.png";
@@ -97,6 +97,7 @@ export const assets = {
   rating,
   logo_qrcode,
   qrcode_payment,
+  userAvatar,
 };
 
 export const products = [

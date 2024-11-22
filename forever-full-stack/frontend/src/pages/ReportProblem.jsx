@@ -1,29 +1,137 @@
-import React from "react";
+import React, { useState, useRef } from "react";
+import axios from "axios";
 
 const ReportProblem = () => {
+  const [formData, setFormData] = useState({
+    problemImage: null,
+    description: "",
+  });
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, problemImage: file }));
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({ ...prev, problemImage: null }));
+    if (preview) {
+      URL.revokeObjectURL(preview);
+      setPreview(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("problemImage", formData.problemImage);
+      formDataToSend.append("description", formData.description);
+
+      await axios.post("http://localhost:4000/api/report", formDataToSend);
+      alert("ส่งรายงานปัญหาเรียบร้อยแล้ว");
+      // รีเซ็ตฟอร์ม
+      setFormData({ problemImage: null, description: "" });
+      setPreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      alert("เกิดข้อผิดพลาด: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <h1 className="text-2xl font-bold mb-6 text-center">แจ้งปัญหา</h1>
-      <div className="space-y-4 text-sm">
-        <p className="text-center mb-4">
-          พบปัญหาการใช้งาน? เราพร้อมช่วยเหลือคุณ โปรดปฏิบัติตามขั้นตอนต่อไปนี้
-        </p>
-        <ol className="list-decimal space-y-2 pl-4">
-          <li>ระบุปัญหาที่พบอย่างชัดเจน</li>
-          <li>แจ้งหมายเลขคำสั่งซื้อ (ถ้ามี) หรือชื่อผู้ใช้ของคุณ</li>
-          <li>เลือกช่องทางการติดต่อที่สะดวกสำหรับคุณ</li>
-          <li>รอการตอบกลับจากทีมงานของเรา</li>
-        </ol>
-        <p className="font-semibold mt-4">ช่องทางการติดต่อ:</p>
-        <ul className="list-disc space-y-2 pl-4">
-          <li>อีเมล: secondhand@bumail.net</li>
-          <li>โทรศัพท์: 082-815-7756 (จันทร์-ศุกร์ 9:00-18:00 น.)</li>
-          <li>Line Official: SecondHand</li>
-        </ul>
-        <p className="text-center mt-4">
-          เรามุ่งมั่นที่จะแก้ไขปัญหาของคุณอย่างรวดเร็วและมีประสิทธิภาพ
-        </p>
-      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* ชูปภาพ */}
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            รูปภาพปัญหา *
+          </label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            required={!preview}
+            className="w-full p-2 border rounded-md"
+          />
+          {preview && (
+            <div className="flex items-center gap-4 mt-2">
+              <img
+                src={preview}
+                alt="Preview"
+                className="max-h-48 rounded-md"
+              />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="p-2 text-red-500 hover:text-red-700"
+                title="ลบรูปภาพ"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* รายละเอียด */}
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            รายละเอียดปัญหา *
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            required
+            rows="4"
+            className="w-full p-2 border rounded-md"
+          />
+        </div>
+
+        {/* ปุ่มส่ง */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 disabled:bg-gray-400"
+        >
+          {loading ? "กำลังส่ง..." : "ส่งรายงาน"}
+        </button>
+      </form>
     </div>
   );
 };

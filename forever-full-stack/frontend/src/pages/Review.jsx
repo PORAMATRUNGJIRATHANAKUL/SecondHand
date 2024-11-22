@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState, useMemo } from "react";
 import { ShopContext } from "../context/ShopContext";
+import userAvatar from "../assets/user-avatar.png";
 
 const calculateAverageRating = (reviews) => {
   const overallRatingInNumber = reviews.reduce(
@@ -174,16 +175,13 @@ const Review = () => {
           <div key={index} className="border-b py-4">
             <div className="flex items-center gap-2">
               <img
-                src={
-                  user?.profileImage ||
-                  `https://avatar.iran.liara.run/public/boy`
-                }
-                alt={`${user?.name}'s avatar`}
+                src={userAvatar}
+                alt={`${review?.name}'s avatar`}
                 className="w-10 h-10 rounded-full"
               />
               <div className="flex flex-col">
                 <span className="font-semibold">
-                  {user?.name || "Anonymous"}
+                  {review?.name || "Anonymous"}
                 </span>
                 <div className="text-yellow-500">
                   {renderStars(review.rating)}
@@ -201,7 +199,7 @@ const Review = () => {
       {/* ส่วนสำหรับส่งความเห็นใหม่ */}
       <div className="my-8 pt-4">
         {/* ข้อความแนะนำการให้คะแนน */}
-        <p className="text-sm text-gray-600 mb-2">คะแนนคุณภาพเว็ปไซต์</p>
+        <p className="text-sm text-gray-600 mb-2">คะแนนคุณภาพเว็บไซต์</p>
 
         {/* ส่วนให้คะแนนดาว */}
         <div className="flex items-center gap-2 mb-2">
