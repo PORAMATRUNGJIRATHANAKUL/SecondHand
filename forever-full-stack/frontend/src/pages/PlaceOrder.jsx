@@ -15,6 +15,7 @@ const PlaceOrder = () => {
   const [paymentProof, setPaymentProof] = useState(null);
   const [paymentProofFileName, setPaymentProofFileName] = useState(null);
   const fileInputRef = useRef(null);
+  const [showSlipPreview, setShowSlipPreview] = useState(false);
 
   const {
     navigate,
@@ -136,7 +137,7 @@ const PlaceOrder = () => {
 
   const confirmQRPayment = useCallback(async () => {
     if (!paymentProof) {
-      toast.error("Please upload your payment proof.");
+      toast.error("กรุณาอัพโหลดหลักฐานการชำระเงิน");
       return;
     }
 
@@ -171,19 +172,19 @@ const PlaceOrder = () => {
       setUploadProgress(0);
 
       if (verifyResponse.data.success) {
-        toast.success("Payment confirmed successfully!");
+        toast.success("ยืนยันการชำระเงินสำเร็จ!");
         setShowQRPopup(false);
         const paymentProofPath = verifyResponse.data.paymentProofPath;
         placeOrder(paymentProofPath);
       } else {
         toast.error(
           verifyResponse.data.message ||
-            "Payment confirmation failed. Please try again."
+            "การยืนยันการชำระเงินล้มเหลว กรุณาลองใหม่อีกครั้ง"
         );
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while confirming payment.");
+      toast.error("เกิดข้อผิดพลาดในการยืนยันการชำระเงิน");
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -201,12 +202,20 @@ const PlaceOrder = () => {
     event.preventDefault();
     if (method === "QR Code") {
       if (!paymentProof) {
-        toast.error("Please complete the QR Code payment first.");
+        toast.error("กรุณาทำการชำระเงินผ่าน QR Code ก่อน");
         return;
       }
       confirmQRPayment();
     } else {
       placeOrder();
+    }
+  };
+
+  const clearFileUpload = () => {
+    setPaymentProof(null);
+    setPaymentProofFileName(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -238,7 +247,7 @@ const PlaceOrder = () => {
               value={formData.lastName}
               className="border border-gray-300 rounded py-1.5 px-3.5 w-full"
               type="text"
-              placeholder="นามสกุล"
+              placeholder="นาม���กุล"
             />
           </div>
           <input
@@ -396,12 +405,21 @@ const PlaceOrder = () => {
                 onClick={() => fileInputRef.current.click()}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 hover:bg-gray-200 transition-colors"
               >
-                Choose File
+                เลือกไฟล์
               </button>
               {paymentProof && (
-                <p className="mt-2 text-sm text-green-600">
-                  File uploaded: {paymentProofFileName}
-                </p>
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-sm text-green-600">
+                    ไฟล์ที่อัพโหลด: {paymentProofFileName}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowSlipPreview(true)}
+                    className="text-black hover:text-gray-800 text-sm"
+                  >
+                    ดูสลิป
+                  </button>
+                </div>
               )}
             </div>
             {uploadProgress > 0 && (
@@ -413,7 +431,7 @@ const PlaceOrder = () => {
                   ></div>
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
-                  Uploading: {uploadProgress}%
+                  กำลังอัพโหลด: {uploadProgress}%
                 </p>
               </div>
             )}
@@ -423,10 +441,11 @@ const PlaceOrder = () => {
                   setShowQRPopup(false);
                   setMethod("cod");
                   setUploadProgress(0);
+                  clearFileUpload();
                 }}
                 className="px-6 py-2 bg-gray-200 text-black rounded-md hover:bg-gray-300 transition-colors"
               >
-                Cancel
+                ยกเลิก
               </button>
               <button
                 onClick={confirmQRPayment}
@@ -437,9 +456,41 @@ const PlaceOrder = () => {
                     : "hover:bg-gray-800"
                 }`}
               >
-                {isUploading ? "Uploading..." : "Confirm"}
+                {isUploading ? "กำลังอัพโหลด..." : "ยืนยัน"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showSlipPreview && paymentProof && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="relative bg-white p-4 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">สลิปการโอนเงิน</h2>
+            <img
+              src={URL.createObjectURL(paymentProof)}
+              alt="สลิปการโอนเงิน"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
+            />
+            <button
+              onClick={() => setShowSlipPreview(false)}
+              className="absolute top-2 right-2 bg-white rounded-full p-2 hover:bg-gray-100"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
         </div>
       )}

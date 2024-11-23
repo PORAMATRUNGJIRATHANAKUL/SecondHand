@@ -137,19 +137,17 @@ const Qrcode = ({ searchQuery }) => {
 
       {/* Modal แสดงสลิป */}
       {selectedPayment && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setSelectedPayment(null)}
-        >
-          <div
-            className="bg-white p-6 rounded-lg max-w-2xl w-full relative"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="relative bg-white p-4 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">สลิปการโอนเงิน</h2>
+            <img
+              src={`${selectedPayment.paymentProof}`}
+              alt="หลักฐานการชำระเงิน"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
+            />
             <button
               onClick={() => setSelectedPayment(null)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              title="ปิด"
-              aria-label="ปิดหน้าต่างแสดงสลิป"
+              className="absolute top-2 right-2 bg-white rounded-full p-2 hover:bg-gray-100"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -166,21 +164,6 @@ const Qrcode = ({ searchQuery }) => {
                 />
               </svg>
             </button>
-
-            <h2 className="text-xl font-bold mb-4">สลิปการชำระเงิน</h2>
-            <img
-              src={`${selectedPayment.paymentProof}`}
-              alt="หลักฐานการชำระเงิน"
-              className="max-w-[500px] max-h-[600px] object-contain mx-auto mb-4"
-            />
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setSelectedPayment(null)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded text-sm"
-              >
-                ปิด
-              </button>
-            </div>
           </div>
         </div>
       )}

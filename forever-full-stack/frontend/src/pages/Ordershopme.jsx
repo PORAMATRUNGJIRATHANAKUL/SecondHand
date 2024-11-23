@@ -221,7 +221,7 @@ const Ordershopme = ({ searchQuery }) => {
                 ))}
               </div>
 
-              {/* ข้อมูลการจัดส่งและการชำระเงิน */}
+              {/* ข้อมูลการการชำระเงิน */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-600 mb-1">ที่อยู่จัดส่ง:</p>
@@ -309,24 +309,33 @@ const Ordershopme = ({ searchQuery }) => {
       </div>
 
       {showQRProof && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="relative bg-white p-4 rounded-lg">
             <h2 className="text-xl font-bold mb-4">สลิปการโอนเงิน</h2>
-            <div className="flex justify-center items-center h-[500px]">
-              <img
-                src={`${selectedOrder.paymentProof}`}
-                alt="QR Code Payment Proof"
-                className="max-w-full max-h-full object-contain rounded-lg"
-              />
-            </div>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setShowQRProof(false)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded"
+            <img
+              src={`${selectedOrder.paymentProof}`}
+              alt="QR Code Payment Proof"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
+            />
+            <button
+              onClick={() => setShowQRProof(false)}
+              className="absolute top-2 right-2 bg-white rounded-full p-2 hover:bg-gray-100"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                ปิด
-              </button>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
         </div>
       )}
