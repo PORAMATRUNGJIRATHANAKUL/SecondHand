@@ -48,7 +48,8 @@ const List = ({ token, searchQuery }) => {
     const searchLower = searchQuery.toLowerCase();
     return (
       item.name.toLowerCase().includes(searchLower) ||
-      item.category.toLowerCase().includes(searchLower)
+      item.category.toLowerCase().includes(searchLower) ||
+      (item.owner?.name || "").toLowerCase().includes(searchLower)
     );
   });
 
