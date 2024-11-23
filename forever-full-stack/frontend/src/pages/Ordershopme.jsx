@@ -248,7 +248,17 @@ const Ordershopme = ({ searchQuery }) => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span>สถานะการชำระเงิน:</span>
-                    <span>{order.payment ? "ชำระแล้ว" : "รอชำระ"}</span>
+
+                    {order.paymentMethod === "QR Code" && (
+                      <span>{order.payment ? "ชำระแล้ว" : "รอชำระ"}</span>
+                    )}
+                    {order.paymentMethod === "ชำระเงินปลายทาง" && (
+                      <span>
+                        {order.status === "ได้รับสินค้าแล้ว"
+                          ? "ชำระแล้ว"
+                          : "รอชำระ"}
+                      </span>
+                    )}
                   </div>
                   {order.paymentMethod === "QR Code" && (
                     <button
