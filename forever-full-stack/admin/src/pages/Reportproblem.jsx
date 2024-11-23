@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 
 const Reportproblem = ({ token, searchQuery }) => {
   const [list, setList] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const fetchList = async () => {
     try {
@@ -100,7 +101,8 @@ const Reportproblem = ({ token, searchQuery }) => {
                     <img
                       src={item.problemImage}
                       alt="ปัญหา"
-                      className="w-20 h-20 object-cover rounded"
+                      className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80"
+                      onClick={() => setSelectedImage(item.problemImage)}
                     />
                   )}
                 </td>
@@ -156,6 +158,36 @@ const Reportproblem = ({ token, searchQuery }) => {
           </div>
         )}
       </div>
+      {selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="relative">
+            <img
+              src={selectedImage}
+              alt="ปัญหา"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-2 right-2 bg-white rounded-full p-2 hover:bg-gray-100"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

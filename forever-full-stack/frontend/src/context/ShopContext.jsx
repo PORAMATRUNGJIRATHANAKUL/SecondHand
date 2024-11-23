@@ -39,10 +39,10 @@ const ShopContextProvider = (props) => {
     return response.data.user;
   };
 
-  const updateUserProfile = async (name) => {
+  const updateUserProfile = async (name, displayName) => {
     const response = await axios.put(
       `${backendUrl}/api/user/updateUserProfile`,
-      { name },
+      { name, displayName },
       {
         headers: { token },
       }

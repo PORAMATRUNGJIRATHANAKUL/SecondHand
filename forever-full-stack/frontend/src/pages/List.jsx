@@ -105,7 +105,7 @@ const List = ({ searchQuery }) => {
         {/* หัวตาราง */}
         <div className="hidden md:grid grid-cols-[1fr_3fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center py-3 px-4 bg-gray-100 rounded-t-lg font-semibold text-gray-700">
           <div>รูปภาพ</div>
-          <div>ชื่อผู้ขาย</div>
+          <div>ชื่อร้าน</div>
           <div>ชื่อสินค้า</div>
           <div>หมวดหมู่</div>
           <div className="text-right">ราคา</div>

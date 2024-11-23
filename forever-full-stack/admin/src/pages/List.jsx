@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 
 const List = ({ token, searchQuery }) => {
   const [list, setList] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const fetchList = async () => {
     try {
@@ -23,7 +24,7 @@ const List = ({ token, searchQuery }) => {
   const removeProduct = async (id) => {
     try {
       const response = await axios.post(
-        backendUrl + "/api/product/remove",
+        backendUrl + "/api/product/removeAdmin",
         { id },
         { headers: { token } }
       );
@@ -100,8 +101,9 @@ const List = ({ token, searchQuery }) => {
       <p className="mb-2">รายการสินค้าทั้งหมด</p>
       <div className="flex flex-col gap-2">
         {/* หัวตาราง */}
-        <div className="hidden md:grid grid-cols-[1fr_3fr_1.5fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center py-3 px-4 bg-gray-100 rounded-t-lg font-semibold text-gray-700">
+        <div className="hidden md:grid grid-cols-[1fr_3fr_1.5fr_1fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center py-3 px-4 bg-gray-100 rounded-t-lg font-semibold text-gray-700">
           <div>รูปภาพ</div>
+          <div>ชื่อร้าน</div>
           <div>ชื่อสินค้า</div>
           <div>หมวดหมู่</div>
           <div className="text-right">ราคา</div>
@@ -115,18 +117,22 @@ const List = ({ token, searchQuery }) => {
         {filteredList.map((item, index) => (
           <div
             key={index}
-            className={`grid grid-cols-[1fr_3fr_1.5fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center py-3 px-4 border-b hover:bg-gray-50 transition-colors ${
+            className={`grid grid-cols-[1fr_3fr_1.5fr_1fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center py-3 px-4 border-b hover:bg-gray-50 transition-colors ${
               index % 2 === 0 ? "bg-white" : "bg-gray-50"
             }`}
           >
             {/* รูปภาพ */}
             <div className="flex items-center">
               <img
-                className="w-12 h-12 object-cover rounded-lg shadow-sm"
+                className="w-12 h-12 object-cover rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
                 src={item.image[0]}
                 alt={`รูปสินค้า ${item.name}`}
+                onClick={() => setSelectedImage(item.image[0])}
               />
             </div>
+
+            {/* ชื่อส้าน */}
+            <div className="text-gray-600">{item.owner?.name || "-"}</div>
 
             {/* ชื่อสินค้า */}
             <div className="font-medium text-gray-800">{item.name}</div>
@@ -202,6 +208,38 @@ const List = ({ token, searchQuery }) => {
           </div>
         )}
       </div>
+
+      {/* Modal แสดงรูปภาพ */}
+      {selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="relative">
+            <img
+              src={selectedImage}
+              alt="รูปสินค้า"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-2 right-2 bg-white rounded-full p-2 hover:bg-gray-100"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

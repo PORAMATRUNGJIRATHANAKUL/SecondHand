@@ -122,6 +122,18 @@ const removeProduct = async (req, res) => {
   }
 };
 
+// ลบสินค้าโดยผู้ดูแลระบบ
+const removeProductAdmin = async (req, res) => {
+  try {
+    const productId = req.body.id;
+    await productModel.findByIdAndDelete(productId);
+    res.json({ success: true, message: "ลบสินค้าสำเร็จ" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "เกิดข้อผิดพลาดในการลบสินค้า" });
+  }
+};
+
 // ดึงข้อมูลสินค้าเดี่ยว
 const singleProduct = async (req, res) => {
   try {
@@ -162,6 +174,7 @@ export {
   listProducts,
   addProduct,
   removeProduct,
+  removeProductAdmin,
   singleProduct,
   approveProduct,
   getProductsByOwner,

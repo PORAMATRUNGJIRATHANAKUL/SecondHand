@@ -9,7 +9,7 @@ const createToken = (id) => {
 };
 
 const getUserProfile = async (req, res) => {
-  const { userId } = req.body;
+  const userId = req.userId;
   const user = await userModel.findById(userId, { password: 0, __v: 0 });
   res.json({ success: true, user });
 };
@@ -134,14 +134,29 @@ const updateProfileImage = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
   try {
-    const { name, userId } = req.body;
+    const userId = req.userId;
+    const { name, displayName } = req.body;
 
-    const user = await userModel.findByIdAndUpdate(userId, { name });
+    console.log(name, displayName);
+
+    if (!name || !displayName) {
+      return res
+        .status(400)
+        .json({ success: false, message: "กรุณาระบุชื่อและชื่อร้าน" });
+    }
+
+    const user = await userModel.findByIdAndUpdate(userId, {
+      name,
+      displayName,
+    });
     user.save();
     res.json({ success: true });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(400).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการอัพเดทข้อมูลผู้ใช้",
+    });
   }
 };
 

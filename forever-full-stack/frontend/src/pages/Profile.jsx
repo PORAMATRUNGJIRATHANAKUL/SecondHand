@@ -13,6 +13,7 @@ function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [newName, setNewName] = useState(user?.name || "");
+  const [newUsername, setNewUsername] = useState(user?.displayName || "");
   const [isLoading, setIsLoading] = useState(false);
 
   const [newImageFile, setNewImageFile] = useState(null);
@@ -41,7 +42,7 @@ function ProfilePage() {
   };
 
   const updateProfileName = async () => {
-    const response = await updateUserProfile(newName);
+    const response = await updateUserProfile(newName, newUsername);
     if (!response.success) {
       throw new Error("ไม่สามารถอัพเดทโปรไฟล์ได้");
     }
@@ -65,7 +66,7 @@ function ProfilePage() {
       if (newImageFile) {
         updatePromises.push(updateProfileImage());
       }
-      if (newName !== user.name) {
+      if (newName !== user.name || newUsername !== user.username) {
         updatePromises.push(updateProfileName());
       }
 
@@ -75,6 +76,7 @@ function ProfilePage() {
       if (updatedUser) {
         setUser(updatedUser);
         setNewName(updatedUser.name);
+        setNewUsername(updatedUser.username);
         setImageTimestamp(Date.now());
       }
     } catch (error) {
@@ -135,7 +137,7 @@ function ProfilePage() {
             htmlFor="name"
             className="block text-sm font-medium text-gray-700"
           >
-            ชื่อ
+            ชื่อร้าน
           </label>
           <input
             type="text"
@@ -143,7 +145,24 @@ function ProfilePage() {
             value={isEditing ? newName : user?.name}
             onChange={(e) => setNewName(e.target.value)}
             disabled={!isEditing}
-            placeholder="กรุณากรอกชื่อ"
+            placeholder="กรุณากรอกชื่อร้าน"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="username"
+            className="block text-sm font-medium text-gray-700"
+          >
+            ชื่อผู้ใช้
+          </label>
+          <input
+            type="text"
+            id="username"
+            value={isEditing ? newUsername : user?.displayName}
+            onChange={(e) => setNewUsername(e.target.value)}
+            disabled={!isEditing}
+            placeholder="กรุณากรอกชื่อผู้ใช้"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500"
           />
         </div>

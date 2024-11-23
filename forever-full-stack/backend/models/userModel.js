@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    displayName: { type: String, required: true },
     profileImage: {
       type: String,
       default: "https://avatar.iran.liara.run/public/boy",
