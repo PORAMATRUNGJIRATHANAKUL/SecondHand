@@ -18,6 +18,15 @@ const ShopContextProvider = (props) => {
   const [shopReviews, setShopReviews] = useState([]);
   const navigate = useNavigate();
 
+  const createReportProblem = async (formData) => {
+    const response = await axios.post(
+      `${backendUrl}/api/reportproblem`,
+      formData,
+      { headers: { token } }
+    );
+    return response.data.report;
+  };
+
   const updateUserProfileImage = async (formData) => {
     const response = await axios.put(
       `${backendUrl}/api/user/updateProfileImage`,
@@ -251,6 +260,7 @@ const ShopContextProvider = (props) => {
     updateUserProfileImage,
     getProductsData,
     getOwnerProducts,
+    createReportProblem,
   };
 
   return (

@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
-import axios from "axios";
+import React, { useState, useRef, useContext } from "react";
+import { ShopContext } from "../context/ShopContext";
 
 const ReportProblem = () => {
+  const { createReportProblem } = useContext(ShopContext);
   const [formData, setFormData] = useState({
     problemImage: null,
     description: "",
@@ -43,16 +44,8 @@ const ReportProblem = () => {
       formDataToSend.append("problemImage", formData.problemImage);
       formDataToSend.append("description", formData.description);
 
-      await axios.post(
-        "http://localhost:4000/api/reportproblem",
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      await createReportProblem(formDataToSend);
+
       alert("ส่งรายงานปัญหาเรียบร้อยแล้ว");
       // รีเซ็ตฟอร์ม
       setFormData({ problemImage: null, description: "" });

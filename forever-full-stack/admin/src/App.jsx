@@ -12,6 +12,7 @@ import Qrcode from "./pages/Qrcode";
 import Login from "./components/Login";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Reportproblem from "./pages/Reportproblem";
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 export const currency = "฿";
@@ -67,6 +68,12 @@ const App = () => {
                 <Route
                   path="/qrcode"
                   element={<Qrcode token={token} searchQuery={searchQuery} />}
+                />
+                <Route
+                  path="/issues"
+                  element={
+                    <Reportproblem token={token} searchQuery={searchQuery} />
+                  }
                 />
               </Routes>
             </div>
