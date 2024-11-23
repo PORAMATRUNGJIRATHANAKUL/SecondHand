@@ -211,7 +211,23 @@ const Orders = () => {
                       <span>{item.owner?.name || "ไม่ระบุชื่อร้าน"}</span>
                     </div>
                     <p className="text-gray-600">฿{item.price}</p>
-                    <p className="text-gray-600">
+                    <div className="flex flex-wrap gap-3 mt-2 text-sm text-gray-600">
+                      <p>จำนวน: {item.quantity} ชิ้น</p>
+                      <p>ไซส์: {item.size}</p>
+                      <div className="flex items-center gap-1">
+                        <span>สี:</span>
+                        {item.colors.map((color, colorIdx) => (
+                          <div
+                            key={colorIdx}
+                            className={`w-4 h-4 rounded-full ${getColorClass(
+                              color
+                            )}`}
+                            title={color}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-gray-600 mt-2">
                       สถานะ: {selectedOrder.status}
                     </p>
                   </div>

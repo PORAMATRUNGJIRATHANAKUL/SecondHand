@@ -84,8 +84,8 @@ const Reportproblem = ({ token, searchQuery }) => {
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <th className="py-2 px-4 border-b text-left">ชื่อผู้แจ้ง</th>
               <th className="py-2 px-4 border-b text-left">รูปภาพ</th>
+              <th className="py-2 px-4 border-b text-left">ชื่อผู้แจ้ง</th>
               <th className="py-2 px-4 border-b text-left">รายละเอียด</th>
               <th className="py-2 px-4 border-b text-left">วันเวลาที่แจ้ง</th>
               <th className="py-2 px-4 border-b text-left">สถานะ</th>
@@ -95,7 +95,6 @@ const Reportproblem = ({ token, searchQuery }) => {
           <tbody>
             {filteredList.map((item, index) => (
               <tr key={item._id} className="hover:bg-gray-50">
-                <td className="py-2 px-4 border-b">{item.reporterName}</td>
                 <td className="py-2 px-4 border-b">
                   {item.problemImage && (
                     <img
@@ -106,6 +105,7 @@ const Reportproblem = ({ token, searchQuery }) => {
                     />
                   )}
                 </td>
+                <td className="py-2 px-4 border-b">{item.reporterName}</td>
                 <td className="py-2 px-4 border-b">{item.description}</td>
                 <td className="py-2 px-4 border-b">
                   {new Date(item.reportedAt).toLocaleString("th-TH")}
