@@ -15,17 +15,31 @@ const Login = () => {
     event.preventDefault();
     try {
       if (currentState === "สมัครสมาชิก") {
+        if (password.length < 8) {
+          toast.error("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+          return;
+        }
+
+        console.log("Sending registration data:", {
+          name,
+          email,
+          password,
+        });
+
         const response = await axios.post(backendUrl + "/api/user/register", {
           name,
           email,
           password,
         });
+
+        console.log("Server response:", response.data);
+
         if (response.data.success) {
           setToken(response.data.token);
           localStorage.setItem("token", response.data.token);
           toast.success("สมัครสมาชิกสำเร็จ");
         } else {
-          toast.error(response.data.message || "ไม่สามารถสมัครสมาชิกได้");
+          toast.error(response.data.message);
         }
       } else {
         const response = await axios.post(backendUrl + "/api/user/login", {
@@ -41,8 +55,12 @@ const Login = () => {
         }
       }
     } catch (error) {
-      console.log(error);
-      toast.error("เกิดข้อผิดพลาด: " + error.message);
+      console.error("Registration error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
+      toast.error(errorMessage);
     }
   };
 
