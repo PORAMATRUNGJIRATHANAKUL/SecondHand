@@ -247,7 +247,7 @@ const PlaceOrder = () => {
               value={formData.lastName}
               className="border border-gray-300 rounded py-1.5 px-3.5 w-full"
               type="text"
-              placeholder="นาม���กุล"
+              placeholder="นามสกุล"
             />
           </div>
           <input
