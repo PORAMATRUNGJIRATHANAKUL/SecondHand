@@ -4,7 +4,7 @@ import productModel from "../models/productModel.js";
 // เพิ่มสินค้าลงตะกร้า
 const addToCart = async (req, res) => {
   try {
-    const { userId, productId, size, color, quantity } = req.body;
+    const { productId, size, color, quantity } = req.body;
 
     // ค้นหาสินค้าเพื่อตรวจสอบสต็อก
     const product = await productModel.findById(productId);

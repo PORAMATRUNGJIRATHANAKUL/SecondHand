@@ -73,6 +73,15 @@ const Product = () => {
     return colorNames[colorName] || colorName;
   };
 
+  const handleAddToCart = () => {
+    addToCart({
+      productId: productData._id,
+      size,
+      color,
+      quantity: 1,
+    });
+  };
+
   useEffect(() => {
     fetchProductData();
   }, [productId, getProductsData]);
@@ -157,8 +166,13 @@ const Product = () => {
             </div>
           </div>
           <button
-            onClick={() => addToCart(productData._id, size, color)}
-            className="bg-black text-white px-8 py-3 text-sm active:bg-gray-700 hover:bg-gray-800 transition-colors"
+            onClick={handleAddToCart}
+            disabled={!size || !color}
+            className={`px-8 py-3 text-sm transition-colors ${
+              !size || !color
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-black text-white active:bg-gray-700 hover:bg-gray-800"
+            }`}
           >
             เพิ่มลงตะกร้า
           </button>

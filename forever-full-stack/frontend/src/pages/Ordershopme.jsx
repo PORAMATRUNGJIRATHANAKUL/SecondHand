@@ -375,19 +375,13 @@ const Ordershopme = ({ searchQuery }) => {
       {showQRProof && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="relative bg-white p-4 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">สลิปการโอนเงิน</h2>
-            <img
-              src={`${selectedOrder.paymentProof}`}
-              alt="QR Code Payment Proof"
-              className="max-w-[90vw] max-h-[90vh] object-contain"
-            />
             <button
               onClick={() => setShowQRProof(false)}
-              className="absolute top-2 right-2 bg-white rounded-full p-2 hover:bg-gray-100"
+              className="absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-full"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
+                className="h-6 w-6 text-gray-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -400,13 +394,38 @@ const Ordershopme = ({ searchQuery }) => {
                 />
               </svg>
             </button>
+            <h2 className="text-xl font-bold mb-4">สลิปการโอนเงิน</h2>
+            <img
+              src={`${selectedOrder.paymentProof}`}
+              alt="QR Code Payment Proof"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
+            />
           </div>
         </div>
       )}
 
       {showProducts && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
+          <div className="relative bg-white p-6 rounded-lg w-full max-w-2xl">
+            <button
+              onClick={() => setShowProducts(false)}
+              className="absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-full"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-gray-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
             <h2 className="text-xl font-bold mb-4">สินค้าในออเดอร์</h2>
             <div className="space-y-4">
               {selectedOrder.items.map((item, index) => (
@@ -444,44 +463,33 @@ const Ordershopme = ({ searchQuery }) => {
                 </div>
               ))}
             </div>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setShowProducts(false)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded"
-              >
-                ปิด
-              </button>
-            </div>
           </div>
         </div>
       )}
 
       {showShippingModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium">ข้อมูลการจัดส่ง</h3>
-              <button
-                onClick={() => setShowShippingModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+          <div className="relative bg-white rounded-lg p-6 w-full max-w-md">
+            <button
+              onClick={() => setShowShippingModal(false)}
+              className="absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-full"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-gray-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <h3 className="text-lg font-medium mb-6">ข้อมูลการจัดส่ง</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

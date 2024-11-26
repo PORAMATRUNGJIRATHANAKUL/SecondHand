@@ -91,7 +91,7 @@ const ShopContextProvider = (props) => {
 
   const submitShopReview = async (review) => {
     if (!user) {
-      toast.error("Please login to submit a review");
+      toast.error("กรุณาเข้าสู่ระบบก่อนรีวิว");
       return;
     }
 
@@ -106,23 +106,23 @@ const ShopContextProvider = (props) => {
     return response.data.review;
   };
 
-  const addToCart = async (itemId, size) => {
-    if (!size) {
-      toast.error("Select Product Size and Select Product Color ");
+  const addToCart = async ({ productId, size, color, quantity }) => {
+    if (!size || !color) {
+      toast.error("กรุณาเลือกไซส์และสี");
       return;
     }
 
     let cartData = structuredClone(cartItems);
 
-    if (cartData[itemId]) {
-      if (cartData[itemId][size]) {
-        cartData[itemId][size] += 1;
+    if (cartData[productId]) {
+      if (cartData[productId][size]) {
+        cartData[productId][size] += quantity;
       } else {
-        cartData[itemId] = 1;
+        cartData[productId][size] = quantity;
       }
     } else {
-      cartData[itemId] = {};
-      cartData[itemId][size] = 1;
+      cartData[productId] = {};
+      cartData[productId][size] = quantity;
     }
     setCartItems(cartData);
 
@@ -130,12 +130,12 @@ const ShopContextProvider = (props) => {
       try {
         await axios.post(
           backendUrl + "/api/cart/add",
-          { itemId, size },
+          { productId, size, color, quantity },
           { headers: { token } }
         );
       } catch (error) {
         console.log(error);
-        toast.error(error.message);
+        toast.error("เกิดข้อผิดพลาด: " + error.message);
       }
     }
   };
@@ -198,11 +198,11 @@ const ShopContextProvider = (props) => {
       if (response.data.success) {
         setProducts(response.data.products.reverse());
       } else {
-        toast.error(response.data.message);
+        toast.error(response.data.message || "ไม่สามารถโหลดข้อมูลสินค้าได้");
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลสินค้า");
     }
   };
 
@@ -214,11 +214,11 @@ const ShopContextProvider = (props) => {
       if (response.data.success) {
         setProducts(response.data.products.reverse());
       } else {
-        toast.error(response.data.message);
+        toast.error(response.data.message || "ไม่สามารถโหลดข้อมูลสินค้าได้");
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลสินค้า");
     }
   };
 
@@ -234,7 +234,7 @@ const ShopContextProvider = (props) => {
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลตะกร้าสินค้า");
     }
   };
 
