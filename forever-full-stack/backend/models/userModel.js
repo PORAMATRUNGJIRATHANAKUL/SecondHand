@@ -10,6 +10,9 @@ const userSchema = new mongoose.Schema(
     },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    bankName: { type: String, default: "" },
+    bankAccount: { type: String, default: "" },
+    bankAccountName: { type: String, default: "" },
     cartData: { type: Object, default: {} },
   },
   { minimize: false }

@@ -137,9 +137,16 @@ const updateProfileImage = async (req, res) => {
 const updateUserProfile = async (req, res) => {
   try {
     const userId = req.userId;
-    const { name, displayName } = req.body;
+    const { name, displayName, bankName, bankAccount, bankAccountName } =
+      req.body;
 
-    console.log(name, displayName);
+    console.log("Updating profile:", {
+      name,
+      displayName,
+      bankName,
+      bankAccount,
+      bankAccountName,
+    });
 
     if (!name || !displayName) {
       return res
@@ -147,12 +154,20 @@ const updateUserProfile = async (req, res) => {
         .json({ success: false, message: "กรุณาระบุชื่อและชื่อร้าน" });
     }
 
-    const user = await userModel.findByIdAndUpdate(userId, {
-      name,
-      displayName,
-    });
-    user.save();
-    res.json({ success: true });
+    const user = await userModel.findByIdAndUpdate(
+      userId,
+      {
+        name,
+        displayName,
+        bankName, // เพิ่มการอัพเดทชื่อธนาคาร
+        bankAccount, // เพิ่มการอัพเดทเลขบัญชี
+        bankAccountName, // เพิ่มการอัพเดทชื่อบัญชี
+      },
+      { new: true } // เพิ่ม option new: true เพื่อให้ return ข้อมูลที่อัพเดทแล้ว
+    );
+
+    await user.save();
+    res.json({ success: true, user }); // ส่งข้อมูล user ที่อัพเดทแล้วกลับไป
   } catch (error) {
     console.log(error);
     res.status(400).json({
@@ -292,7 +307,7 @@ const updateAddress = async (req, res) => {
       district,
       province,
       postalCode,
-      country: country || "Thailand",
+      country: country || "ประเทศไทย",
       phoneNumber,
     };
 

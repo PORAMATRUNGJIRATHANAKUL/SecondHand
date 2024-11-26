@@ -14,6 +14,11 @@ function ProfilePage() {
   const [previewImage, setPreviewImage] = useState(null);
   const [newName, setNewName] = useState(user?.name || "");
   const [newUsername, setNewUsername] = useState(user?.displayName || "");
+  const [newBankName, setNewBankName] = useState(user?.bankName || "");
+  const [newBankAccount, setNewBankAccount] = useState(user?.bankAccount || "");
+  const [newBankAccountName, setNewBankAccountName] = useState(
+    user?.bankAccountName || ""
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const [newImageFile, setNewImageFile] = useState(null);
@@ -42,7 +47,13 @@ function ProfilePage() {
   };
 
   const updateProfileName = async () => {
-    const response = await updateUserProfile(newName, newUsername);
+    const response = await updateUserProfile(
+      newName,
+      newUsername,
+      newBankName,
+      newBankAccount,
+      newBankAccountName
+    );
     if (!response.success) {
       throw new Error("ไม่สามารถอัพเดทโปรไฟล์ได้");
     }
@@ -179,6 +190,59 @@ function ProfilePage() {
             value={user?.email}
             disabled
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="bankName"
+            className="block text-sm font-medium text-gray-700"
+          >
+            ชื่อธนาคาร
+          </label>
+          <input
+            type="text"
+            id="bankName"
+            value={isEditing ? newBankName : user?.bankName}
+            onChange={(e) => setNewBankName(e.target.value)}
+            disabled={!isEditing}
+            placeholder="กรุณากรอกชื่อธนาคาร"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="bankAccount"
+            className="block text-sm font-medium text-gray-700"
+          >
+            เลขบัญชีธนาคาร
+          </label>
+          <input
+            type="text"
+            id="bankAccount"
+            value={isEditing ? newBankAccount : user?.bankAccount}
+            onChange={(e) => setNewBankAccount(e.target.value)}
+            disabled={!isEditing}
+            placeholder="กรุณากรอกเลขบัญชีธนาคาร"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="bankAccountName"
+            className="block text-sm font-medium text-gray-700"
+          >
+            ชื่อบัญชี
+          </label>
+          <input
+            type="text"
+            id="bankAccountName"
+            value={isEditing ? newBankAccountName : user?.bankAccountName}
+            onChange={(e) => setNewBankAccountName(e.target.value)}
+            disabled={!isEditing}
+            placeholder="กรุณากรอกชื่อบัญชี"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:text-gray-500"
           />
         </div>
       </div>

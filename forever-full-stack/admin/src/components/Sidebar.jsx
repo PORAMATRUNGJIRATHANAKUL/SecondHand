@@ -21,6 +21,23 @@ const Sidebar = () => {
           />
           <p className="hidden md:block">รายการสินค้า</p>
         </NavLink>
+
+        <NavLink
+          className={({ isActive }) => `
+            flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l
+            hover:bg-gray-50 transition-colors
+            ${isActive ? "bg-gray-100" : ""}
+          `}
+          to="/bank"
+        >
+          <img
+            className="w-5 h-5"
+            src={assets.bank_icon}
+            alt="ไอคอนบัญชีร้าน"
+          />
+          <p className="hidden md:block">บัญชีร้าน</p>
+        </NavLink>
+
         <NavLink
           className={({ isActive }) => `
             flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l

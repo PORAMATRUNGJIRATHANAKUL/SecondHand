@@ -10,6 +10,7 @@ import Orders from "./pages/Orders";
 import Review from "./pages/Review";
 import Qrcode from "./pages/Qrcode";
 import Login from "./components/Login";
+import BankPage from "./pages/ฺBankpage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Reportproblem from "./pages/Reportproblem";
@@ -74,6 +75,10 @@ const App = () => {
                   element={
                     <Reportproblem token={token} searchQuery={searchQuery} />
                   }
+                />
+                <Route
+                  path="/bank"
+                  element={<BankPage token={token} searchQuery={searchQuery} />}
                 />
               </Routes>
             </div>

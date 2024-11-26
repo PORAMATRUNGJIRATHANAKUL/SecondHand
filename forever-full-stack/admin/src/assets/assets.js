@@ -6,6 +6,7 @@ import parcel_icon from "./parcel_icon.svg";
 import review_icon from "./review_icon.png";
 import logo_qrcode from "./logo_qrcode.png";
 import issue_icon from "./issue_icon.png";
+import bank_icon from "./bank_icon.png";
 export const assets = {
   logo,
   add_icon,
@@ -15,4 +16,5 @@ export const assets = {
   review_icon,
   logo_qrcode,
   issue_icon,
+  bank_icon,
 };

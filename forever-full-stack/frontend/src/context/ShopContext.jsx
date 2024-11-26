@@ -39,16 +39,37 @@ const ShopContextProvider = (props) => {
     return response.data.user;
   };
 
-  const updateUserProfile = async (name, displayName) => {
-    const response = await axios.put(
-      `${backendUrl}/api/user/updateUserProfile`,
-      { name, displayName },
-      {
-        headers: { token },
+  const updateUserProfile = async (
+    name,
+    displayName,
+    bankName,
+    bankAccount,
+    bankAccountName
+  ) => {
+    try {
+      const response = await axios.put(
+        `${backendUrl}/api/user/updateUserProfile`,
+        {
+          name,
+          displayName,
+          bankName,
+          bankAccount,
+          bankAccountName,
+        },
+        {
+          headers: { token },
+        }
+      );
+
+      if (response.data.success) {
+        await fetchUserProfile(token);
       }
-    );
-    fetchUserProfile(token);
-    return response.data.user;
+      return response.data;
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("ไม่สามารถอัพเดทโปรไฟล์ได้");
+      return { success: false };
+    }
   };
 
   const fetchUserProfile = async (token) => {
