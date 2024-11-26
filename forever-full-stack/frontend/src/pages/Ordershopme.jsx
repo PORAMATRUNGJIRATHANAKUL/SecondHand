@@ -10,6 +10,11 @@ const Ordershopme = ({ searchQuery }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showQRProof, setShowQRProof] = useState(false);
   const [showProducts, setShowProducts] = useState(false);
+  const [showShippingModal, setShowShippingModal] = useState(false);
+  const [shippingInfo, setShippingInfo] = useState({
+    trackingNumber: "",
+    shippingProvider: "",
+  });
 
   const fetchAllOrders = async () => {
     if (!token) {
@@ -134,6 +139,30 @@ const Ordershopme = ({ searchQuery }) => {
       Beige: "เบจ",
     };
     return colorNames[colorName] || colorName;
+  };
+
+  const updateShippingInfo = async (orderId) => {
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/order/shipping`,
+        {
+          orderId,
+          ...shippingInfo,
+        },
+        { headers: { token } }
+      );
+
+      if (response.data.success) {
+        toast.success("อัพเดทข้อมูลการจัดส่งสำเร็จ");
+        setShowShippingModal(false);
+        fetchAllOrders();
+      } else {
+        toast.error("ไม่สามารถอัพเดทข้อมูลการจัดส่งได้");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง");
+    }
   };
 
   return (
@@ -273,21 +302,51 @@ const Ordershopme = ({ searchQuery }) => {
 
               {/* สถานะการจัดส่ง */}
               <div className="mt-4 border-t pt-4">
-                <div className="flex justify-between items-center">
-                  <select
-                    onChange={(event) => statusHandler(event, order._id)}
-                    value={order.status}
-                    className="w-full p-2 border rounded bg-gray-50 font-medium"
-                    disabled={order.status === "ได้รับสินค้าแล้ว"}
-                  >
-                    <option value="รอดำเนินการ">รอดำเนินการ</option>
-                    <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
-                    <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
-                    <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
-                    <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
-                    <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
-                    <option value="ได้รับสินค้าแล้ว">ได้รับสินค้าแล้ว</option>
-                  </select>
+                <div className="flex flex-col gap-4">
+                  {order.trackingNumber && (
+                    <div className="bg-gray-50 p-3 rounded-md">
+                      <p className="text-sm text-gray-600">ข้อมูลการจัดส่ง:</p>
+                      <p className="font-medium">
+                        เลขพัสดุ: {order.trackingNumber}
+                      </p>
+                      <p className="font-medium">
+                        ขนส่ง: {order.shippingProvider}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-4">
+                    <select
+                      onChange={(event) => statusHandler(event, order._id)}
+                      value={order.status}
+                      className="flex-1 p-2 border rounded bg-gray-50 font-medium"
+                      disabled={order.status === "ได้รับสินค้าแล้ว"}
+                    >
+                      <option value="รอดำเนินการ">รอดำเนินการ</option>
+                      <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
+                      <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
+                      <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
+                      <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
+                      <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
+                      <option value="ได้รับสินค้าแล้ว">ได้รับสินค้าแล้ว</option>
+                    </select>
+
+                    <button
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setShippingInfo({
+                          trackingNumber: order.trackingNumber || "",
+                          shippingProvider: order.shippingProvider || "",
+                        });
+                        setShowShippingModal(true);
+                      }}
+                      className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
+                    >
+                      {order.trackingNumber
+                        ? "ข้อมูลจัดส่ง"
+                        : "เพิ่มข้อมูลจัดส่ง"}
+                    </button>
+                  </div>
                 </div>
 
                 {/* แสดงสถานะเมื่อลูกค้าได้รับสินค้าแล้ว */}
@@ -387,6 +446,93 @@ const Ordershopme = ({ searchQuery }) => {
               >
                 ปิด
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showShippingModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-medium">ข้อมูลการจัดส่ง</h3>
+              <button
+                onClick={() => setShowShippingModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  เลขพัสดุ
+                </label>
+                <input
+                  type="text"
+                  value={shippingInfo.trackingNumber}
+                  onChange={(e) =>
+                    setShippingInfo((prev) => ({
+                      ...prev,
+                      trackingNumber: e.target.value,
+                    }))
+                  }
+                  placeholder="กรอกเลขพัสดุ"
+                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  บริษัทขนส่ง
+                </label>
+                <select
+                  value={shippingInfo.shippingProvider}
+                  onChange={(e) =>
+                    setShippingInfo((prev) => ({
+                      ...prev,
+                      shippingProvider: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">เลือกบริษัทขนส่ง</option>
+                  <option value="Kerry Express">Kerry Express</option>
+                  <option value="Flash Express">Flash Express</option>
+                  <option value="Thailand Post">ไปรษณีย์ไทย</option>
+                  <option value="J&T Express">J&T Express</option>
+                  <option value="Ninja Van">Ninja Van</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => updateShippingInfo(selectedOrder._id)}
+                  className="flex-1 bg-black text-white py-2.5 rounded-md hover:bg-gray-800 transition-colors"
+                >
+                  บันทึกข้อมูล
+                </button>
+                <button
+                  onClick={() => setShowShippingModal(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  ยกเลิก
+                </button>
+              </div>
             </div>
           </div>
         </div>

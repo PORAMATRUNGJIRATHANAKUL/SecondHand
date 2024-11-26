@@ -9,6 +9,7 @@ import {
   getQRCodePaymentList,
   deleteOrder,
   getOrdersByUserId,
+  updateShippingInfo,
 } from "../controllers/orderController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
@@ -37,5 +38,8 @@ orderRouter.get("/my-orders", authUser, getOrdersByUserId);
 
 // QR Code Payment List
 orderRouter.get("/qr-payment-list", authUser, getQRCodePaymentList);
+
+// Shipping Features
+orderRouter.post("/shipping", authUser, updateShippingInfo);
 
 export default orderRouter;

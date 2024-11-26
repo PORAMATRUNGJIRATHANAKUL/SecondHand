@@ -162,7 +162,7 @@ const Orders = () => {
                 }}
                 className="border px-4 py-2 text-sm font-medium rounded-sm hover:bg-gray-50"
               >
-                ติดตามพัสดุ
+                รายละเอียดสินค้า
               </button>
             </div>
           </div>
@@ -179,13 +179,80 @@ const Orders = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">ติดตามสถานะพัสดุ</h3>
+              <h3 className="text-lg font-medium">รายละเอียดสินค้า</h3>
               <button
                 onClick={() => setShowTrackingModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
                 ✕
               </button>
+            </div>
+
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="space-y-2">
+                {selectedOrder.trackingNumber ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-black bg-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                        />
+                      </svg>
+                      <span className="font-medium">เลขพัสดุ:</span>
+                      <span className="text-black font-medium">
+                        {selectedOrder.trackingNumber}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-black bg-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                        />
+                      </svg>
+                      <span className="font-medium">ขนส่งโดย:</span>
+                      <span className="text-black font-medium">
+                        {selectedOrder.shippingProvider}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-gray-500 text-center py-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-8 w-8 mx-auto mb-2 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                      />
+                    </svg>
+                    <p>ยังไม่มีข้อมูลการจัดส่ง</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -236,12 +303,14 @@ const Orders = () => {
             </div>
 
             {selectedOrder.status !== "ได้รับสินค้าแล้ว" && (
-              <button
-                onClick={() => updateOrderStatus(selectedOrder._id)}
-                className="mt-4 w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800"
-              >
-                ได้รับสินค้าแล้ว
-              </button>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => updateOrderStatus(selectedOrder._id)}
+                  className="mt-4 px-6 bg-black text-white py-2 rounded-lg hover:bg-gray-800"
+                >
+                  ได้รับสินค้าแล้ว
+                </button>
+              </div>
             )}
           </div>
         </div>

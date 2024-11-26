@@ -238,19 +238,30 @@ const userOrders = async (req, res) => {
 // update order status from Admin Panel
 const updateStatus = async (req, res) => {
   try {
-    const { orderId, status, payment } = req.body; // เพิ่ม payment
+    const { orderId, status, payment, trackingNumber, shippingProvider } =
+      req.body;
 
-    // อัพเดททั้งสถานะและการชำระเงิน
     const updateData = {
       status,
-      ...(payment !== undefined && { payment }), // เพิ่ม payment ถ้ามีการส่งมา
+      ...(payment !== undefined && { payment }),
+      ...(trackingNumber && { trackingNumber }),
+      ...(shippingProvider && { shippingProvider }),
     };
 
-    await orderModel.findByIdAndUpdate(orderId, updateData);
-    res.json({ success: true, message: "อัพเดทสถานะสำเร็จ" });
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      orderId,
+      updateData,
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "อัพเดทข้อมูลสำเร็จ",
+      order: updatedOrder,
+    });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: "เกิดข้อผิดพลาดในการอัพเดทสถานะ" });
+    res.json({ success: false, message: "เกิดข้อผิดพลาดในการอัพเดทส้อมูล" });
   }
 };
 
@@ -321,6 +332,42 @@ const getOrdersByUserId = async (req, res) => {
   }
 };
 
+// เพิ่มฟังก์ชันใหม่สำหรับอัพเดทข้อมูลการจัดส่ง
+const updateShippingInfo = async (req, res) => {
+  try {
+    const { orderId, trackingNumber, shippingProvider } = req.body;
+
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      orderId,
+      {
+        trackingNumber,
+        shippingProvider,
+        status: "จัดส่งแล้ว", // อัพเดทสถานะเป็นจัดส่งแล้วอัตโนมัติ
+      },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบออเดอร์ที่ระบุ",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "อัพเดทข้อมูลการจัดส่งสำเร็จ",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง",
+    });
+  }
+};
+
 export {
   placeOrder,
   placeOrderQRCode,
@@ -331,4 +378,5 @@ export {
   getQRCodePaymentList,
   deleteOrder,
   getOrdersByUserId,
+  updateShippingInfo,
 };

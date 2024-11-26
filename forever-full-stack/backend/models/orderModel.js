@@ -8,8 +8,10 @@ const orderSchema = new mongoose.Schema({
   status: { type: String, required: true, default: "Order Placed" },
   paymentMethod: { type: String, required: true },
   payment: { type: Boolean, required: true, default: false },
-  paymentProof: { type: String, default: null }, // เพิ่มฟิลด์นี้สำหรับ QR Code payment proof
+  paymentProof: { type: String, default: null },
   paymentDate: { type: Date },
+  trackingNumber: { type: String, default: null },
+  shippingProvider: { type: String, default: null },
   date: { type: Number, required: true },
 });
 
