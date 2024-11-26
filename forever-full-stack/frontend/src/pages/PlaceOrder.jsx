@@ -26,7 +26,7 @@ const PlaceOrder = () => {
     province: "",
     district: "",
     postalCode: "",
-    country: "",
+    country: "ประเทศไทย",
     phoneNumber: "",
   });
   const [isAddressDropdownOpen, setIsAddressDropdownOpen] = useState(false);
@@ -259,38 +259,98 @@ const PlaceOrder = () => {
   const handleAddAddress = async (e) => {
     e.preventDefault();
     try {
-      let response;
-      if (newAddressData._id) {
-        // กรณีแก้ไขที่อยู่
-        response = await axios.put(
-          `${backendUrl}/api/user/address/${newAddressData._id}`,
-          newAddressData,
-          { headers: { token } }
-        );
-        toast.success("แก้ไขที่อยู่เรียบร้อย");
-      } else {
-        // กรณีเพิ่มที่อยู่ใหม่
-        response = await axios.post(
-          `${backendUrl}/api/user/address`,
-          newAddressData,
-          { headers: { token } }
-        );
-        toast.success("เพิ่มที่อยู่เรียบร้อย");
-      }
+      const response = await axios.post(
+        `${backendUrl}/api/user/address`,
+        newAddressData,
+        {
+          headers: { token },
+        }
+      );
 
       if (response.data.success) {
-        // อัพเดทรายการที่อยู่
-        const updatedAddresses = await axios.get(
-          `${backendUrl}/api/user/addresses`,
-          { headers: { token } }
-        );
-        setAddresses(updatedAddresses.data);
+        toast.success("เพิ่มที่อยู่สำเร็จ");
+        setAddresses([...addresses, response.data.address]);
+        setSelectedAddress(response.data.address);
         setShowAddressForm(false);
-        resetForm();
+        setNewAddressData({
+          name: "",
+          addressLine1: "",
+          addressLine2: "",
+          province: "",
+          district: "",
+          postalCode: "",
+          country: "Thailand",
+          phoneNumber: "",
+        });
+      } else {
+        toast.error(response.data.message || "เกิดข้อผิดพลาดในการเพิ่มที่อยู่");
       }
     } catch (error) {
-      console.error(error);
-      toast.error("ไม่สามารถบันทึกที่อยู่ได้");
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "เกิดข้อผิดพลาดในการเพิ่มที่อยู่";
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleUpdateAddress = async (addressId) => {
+    try {
+      const response = await axios.put(
+        `${backendUrl}/api/user/address/${addressId}`,
+        newAddressData,
+        {
+          headers: { token },
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("แก้ไขที่อยู่สำเร็จ");
+        setAddresses(
+          addresses.map((addr) =>
+            addr._id === addressId ? response.data.address : addr
+          )
+        );
+        if (selectedAddress?._id === addressId) {
+          setSelectedAddress(response.data.address);
+        }
+        setShowAddressForm(false);
+      } else {
+        toast.error(response.data.message || "เกิดข้อผิดพลาดในการแก้ไขที่อยู่");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "เกิดข้อผิดพลาดในการแก้ไขที่อยู่";
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleDeleteAddress = async (addressId) => {
+    try {
+      const response = await axios.delete(
+        `${backendUrl}/api/user/address/${addressId}`,
+        {
+          headers: { token },
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("ลบที่อยู่สำเร็จ");
+        setAddresses(addresses.filter((addr) => addr._id !== addressId));
+        if (selectedAddress?._id === addressId) {
+          setSelectedAddress(null);
+        }
+      } else {
+        toast.error(response.data.message || "เกิดข้อผิดพลาดในการลบที่อยู่");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "เกิดข้อผิดพลาดในการลบที่อยู่";
+      toast.error(errorMessage);
     }
   };
 
@@ -302,7 +362,7 @@ const PlaceOrder = () => {
       province: "",
       district: "",
       postalCode: "",
-      country: "",
+      country: "Thailand",
       phoneNumber: "",
     });
   };
@@ -409,6 +469,9 @@ const PlaceOrder = () => {
                           {`${address.district}, ${address.province} ${address.postalCode}`}
                         </p>
                         <p className="text-sm text-gray-600">
+                          {address.country}
+                        </p>
+                        <p className="text-sm text-gray-600">
                           โทร: {address.phoneNumber}
                         </p>
                       </div>
@@ -427,7 +490,49 @@ const PlaceOrder = () => {
                             setIsAddressDropdownOpen(false);
                           }}
                         >
-                          แก้ไข
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                        </div>
+
+                        {/* ปุ่มลบ */}
+                        <div
+                          className="hidden group-hover:block text-sm text-red-600 hover:text-red-800 cursor-pointer"
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "คุณต้องการลบที่อยู่นี้ใช่หรือไม่?"
+                              )
+                            ) {
+                              handleDeleteAddress(address._id);
+                            }
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
                         </div>
 
                         {/* ปุ่มตั้งค่าเริ่มต้น */}
@@ -496,7 +601,7 @@ const PlaceOrder = () => {
               >
                 <p
                   className={`min-w-3.5 h-3.5 border rounded-full ${
-                    method === "ชระเงินปลายทาง" ? "bg-green-400" : ""
+                    method === "ชระเงินลายทาง" ? "bg-green-400" : ""
                   }`}
                 ></p>
                 <p className="text-gray-500 text-sm font-medium mx-4">

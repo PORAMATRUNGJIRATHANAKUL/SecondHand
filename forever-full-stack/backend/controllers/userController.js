@@ -166,7 +166,59 @@ const updateUserProfile = async (req, res) => {
 const addAddress = async (req, res) => {
   try {
     const userId = req.userId;
-    const addressData = { ...req.body, userId };
+    const {
+      name,
+      addressLine1,
+      addressLine2,
+      district,
+      province,
+      postalCode,
+      country,
+      phoneNumber,
+    } = req.body;
+
+    // ตรวจสอบข้อมูลที่จำเป็น
+    if (
+      !name ||
+      !addressLine1 ||
+      !district ||
+      !province ||
+      !postalCode ||
+      !phoneNumber
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน",
+      });
+    }
+
+    // ตรวจสอบรูปแบบรหัสไปรษณีย์
+    if (!/^[0-9]{5}$/.test(postalCode)) {
+      return res.status(400).json({
+        success: false,
+        message: "รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก",
+      });
+    }
+
+    // ตรวจสอบรูปแบบเบอร์โทรศัพท์
+    if (!/^[0-9]{9,10}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: "เบอร์โทรศัพท์ไม่ถูกต้อง",
+      });
+    }
+
+    const addressData = {
+      userId,
+      name,
+      addressLine1,
+      addressLine2,
+      district,
+      province,
+      postalCode,
+      country: country || "ประเทศไทย",
+      phoneNumber,
+    };
 
     // ถ้าเป็นที่อยู่แรก ให้เป็น default
     const existingAddresses = await addressModel.countDocuments({ userId });
@@ -182,7 +234,7 @@ const addAddress = async (req, res) => {
     console.log(error);
     res.status(400).json({
       success: false,
-      message: "เกิดข้อผิดพลาดในการเพิ่มที่อยู่",
+      message: error.message || "เกิดข้อผิดพลาดในการเพิ่มที่อยู่",
     });
   }
 };
@@ -192,11 +244,62 @@ const updateAddress = async (req, res) => {
   try {
     const { addressId } = req.params;
     const userId = req.userId;
+    const {
+      name,
+      addressLine1,
+      addressLine2,
+      district,
+      province,
+      postalCode,
+      country,
+      phoneNumber,
+    } = req.body;
+
+    // ตรวจสอบข้อมูลที่จำเป็น
+    if (
+      !name ||
+      !addressLine1 ||
+      !district ||
+      !province ||
+      !postalCode ||
+      !phoneNumber
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน",
+      });
+    }
+
+    // ตรวจสอบรูปแบบข้อมูล
+    if (!/^[0-9]{5}$/.test(postalCode)) {
+      return res.status(400).json({
+        success: false,
+        message: "รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก",
+      });
+    }
+
+    if (!/^[0-9]{9,10}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: "เบอร์โทรศัพท์ไม่ถูกต้อง",
+      });
+    }
+
+    const updateData = {
+      name,
+      addressLine1,
+      addressLine2,
+      district,
+      province,
+      postalCode,
+      country: country || "Thailand",
+      phoneNumber,
+    };
 
     const address = await addressModel.findOneAndUpdate(
       { _id: addressId, userId },
-      req.body,
-      { new: true }
+      updateData,
+      { new: true, runValidators: true }
     );
 
     if (!address) {
@@ -211,7 +314,7 @@ const updateAddress = async (req, res) => {
     console.log(error);
     res.status(400).json({
       success: false,
-      message: "เกิดข้อผิดพลาดในการแก้ไขที่อยู่",
+      message: error.message || "เกิดข้อผิดพลาดในการแก้ไขที่อยู่",
     });
   }
 };
