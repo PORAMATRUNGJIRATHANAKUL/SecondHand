@@ -29,6 +29,7 @@ const PlaceOrder = () => {
     country: "",
     phoneNumber: "",
   });
+  const [isAddressDropdownOpen, setIsAddressDropdownOpen] = useState(false);
 
   const {
     navigate,
@@ -258,35 +259,77 @@ const PlaceOrder = () => {
   const handleAddAddress = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        `${backendUrl}/api/user/addresses`,
-        newAddressData,
-        { headers: { token } }
-      );
+      let response;
+      if (newAddressData._id) {
+        // กรณีแก้ไขที่อยู่
+        response = await axios.put(
+          `${backendUrl}/api/user/address/${newAddressData._id}`,
+          newAddressData,
+          { headers: { token } }
+        );
+        toast.success("แก้ไขที่อยู่เรียบร้อย");
+      } else {
+        // กรณีเพิ่มที่อยู่ใหม่
+        response = await axios.post(
+          `${backendUrl}/api/user/address`,
+          newAddressData,
+          { headers: { token } }
+        );
+        toast.success("เพิ่มที่อยู่เรียบร้อย");
+      }
+
       if (response.data.success) {
-        setAddresses([...addresses, response.data.address]);
-        setSelectedAddress(response.data.address);
+        // อัพเดทรายการที่อยู่
+        const updatedAddresses = await axios.get(
+          `${backendUrl}/api/user/addresses`,
+          { headers: { token } }
+        );
+        setAddresses(updatedAddresses.data);
         setShowAddressForm(false);
-        setNewAddressData({
-          name: "",
-          addressLine1: "",
-          addressLine2: "",
-          province: "",
-          district: "",
-          postalCode: "",
-          country: "",
-          phoneNumber: "",
-        });
-        toast.success("เพิ่มที่อยู่สำเร็จ");
+        resetForm();
       }
     } catch (error) {
       console.error(error);
-      toast.error("ไม่สามารถเพิ่มที่อยู่ได้");
+      toast.error("ไม่สามารถบันทึกที่อยู่ได้");
     }
+  };
+
+  const resetForm = () => {
+    setNewAddressData({
+      name: "",
+      addressLine1: "",
+      addressLine2: "",
+      province: "",
+      district: "",
+      postalCode: "",
+      country: "",
+      phoneNumber: "",
+    });
   };
 
   const handleSelectAddress = (address) => {
     setSelectedAddress(address);
+  };
+
+  const handleSetDefaultAddress = async (addressId) => {
+    try {
+      const response = await axios.put(
+        `${backendUrl}/api/user/address/${addressId}/default`,
+        {},
+        { headers: { token } }
+      );
+      if (response.data.success) {
+        const updatedAddresses = addresses.map((addr) => ({
+          ...addr,
+          isDefault: addr._id === addressId,
+        }));
+        setAddresses(updatedAddresses);
+        toast.success("กำหนดที่อยู่หลักเรียบร้อย");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("ไม่สามารถกำหนดที่อยู่หลักได้");
+    }
   };
 
   return (
@@ -303,31 +346,108 @@ const PlaceOrder = () => {
 
           {/* แสดงที่อยู่ที่มีอยู่ */}
           {addresses.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">เลือกที่อยู่จัดส่ง</h3>
-              <div className="space-y-2">
-                {addresses.map((address) => (
-                  <div
-                    key={address._id}
-                    className={`p-3 border rounded-md cursor-pointer ${
-                      selectedAddress?._id === address._id
-                        ? "border-black"
-                        : "border-gray-200"
-                    }`}
-                    onClick={() => handleSelectAddress(address)}
-                  >
-                    <p>{address.addressLine1}</p>
-                    {address.addressLine2 && <p>{address.addressLine2}</p>}
-                    <p>{`${address.district}, ${address.province} ${address.postalCode}`}</p>
-                    <p>โทร: {address.phoneNumber}</p>
-                    {address.isDefault && (
-                      <span className="text-sm text-green-600">
-                        ที่อยู่หลัก
-                      </span>
-                    )}
+            <div className="mb-4 relative">
+              <div
+                onClick={() => setIsAddressDropdownOpen(!isAddressDropdownOpen)}
+                className="w-full p-3 border rounded-md cursor-pointer flex justify-between items-center"
+              >
+                {selectedAddress ? (
+                  <div>
+                    <p>{selectedAddress.name}</p>
+                    <p className="text-sm text-gray-600">
+                      {selectedAddress.addressLine1}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {`${selectedAddress.district}, ${selectedAddress.province} ${selectedAddress.postalCode}`}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      โทร: {selectedAddress.phoneNumber}
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  <span className="text-gray-500">เลือกที่อยู่จัดส่ง</span>
+                )}
+
+                <svg
+                  className={`w-5 h-5 transition-transform ${
+                    isAddressDropdownOpen ? "transform rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </div>
+
+              {/* Dropdown menu */}
+              {isAddressDropdownOpen && (
+                <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {addresses.map((address) => (
+                    <div
+                      key={address._id}
+                      className={`p-3 cursor-pointer hover:bg-gray-50 flex items-center justify-between group ${
+                        selectedAddress?._id === address._id ? "bg-gray-50" : ""
+                      }`}
+                      onClick={() => {
+                        handleSelectAddress(address);
+                        setIsAddressDropdownOpen(false);
+                      }}
+                    >
+                      {/* ข้อมูลที่อยู่ */}
+                      <div className="flex-grow">
+                        <p>{address.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {address.addressLine1}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {`${address.district}, ${address.province} ${address.postalCode}`}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          โทร: {address.phoneNumber}
+                        </p>
+                      </div>
+
+                      {/* ส่วนแสดงสถานะและปุ่มต่างๆ */}
+                      <div
+                        className="flex items-center gap-3 ml-4"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* ปุ่มแก้ไข */}
+                        <div
+                          className="hidden group-hover:block text-sm text-gray-600 hover:text-gray-800 cursor-pointer"
+                          onClick={() => {
+                            setNewAddressData(address);
+                            setShowAddressForm(true);
+                            setIsAddressDropdownOpen(false);
+                          }}
+                        >
+                          แก้ไข
+                        </div>
+
+                        {/* ปุ่มตั้งค่าเริ่มต้น */}
+                        {address.isDefault ? (
+                          <span className="text-sm text-gray-500">
+                            ค่าเริ่มต้น
+                          </span>
+                        ) : (
+                          <div
+                            className="hidden group-hover:block text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+                            onClick={() => handleSetDefaultAddress(address._id)}
+                          >
+                            ตั้งเป็นค่าเริ่มต้น
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -376,7 +496,7 @@ const PlaceOrder = () => {
               >
                 <p
                   className={`min-w-3.5 h-3.5 border rounded-full ${
-                    method === "ชำระเงินปลายทาง" ? "bg-green-400" : ""
+                    method === "ชระเงินปลายทาง" ? "bg-green-400" : ""
                   }`}
                 ></p>
                 <p className="text-gray-500 text-sm font-medium mx-4">
