@@ -110,9 +110,8 @@ const Ordershopme = ({ searchQuery }) => {
 
     const searchLower = searchQuery.toLowerCase().trim();
 
-    const fullName =
-      `${order.address.firstName} ${order.address.lastName}`.toLowerCase();
-    if (fullName.includes(searchLower)) return true;
+    const name = order.address.name.toLowerCase();
+    if (name.includes(searchLower)) return true;
 
     const hasMatchingItem = order.items.some((item) =>
       item.name.toLowerCase().includes(searchLower)
@@ -254,11 +253,17 @@ const Ordershopme = ({ searchQuery }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-600 mb-1">ที่อยู่จัดส่ง:</p>
-                  <p>{order.address.street}</p>
+                  <p className="font-medium">{order.address.name}</p>
+                  <p>{order.address.addressLine1}</p>
+                  {order.address.addressLine2 && (
+                    <p>{order.address.addressLine2}</p>
+                  )}
                   <p>
-                    {order.address.city} {order.address.state}{" "}
-                    {order.address.country} {order.address.zipcode}
+                    {order.address.district} {order.address.province}{" "}
+                    {order.address.postalCode}
                   </p>
+                  <p>{order.address.country}</p>
+                  <p className="mt-1">โทร: {order.address.phoneNumber}</p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">

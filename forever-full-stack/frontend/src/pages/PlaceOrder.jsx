@@ -108,7 +108,7 @@ const PlaceOrder = () => {
         }
 
         let orderData = {
-          address: formData,
+          address: selectedAddress,
           items: orderItems,
           amount: getCartAmount() + delivery_fee,
           paymentMethod: method,
@@ -146,6 +146,7 @@ const PlaceOrder = () => {
       token,
       setCartItems,
       navigate,
+      selectedAddress,
     ]
   );
 
@@ -584,7 +585,7 @@ const PlaceOrder = () => {
               >
                 <p
                   className={`min-w-3.5 h-3.5 border rounded-full ${
-                    method === "Scan QR Code" ? "bg-green-400" : ""
+                    method === "QR Code" ? "bg-green-400" : ""
                   }`}
                 ></p>
                 <p className="text-gray-500 text-sm font-medium mx-4">
@@ -594,14 +595,15 @@ const PlaceOrder = () => {
               </div>
               <div
                 onClick={() => {
-                  setMethod("ชำระเงินปลายทาง");
-                  setPaymentProofPath(null);
+                  setMethod("cod");
+                  setPaymentProof(null);
+                  setPaymentProofFileName(null);
                 }}
                 className="flex items-center gap-3 border p-2 px-3 cursor-pointer"
               >
                 <p
                   className={`min-w-3.5 h-3.5 border rounded-full ${
-                    method === "ชระเงินลายทาง" ? "bg-green-400" : ""
+                    method === "cod" ? "bg-green-400" : ""
                   }`}
                 ></p>
                 <p className="text-gray-500 text-sm font-medium mx-4">
