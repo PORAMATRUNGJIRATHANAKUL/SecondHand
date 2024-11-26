@@ -3,11 +3,60 @@ import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import { assets } from "../assets/assets";
 import CartTotal from "../components/CartTotal";
+import axios from "axios";
+
+const Modal = ({ isOpen, onClose, message }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg relative max-w-md w-full mx-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">แจ้งเตือน</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <p className="text-gray-600">{message}</p>
+      </div>
+    </div>
+  );
+};
 
 const Cart = () => {
   const { products, currency, cartItems, updateQuantity, navigate } =
     useContext(ShopContext);
   const [cartData, setCartData] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const response = await axios.post("/api/cart/get");
+        if (response.data.success) {
+          const cartFromServer = response.data.cart;
+        }
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+      }
+    };
+
+    fetchCart();
+  }, []);
 
   useEffect(() => {
     if (products.length > 0) {
@@ -33,6 +82,41 @@ const Cart = () => {
     }
   }, [cartItems, products]);
 
+  const handleQuantityChange = (
+    item,
+    productData,
+    newValue,
+    isTyping = false
+  ) => {
+    if (isTyping && (newValue === "" || newValue === "0")) {
+      updateQuantity(item._id, item.size, 1);
+      return;
+    }
+
+    const newQuantity = Number(newValue);
+
+    if (isNaN(newQuantity) || newQuantity < 1) return;
+
+    const stockItem = productData.stockItems.find(
+      (stock) => stock.size === item.size && stock.color === item.color
+    );
+
+    if (!stockItem || newQuantity > stockItem.stock) {
+      setModalMessage(
+        `ไม่สามารถเพิ่มจำนวนสินค้าได้ เนื่องจากสินค้า ${
+          productData.name
+        } ไซส์ ${item.size} มีสินค้าคงเหลือเพียง ${stockItem?.stock || 0} ชิ้น`
+      );
+      setIsModalOpen(true);
+      if (isTyping) {
+        updateQuantity(item._id, item.size, item.quantity);
+      }
+      return;
+    }
+
+    updateQuantity(item._id, item.size, newQuantity);
+  };
+
   return (
     <div className="border-t pt-14">
       <div className="text-2xl mb-3">
@@ -43,6 +127,9 @@ const Cart = () => {
         {cartData.map((item, index) => {
           const productData = products.find(
             (product) => product._id === item._id
+          );
+          const stockItem = productData.stockItems.find(
+            (stock) => stock.size === item.size && stock.color === item.color
           );
 
           return (
@@ -95,18 +182,41 @@ const Cart = () => {
                   </div>
                 </div>
               </div>
-              <input
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === "" || value === "0") return;
-                  updateQuantity(item._id, item.size, Number(value));
-                }}
-                className="border max-w-10 sm:max-w-20 px-1 sm:px-2 py-1"
-                type="number"
-                min={1}
-                defaultValue={item.quantity}
-                aria-label="จำนวนสินค้า"
-              />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    handleQuantityChange(item, productData, item.quantity - 1)
+                  }
+                  className="w-8 h-8 flex items-center justify-center border rounded-md hover:bg-gray-100"
+                  disabled={item.quantity <= 1}
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  value={item.quantity}
+                  onChange={(e) =>
+                    handleQuantityChange(
+                      item,
+                      productData,
+                      e.target.value,
+                      true
+                    )
+                  }
+                  className="w-12 text-center border rounded-md px-1"
+                  min="1"
+                  max={stockItem?.stock || 1}
+                />
+                <button
+                  onClick={() =>
+                    handleQuantityChange(item, productData, item.quantity + 1)
+                  }
+                  className="w-8 h-8 flex items-center justify-center border rounded-md hover:bg-gray-100"
+                  disabled={item.quantity >= (stockItem?.stock || 1)}
+                >
+                  +
+                </button>
+              </div>
               <img
                 onClick={() => updateQuantity(item._id, item.size, 0)}
                 className="w-4 mr-4 sm:w-5 cursor-pointer"
@@ -117,6 +227,12 @@ const Cart = () => {
           );
         })}
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        message={modalMessage}
+      />
 
       <div className="flex justify-end my-20">
         <div className="w-full sm:w-[450px]">

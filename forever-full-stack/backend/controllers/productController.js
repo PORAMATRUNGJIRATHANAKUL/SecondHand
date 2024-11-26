@@ -122,7 +122,7 @@ const removeProduct = async (req, res) => {
   }
 };
 
-// ลบสินค้าโดยผู้ดูแลระบบ
+// ลบสินค้าโดยผู้ดูแลระ���บ
 const removeProductAdmin = async (req, res) => {
   try {
     const productId = req.body.id;
@@ -137,8 +137,13 @@ const removeProductAdmin = async (req, res) => {
 // ดึงข้อมูลสินค้าเดี่ยว
 const singleProduct = async (req, res) => {
   try {
-    const { productId } = req.body;
+    const productId = req.params.id;
     const product = await productModel.findById(productId);
+
+    if (!product) {
+      return res.json({ success: false, message: "ไม่พบสินค้า" });
+    }
+
     res.json({ success: true, product });
   } catch (error) {
     console.log(error);
