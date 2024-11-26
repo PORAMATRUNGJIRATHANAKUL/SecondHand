@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
 import { v2 as cloudinary } from "cloudinary";
+import addressModel from "../models/addressModel.js";
 
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET);
@@ -161,6 +162,139 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+// เพิ่มที่อยู่ใหม่
+const addAddress = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const addressData = { ...req.body, userId };
+
+    // ถ้าเป็นที่อยู่แรก ให้เป็น default
+    const existingAddresses = await addressModel.countDocuments({ userId });
+    if (existingAddresses === 0) {
+      addressData.isDefault = true;
+    }
+
+    const newAddress = new addressModel(addressData);
+    await newAddress.save();
+
+    res.json({ success: true, address: newAddress });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการเพิ่มที่อยู่",
+    });
+  }
+};
+
+// แก้ไขที่อยู่
+const updateAddress = async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const userId = req.userId;
+
+    const address = await addressModel.findOneAndUpdate(
+      { _id: addressId, userId },
+      req.body,
+      { new: true }
+    );
+
+    if (!address) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบที่อยู่ที่ต้องการแก้ไข",
+      });
+    }
+
+    res.json({ success: true, address });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการแก้ไขที่อยู่",
+    });
+  }
+};
+
+// ลบที่อยู่
+const deleteAddress = async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const userId = req.userId;
+
+    const address = await addressModel.findOneAndDelete({
+      _id: addressId,
+      userId,
+    });
+
+    if (!address) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบที่อยู่ที่ต้องการลบ",
+      });
+    }
+
+    // ถ้าลบที่อยู่ default ให้กำหนดที่อยู่แรกเป็น default แทน
+    if (address.isDefault) {
+      const firstAddress = await addressModel.findOne({ userId });
+      if (firstAddress) {
+        firstAddress.isDefault = true;
+        await firstAddress.save();
+      }
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการลบที่อยู่",
+    });
+  }
+};
+
+// ดึงที่อยู่ทั้งหมดของผู้ใช้
+const getAddresses = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const addresses = await addressModel.find({ userId });
+    res.json({ success: true, addresses });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการดึงข้อมูลที่อยู่",
+    });
+  }
+};
+
+// กำหนดที่อยู่เริ่มต้น
+const setDefaultAddress = async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const userId = req.userId;
+
+    const address = await addressModel.findOne({ _id: addressId, userId });
+    if (!address) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบที่อยู่ที่ต้องการกำหนดเป็นค่าเริ่มต้น",
+      });
+    }
+
+    address.isDefault = true;
+    await address.save(); // This will trigger the pre-save middleware
+
+    res.json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการกำหนดที่อยู่เริ่มต้น",
+    });
+  }
+};
+
 export {
   loginUser,
   registerUser,
@@ -168,4 +302,9 @@ export {
   updateProfileImage,
   updateUserProfile,
   getUserProfile,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  getAddresses,
+  setDefaultAddress,
 };

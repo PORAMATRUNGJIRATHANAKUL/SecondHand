@@ -6,6 +6,11 @@ import {
   updateProfileImage,
   updateUserProfile,
   getUserProfile,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  getAddresses,
+  setDefaultAddress,
 } from "../controllers/userController.js";
 import upload from "../middleware/multer.js";
 import authUser from "../middleware/auth.js";
@@ -23,4 +28,9 @@ userRouter.put(
 );
 userRouter.put("/updateUserProfile", authUser, updateUserProfile);
 userRouter.get("/me", authUser, getUserProfile);
+userRouter.post("/address", authUser, addAddress);
+userRouter.put("/address/:addressId", authUser, updateAddress);
+userRouter.delete("/address/:addressId", authUser, deleteAddress);
+userRouter.get("/addresses", authUser, getAddresses);
+userRouter.put("/address/:addressId/default", authUser, setDefaultAddress);
 export default userRouter;
