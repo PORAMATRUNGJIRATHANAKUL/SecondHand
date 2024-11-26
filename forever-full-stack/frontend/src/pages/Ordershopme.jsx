@@ -294,7 +294,7 @@ const Ordershopme = ({ searchQuery }) => {
                       onClick={() => viewQRProof(order)}
                       className="bg-black  hover:bg-gray-800 text-white px-3 py-1.5 rounded text-sm w-full transition-colors"
                     >
-                      ดูสลิป
+                      ตรวจสอบการชำระเงิน
                     </button>
                   )}
                 </div>

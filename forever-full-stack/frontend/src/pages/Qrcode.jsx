@@ -109,9 +109,9 @@ const Qrcode = ({ searchQuery }) => {
               <button
                 onClick={() => viewPaymentProof(payment)}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm"
-                title="ดูสลิปการโอนเงิน"
+                title="ดรวจสอบการชำระเงิน"
               >
-                ดูสลิป
+                ตรวจสอบการชำระเงิน
               </button>
             </div>
             <div className="text-center">

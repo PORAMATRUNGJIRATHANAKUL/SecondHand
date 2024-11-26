@@ -190,7 +190,7 @@ const Orders = ({ token, searchQuery }) => {
                   onClick={() => viewQRProof(order)}
                   className="mt-2 bg-blue-500 text-white px-2 py-1 rounded text-xs"
                 >
-                  ดูสลิป
+                  ตรวจสอบการชำระเงิน
                 </button>
               )}
               <p>วันที่: {new Date(order.date).toLocaleDateString()}</p>

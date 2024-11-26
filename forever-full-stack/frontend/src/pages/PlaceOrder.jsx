@@ -417,7 +417,7 @@ const PlaceOrder = () => {
                     onClick={() => setShowSlipPreview(true)}
                     className="text-black hover:text-gray-800 text-sm"
                   >
-                    ดูสลิป
+                    ตววจสอบการชำระเงิน
                   </button>
                 </div>
               )}
