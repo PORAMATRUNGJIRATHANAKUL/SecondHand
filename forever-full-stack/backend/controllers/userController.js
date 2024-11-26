@@ -413,6 +413,60 @@ const setDefaultAddress = async (req, res) => {
   }
 };
 
+export const getBanks = async (req, res) => {
+  try {
+    const users = await userModel
+      .find({
+        bankName: { $ne: "" },
+        bankAccount: { $ne: "" },
+        bankAccountName: { $ne: "" },
+      })
+      .select("name bankName bankAccount bankAccountName");
+
+    const banks = users.map((user) => ({
+      id: user._id,
+      name: user.name,
+      bankName: user.bankName,
+      bankAccount: user.bankAccount,
+      bankAccountName: user.bankAccountName,
+    }));
+
+    res.json({ success: true, banks });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteBankInfo = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await userModel.findByIdAndUpdate(
+      userId,
+      {
+        bankName: "",
+        bankAccount: "",
+        bankAccountName: "",
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบข้อมูลผู้ใช้",
+      });
+    }
+
+    res.json({ success: true, message: "ลบข้อมูลธนาคารเรียบร้อย" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการลบข้อมูลธนาคาร",
+    });
+  }
+};
+
 export {
   loginUser,
   registerUser,
