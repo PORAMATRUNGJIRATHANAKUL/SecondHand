@@ -249,7 +249,7 @@ const Ordershopme = ({ searchQuery }) => {
                 ))}
               </div>
 
-              {/* ข้อมูลการการชำระเงิน */}
+              {/* ข้อมูลการกำระเงินและที่อยู่ */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-600 mb-1">ที่อยู่จัดส่ง:</p>
@@ -305,62 +305,55 @@ const Ordershopme = ({ searchQuery }) => {
                 </div>
               </div>
 
-              {/* สถานะการจัดส่ง */}
-              <div className="mt-4 border-t pt-4">
-                <div className="flex flex-col gap-4">
-                  {order.trackingNumber && (
-                    <div className="bg-gray-50 p-3 rounded-md">
-                      <p className="text-sm text-gray-600">ข้อมูลการจัดส่ง:</p>
-                      <p className="font-medium">
-                        เลขพัสดุ: {order.trackingNumber}
-                      </p>
-                      <p className="font-medium">
-                        ขนส่ง: {order.shippingProvider}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-4">
-                    <select
-                      onChange={(event) => statusHandler(event, order._id)}
-                      value={order.status}
-                      className="flex-1 p-2 border rounded bg-gray-50 font-medium"
-                      disabled={order.status === "ได้รับสินค้าแล้ว"}
-                    >
-                      <option value="รอดำเนินการ">รอดำเนินการ</option>
-                      <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
-                      <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
-                      <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
-                      <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
-                      <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
-                      <option value="ได้รับสินค้าแล้ว">ได้รับสินค้าแล้ว</option>
-                    </select>
-
-                    <button
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setShippingInfo({
-                          trackingNumber: order.trackingNumber || "",
-                          shippingProvider: order.shippingProvider || "",
-                        });
-                        setShowShippingModal(true);
-                      }}
-                      className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
-                    >
-                      {order.trackingNumber
-                        ? "ข้อมูลจัดส่ง"
-                        : "เพิ่มข้อมูลจัดส่ง"}
-                    </button>
-                  </div>
+              {/* ส้อมูลการจัดส่ง (ถ้ามี) */}
+              {order.trackingNumber && (
+                <div className="mt-4 bg-gray-50 p-3 rounded-md">
+                  <p className="text-sm text-gray-600">ข้อมูลการจัดส่ง:</p>
+                  <p className="font-medium">
+                    เลขพัสดุ: {order.trackingNumber}
+                  </p>
+                  <p className="font-medium">ขนส่ง: {order.shippingProvider}</p>
                 </div>
+              )}
 
-                {/* แสดงสถานะเมื่อลูกค้าได้รับสินค้าแล้ว */}
-                {order.status === "ได้รับสินค้าแล้ว" && (
-                  <div className="mt-4 text-green-600 font-medium text-sm">
-                    ✓ ลูกค้าได้รับสินค้าแล้ว
-                  </div>
-                )}
+              {/* ปุ่มควบคุมที่มุมขวาล่าง */}
+              <div className="mt-4 pt-4 border-t flex justify-end items-center gap-2">
+                <select
+                  onChange={(event) => statusHandler(event, order._id)}
+                  value={order.status}
+                  className="w-[180px] p-2 border rounded bg-gray-50 font-medium text-sm"
+                  disabled={order.status === "ได้รับสินค้าแล้ว"}
+                >
+                  <option value="รอดำเนินการ">รอดำเนินการ</option>
+                  <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
+                  <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
+                  <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
+                  <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
+                  <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
+                  <option value="ได้รับสินค้าแล้ว">ได้รับสินค้าแล้ว</option>
+                </select>
+
+                <button
+                  onClick={() => {
+                    setSelectedOrder(order);
+                    setShippingInfo({
+                      trackingNumber: order.trackingNumber || "",
+                      shippingProvider: order.shippingProvider || "",
+                    });
+                    setShowShippingModal(true);
+                  }}
+                  className="w-[180px] px-4 py-2 bg-black text-white rounded text-sm hover:bg-gray-800 transition-colors"
+                >
+                  {order.trackingNumber ? "ข้อมูลจัดส่ง" : "เพิ่มข้อมูลจัดส่ง"}
+                </button>
               </div>
+
+              {/* แสดงสถานะเมื่อลูกค้าได้รับสินค้าแล้ว */}
+              {order.status === "ได้รับสินค้าแล้ว" && (
+                <div className="mt-4 text-green-600 font-medium text-sm">
+                  ✓ ลูกค้าได้รับสินค้าแล้ว
+                </div>
+              )}
             </div>
           ))}
 

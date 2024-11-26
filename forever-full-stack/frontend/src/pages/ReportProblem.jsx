@@ -125,14 +125,16 @@ const ReportProblem = () => {
           />
         </div>
 
-        {/* ปุ่มส่ง */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 disabled:bg-gray-400"
-        >
-          {loading ? "กำลังส่ง..." : "ส่งรายงาน"}
-        </button>
+        {/* ปุ่มส่ง - แก้ไขส่วนนี้ */}
+        <div className="flex justify-center">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-black text-white py-2 px-8 rounded-md hover:bg-gray-800 disabled:bg-gray-400 text-sm"
+          >
+            {loading ? "กำลังส่ง..." : "ส่งรายงาน"}
+          </button>
+        </div>
       </form>
     </div>
   );

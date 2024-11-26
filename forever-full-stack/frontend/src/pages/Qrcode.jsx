@@ -43,7 +43,9 @@ const Qrcode = ({ searchQuery }) => {
 
       if (response.data.success) {
         toast.success("ยืนยันการชำระเงินสำเร็จ");
-        window.location.href = "/Ordershopme";
+        navigate("/Ordershopme", {
+          state: { verifiedOrderId: id },
+        });
       } else {
         toast.error("ไม่สามารถยืนยันการชำระเงินได้");
       }
