@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 const List = ({ searchQuery }) => {
   const { backendUrl, token, currency } = useContext(ShopContext);
   const [list, setList] = useState([]);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
 
   const fetchList = async () => {
     try {
@@ -98,32 +99,36 @@ const List = ({ searchQuery }) => {
     return colorMap[colorName] || "bg-gray-200";
   };
 
+  const toggleDropdown = (itemId) => {
+    setOpenDropdownId(openDropdownId === itemId ? null : itemId);
+  };
+
   return (
     <>
       <p className="mb-2">รายการสินค้าของฉัน</p>
       <div className="flex flex-col gap-2">
         {/* หัวตาราง */}
-        <div className="hidden md:grid grid-cols-[1fr_3fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center py-3 px-4 bg-gray-100 rounded-t-lg font-semibold text-gray-700">
-          <div>รูปภาพ</div>
-          <div>ชื่อร้าน</div>
-          <div>ชื่อสินค้า</div>
-          <div>หมวดหมู่</div>
-          <div className="text-right">ราคา</div>
-          <div className="text-center">สี/ไซส์</div>
-          <div className="text-center">คงเหลือ</div>
-          <div className="text-center">จัดการ</div>
+        <div className="hidden md:grid grid-cols-12 gap-4 items-center py-3 px-4 bg-gray-100 rounded-t-lg font-semibold text-gray-700">
+          <div className="col-span-1">รูปภาพ</div>
+          <div className="col-span-2">ชื่อร้าน</div>
+          <div className="col-span-2">ชื่อสินค้า</div>
+          <div className="col-span-2">หมวดหมู่</div>
+          <div className="col-span-1 text-right">ราคา</div>
+          <div className="col-span-2 text-center">สี/ไซส์</div>
+          <div className="col-span-1 text-center">คงเหลือ</div>
+          <div className="col-span-1 text-center">จัดการ</div>
         </div>
 
         {/* รายการสินค้า */}
         {filteredList.map((item, index) => (
           <div
             key={index}
-            className={`grid grid-cols-[1fr_3fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center py-3 px-4 border-b hover:bg-gray-50 transition-colors ${
+            className={`grid grid-cols-12 gap-4 items-center py-3 px-4 border-b hover:bg-gray-50 transition-colors ${
               index % 2 === 0 ? "bg-white" : "bg-gray-50"
             }`}
           >
             {/* รูปภาพ */}
-            <div className="flex items-center">
+            <div className="col-span-1 flex items-center">
               <img
                 className="w-12 h-12 object-cover rounded-lg shadow-sm"
                 src={item.image[0]}
@@ -132,58 +137,75 @@ const List = ({ searchQuery }) => {
             </div>
 
             {/* ชื่อร้าน */}
-            <div className="text-gray-600">{item.owner?.name || "ไม่ระบุ"}</div>
+            <div className="col-span-2 text-gray-600">
+              {item.owner?.name || "ไม่ระบุ"}
+            </div>
 
             {/* ชื่อสินค้า */}
-            <div className="font-medium text-gray-800">{item.name}</div>
+            <div className="col-span-2 font-medium text-gray-800">
+              {item.name}
+            </div>
 
             {/* หมวดหมู่ */}
-            <div className="text-gray-600">{item.category}</div>
+            <div className="col-span-2 text-gray-600">{item.category}</div>
 
             {/* ราคา */}
-            <div className="text-right font-medium text-gray-800">
+            <div className="col-span-1 text-right font-medium text-gray-800">
               {currency}
               {item.price.toLocaleString()}
             </div>
 
-            {/* ไซส์ */}
-            <div className="hidden md:flex flex-col items-center justify-center gap-1">
-              {item.sizes.map((size) => (
-                <div key={size} className="flex flex-col gap-1">
-                  {item.colors.map((color) => {
-                    const stockItem = item.stockItems.find(
-                      (stock) => stock.size === size && stock.color === color
-                    );
-                    const stockCount = stockItem ? stockItem.stock : 0;
+            {/* สี/ไซส์ */}
+            <div className="col-span-2 hidden md:flex flex-col items-center justify-center relative">
+              <button
+                onClick={() => toggleDropdown(item._id)}
+                className="px-3 py-1 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+              >
+                รายละเอียด
+              </button>
 
-                    return stockCount > 0 ? (
-                      <div
-                        key={`${size}-${color}`}
-                        className="text-sm flex items-center gap-1"
-                      >
-                        <div
-                          className={`w-3 h-3 rounded-full ${getColorClass(
-                            color
-                          )}`}
-                          title={getColorName(color)}
-                        />
-                        <span className="bg-gray-100 px-2 py-0.5 rounded-full">
-                          {size}: {stockCount}
-                        </span>
-                      </div>
-                    ) : null;
-                  })}
+              {openDropdownId === item._id && (
+                <div className="absolute top-full mt-1 z-10 bg-white rounded-lg shadow-lg border p-3 min-w-[200px]">
+                  {item.sizes.map((size) => (
+                    <div key={size} className="mb-2">
+                      <div className="font-medium mb-1">ไซส์ {size}</div>
+                      {item.colors.map((color) => {
+                        const stockItem = item.stockItems.find(
+                          (stock) =>
+                            stock.size === size && stock.color === color
+                        );
+                        const stockCount = stockItem ? stockItem.stock : 0;
+
+                        return stockCount > 0 ? (
+                          <div
+                            key={`${size}-${color}`}
+                            className="text-sm flex items-center gap-2 mb-1"
+                          >
+                            <div
+                              className={`w-3 h-3 rounded-full ${getColorClass(
+                                color
+                              )}`}
+                              title={getColorName(color)}
+                            />
+                            <span>
+                              {getColorName(color)}: {stockCount}
+                            </span>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
 
             {/* คงเหลือ */}
-            <div className="text-center font-medium text-gray-800">
+            <div className="col-span-1 text-center font-medium text-gray-800">
               {item.stockItems.reduce((stock, item) => stock + item.stock, 0)}
             </div>
 
             {/* ปุ่มลบ */}
-            <div className="flex justify-center">
+            <div className="col-span-1 flex justify-center">
               <button
                 onClick={() => {
                   if (window.confirm("คุณต้องการลบสินค้านี้ใช่หรือไม่?")) {

@@ -55,16 +55,6 @@ const MyShop = () => {
         >
           รายการสั่งซื้อลูกค้า
         </button>
-        <button
-          onClick={() => setActiveTab("payments")}
-          className={`pb-2 px-1 ${
-            activeTab === "payments"
-              ? "border-b-2 border-black text-black"
-              : "text-gray-500"
-          }`}
-        >
-          การชำระเงิน
-        </button>
       </div>
 
       {/* Content */}

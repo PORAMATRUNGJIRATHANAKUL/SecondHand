@@ -422,59 +422,78 @@ const Ordershopme = ({ searchQuery }) => {
 
       {showQRProof && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="relative bg-white p-4 rounded-lg">
-            <button
-              onClick={() => setShowQRProof(false)}
-              className="absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-full"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-gray-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+          <div className="relative bg-white p-4 rounded-lg max-w-lg w-full">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-semibold">สลิปการโอนเงิน</h2>
+              <button
+                onClick={() => setShowQRProof(false)}
+                className="text-gray-500 hover:text-gray-700"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex justify-center items-center h-[400px]">
+                <img
+                  src={selectedOrder.paymentProof}
+                  alt="สลิปการโอนเงิน"
+                  className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    e.target.src = assets.noImage;
+                    e.target.onerror = null;
+                  }}
                 />
-              </svg>
-            </button>
-            <h2 className="text-xl font-bold mb-4">สลิปการโอนเงิน</h2>
-            <img
-              src={`${selectedOrder.paymentProof}`}
-              alt="QR Code Payment Proof"
-              className="max-w-[90vw] max-h-[90vh] object-contain"
-            />
+              </div>
+              <div className="mt-2 text-sm text-gray-600">
+                <p>
+                  วันที่: {new Date(selectedOrder.date).toLocaleDateString()}
+                </p>
+                <p>จำนวนเงิน: ฿{selectedOrder.amount.toLocaleString()}</p>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {showProducts && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="relative bg-white p-6 rounded-lg w-full max-w-2xl">
-            <button
-              onClick={() => setShowProducts(false)}
-              className="absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-full"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-gray-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+          <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">สินค้าในออเดอร์</h2>
+              <button
+                onClick={() => setShowProducts(false)}
+                className="text-gray-500 hover:text-gray-700"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-            <h2 className="text-xl font-bold mb-4">สินค้าในออเดอร์</h2>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
             <div className="space-y-4">
               {selectedOrder.items.map((item, index) => (
                 <div
@@ -500,7 +519,7 @@ const Ordershopme = ({ searchQuery }) => {
                               className={`w-5 h-5 rounded-full ${getColorClass(
                                 color
                               )}`}
-                              title={color}
+                              title={getColorName(color)}
                             />
                           ))}
                         </div>

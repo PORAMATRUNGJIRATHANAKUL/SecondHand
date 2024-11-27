@@ -35,7 +35,7 @@ const Sidebar = () => {
             src={assets.bank_icon}
             alt="ไอคอนบัญชีร้าน"
           />
-          <p className="hidden md:block">บัญชีร้าน</p>
+          <p className="hidden md:block">บัญชีร้านของแต่ละร้านค้า</p>
         </NavLink>
 
         <NavLink
@@ -51,7 +51,7 @@ const Sidebar = () => {
             src={assets.order_icon}
             alt="ไอคอนคำสั่งซื้อ"
           />
-          <p className="hidden md:block">คำสั่งซื้อ</p>
+          <p className="hidden md:block">รายการสินค้าของแต่ละร้านค้า</p>
         </NavLink>
 
         <NavLink

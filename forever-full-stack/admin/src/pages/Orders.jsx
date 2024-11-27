@@ -93,87 +93,94 @@ const Orders = ({ token, searchQuery }) => {
     return false;
   });
 
+  const viewQRProof = (order) => {
+    setSelectedOrder(order);
+    setShowQRProof(true);
+  };
+
   return (
-    <div>
-      <h3>Order Page</h3>
-      <div>
+    <div className="p-4">
+      <h3 className="text-xl font-semibold mb-4">
+        รายการสินค้าของแต่ละร้านค้า
+      </h3>
+      <div className="space-y-4">
         {filteredOrders.map((order, index) => (
-          <div
-            className="grid grid-cols-1 sm:grid-cols-[0.5fr_2fr_1fr_1fr_1fr_1fr] gap-3 items-start border-2 border-gray-200 p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700"
-            key={index}
-          >
-            <img
-              className="w-12 cursor-pointer hover:opacity-80"
-              src={assets.parcel_icon}
-              alt=""
-              onClick={() => viewProducts(order)}
-            />
-            <div>
-              {order.items.map((item, index) => (
-                <div key={index} className="mb-2">
-                  <p className="font-medium">ร้าน: {order.owner.name}</p>
-                  <p>สินค้า: {item.name}</p>
-                  <p>จำนวน: {item.quantity}</p>
-                  <p>ราคา: ฿{item.price * item.quantity}</p>
+          <div className="bg-white rounded-lg shadow p-4" key={index}>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <p className="font-medium text-lg">ร้าน: {order.owner.name}</p>
+                <p className="text-gray-600">
+                  วันที่: {new Date(order.date).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-lg">฿{order.amount}</p>
+                <p className="text-sm text-gray-600">
+                  จำนวนรายการ: {order.items.length}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {order.items.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-4 border-b pb-3"
+                >
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium">{item.name}</p>
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <span>จำนวน: {item.quantity}</span>
+                      <span>ไซส์: {item.size}</span>
+                      {item.colors && (
+                        <div className="flex items-center gap-1">
+                          <span>สี:</span>
+                          {item.colors.map((color, colorIdx) => (
+                            <div
+                              key={colorIdx}
+                              className={`w-4 h-4 rounded-full ${getColorClass(
+                                color
+                              )}`}
+                              title={color}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm mt-1">
+                      ราคา: ฿{item.price * item.quantity}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
-            <div>
-              {order.items.map((item, index) => (
-                <p
-                  key={index}
-                  className="flex items-center gap-2 py-0.5 flex-wrap"
-                >
-                  <span>{item.name}</span>
-                  <span className="text-gray-500">จำนวน {item.quantity}</span>
-                  <span className="text-gray-500">ไซส์ {item.size}</span>
-                  {item.colors && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-gray-500">สี</span>
-                      {item.colors.map((color, colorIdx) => (
-                        <div
-                          key={colorIdx}
-                          className={`w-4 h-4 rounded-full ${getColorClass(
-                            color
-                          )}`}
-                          title={color}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {index !== order.items.length - 1 && (
-                    <span className="text-gray-300">,</span>
-                  )}
-                </p>
-              ))}
-            </div>
-            <div>
-              <p className="text-sm sm:text-[15px]">
-                จำนวนรายการ: {order.items.length}
-              </p>
-              <p className="mt-3">วิธีชำระเงิน: {order.paymentMethod}</p>
-              <p>สถานะการชำระเงิน: {order.payment ? "ชำระแล้ว" : "รอชำระ"}</p>
-              {order.paymentMethod === "QR Code" && (
-                <button
-                  onClick={() => viewQRProof(order)}
-                  className="mt-2 bg-blue-500 text-white px-2 py-1 rounded text-xs"
-                >
-                  ตรวจสอบการชำระเงิน
-                </button>
-              )}
-              <p>วันที่: {new Date(order.date).toLocaleDateString()}</p>
-            </div>
-            <p className="text-sm sm:text-[15px]">฿{order.amount}</p>
 
-            <div className="flex flex-col gap-2">
-              <div className="mt-2">
-                <p>สถานะการโอนให้ร้านค้า:</p>
+            <div className="flex justify-between items-center mt-4 pt-3 border-t">
+              <div className="space-y-1">
+                <p>วิธีชำระเงิน: {order.paymentMethod}</p>
+                <p>สถานะ: {order.payment ? "ชำระแล้ว" : "รอชำระ"}</p>
+                {order.paymentMethod === "QR Code" && (
+                  <button
+                    onClick={() => viewQRProof(order)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                  >
+                    ตรวจสอบการชำระเงิน
+                  </button>
+                )}
+              </div>
+              <div className="w-48">
+                <p className="mb-1">สถานะการโอนให้ร้านค้า:</p>
                 <select
                   value={order.transferredToShop}
                   onChange={(e) =>
                     updateTransferStatus(order._id, e.target.value === "true")
                   }
-                  className="mt-1 p-1 border rounded w-full"
+                  className="w-full p-2 border rounded"
                 >
                   <option value={false}>ยังไม่โอน</option>
                   <option value={true}>โอนแล้ว</option>
@@ -191,23 +198,49 @@ const Orders = ({ token, searchQuery }) => {
       </div>
 
       {showQRProof && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
-            <h2 className="text-xl font-bold mb-4">สลิปการโอนเงิน</h2>
-            <div className="flex justify-center items-center h-[500px]">
-              <img
-                src={`${selectedOrder.paymentProof}`}
-                alt="QR Code Payment Proof"
-                className="max-w-full max-h-full object-contain rounded-lg"
-              />
-            </div>
-            <div className="flex justify-end mt-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="relative bg-white p-4 rounded-lg max-w-lg w-full">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-semibold">สลิปการโอนเงิน</h2>
               <button
                 onClick={() => setShowQRProof(false)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded"
+                className="text-gray-500 hover:text-gray-700"
               >
-                ปิด
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex justify-center items-center h-[400px]">
+                <img
+                  src={selectedOrder.paymentProof}
+                  alt="สลิปการโอนเงิน"
+                  className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    e.target.src = assets.noImage;
+                    e.target.onerror = null;
+                  }}
+                />
+              </div>
+              <div className="mt-2 text-sm text-gray-600">
+                <p>
+                  วันที่: {new Date(selectedOrder.date).toLocaleDateString()}
+                </p>
+                <p>จำนวนเงิน: ฿{selectedOrder.amount.toLocaleString()}</p>
+              </div>
             </div>
           </div>
         </div>
