@@ -125,7 +125,7 @@ const Orders = () => {
                 >
                   <div className="flex-1 flex">
                     <img className="w-16 sm:w-20" src={item.image[0]} alt="" />
-                    <div>
+                    <div className="ml-4 sm:ml-6">
                       <p className="sm:text-base font-medium">{item.name}</p>
                       <p className="text-sm text-gray-500">
                         ร้านค้า: {item.owner?.name || "ไม่ระบุ"}
@@ -147,6 +147,18 @@ const Orders = () => {
                           ))}
                         </div>
                       </div>
+                      {item.trackingNumber && item.shippingProvider && (
+                        <div className="text-sm space-y-1 mt-2">
+                          <p>
+                            <span className="font-medium">เลขพัสดุ:</span>{" "}
+                            {item.trackingNumber}
+                          </p>
+                          <p>
+                            <span className="font-medium">ขนส่งโดย:</span>{" "}
+                            {item.shippingProvider}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -155,12 +167,6 @@ const Orders = () => {
                       <div className="w-2 h-2 rounded-full bg-green-500"></div>
                       <p className="text-sm">{item.status}</p>
                     </div>
-                    {item.trackingNumber && item.shippingProvider && (
-                      <p className="text-sm">
-                        เลขพัสดุ: {item.trackingNumber} ขนส่งโดย:{" "}
-                        {item.shippingProvider}
-                      </p>
-                    )}
                   </div>
                 </div>
               ))}
@@ -191,63 +197,99 @@ const Orders = () => {
 
       {showTrackingModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">รายละเอียดสินค้า</h3>
+          <div className="bg-white rounded-lg p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6 border-b pb-4">
+              <h3 className="text-xl font-semibold">รายละเอียดสินค้า</h3>
               <button
                 onClick={() => setShowTrackingModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 text-xl"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-4">
+            {/* Items List */}
+            <div className="space-y-6">
               {selectedOrder.items.map((item, idx) => (
-                <div key={idx} className="flex gap-4 border-b pb-4">
+                <div
+                  key={idx}
+                  className="flex gap-6 border-b pb-6 last:border-b-0"
+                >
+                  {/* Product Image */}
                   <img
                     src={item.image[0]}
-                    alt=""
-                    className="w-24 h-24 object-cover"
+                    alt={item.name}
+                    className="w-32 h-32 object-cover rounded-lg shadow-sm"
                   />
-                  <div className="flex-1">
-                    <p className="font-medium">{item.name}</p>
-                    <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+
+                  {/* Product Details */}
+                  <div className="flex-1 space-y-3">
+                    <h4 className="text-lg font-medium">{item.name}</h4>
+
+                    {/* Shop Info */}
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
                       {item.owner?.profileImage ? (
                         <img
                           src={item.owner.profileImage}
                           alt="Profile"
-                          className="w-4 h-4 rounded-full object-cover"
+                          className="w-5 h-5 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                        <div className="w-5 h-5 rounded-full bg-gray-300"></div>
                       )}
-                      <span>{item.owner?.name || "ไม่ระบุชื่อร้าน"}</span>
-                      <p className="text-gray-600 mt-2">สถานะ: {item.status}</p>
+                      <span className="font-medium">
+                        {item.owner?.name || "ไม่ระบุชื่อร้าน"}
+                      </span>
                     </div>
-                    {item.trackingNumber && item.shippingProvider && (
-                      <p className="text-sm">
-                        เลขพัสดุ: {item.trackingNumber} ขนส่งโดย:{" "}
-                        {item.shippingProvider}
+
+                    {/* Status and Tracking */}
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">
+                        สถานะ: <span className="text-black">{item.status}</span>
                       </p>
-                    )}
-                    <p className="text-gray-600">฿{item.price}</p>
-                    <div className="flex flex-wrap gap-3 mt-2 text-sm text-gray-600">
-                      <p>จำนวน: {item.quantity} ชิ้น</p>
-                      <p>ไซส์: {item.size}</p>
-                      <div className="flex items-center gap-1">
-                        <span>สี:</span>
-                        {item.colors.map((color, colorIdx) => (
-                          <div
-                            key={colorIdx}
-                            className={`w-4 h-4 rounded-full ${getColorClass(
-                              color
-                            )}`}
-                            title={color}
-                          />
-                        ))}
+                      {item.trackingNumber && item.shippingProvider && (
+                        <div className="text-sm space-y-1">
+                          <p>
+                            <span className="font-medium">เลขพัสดุ:</span>{" "}
+                            {item.trackingNumber}
+                          </p>
+                          <p>
+                            <span className="font-medium">ขนส่งโดย:</span>{" "}
+                            {item.shippingProvider}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Product Specifications */}
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                      <p className="flex items-center gap-1">
+                        <span className="font-medium">จำนวน:</span>{" "}
+                        {item.quantity} ชิ้น
+                      </p>
+                      <p className="flex items-center gap-1">
+                        <span className="font-medium">ไซส์:</span> {item.size}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">สี:</span>
+                        <div className="flex gap-1">
+                          {item.colors.map((color, colorIdx) => (
+                            <div
+                              key={colorIdx}
+                              className={`w-5 h-5 rounded-full ${getColorClass(
+                                color
+                              )} border border-gray-200`}
+                              title={color}
+                            />
+                          ))}
+                        </div>
                       </div>
                     </div>
+
+                    <p className="text-lg font-semibold text-black mt-2">
+                      ฿{(item.price + 50).toLocaleString()}
+                    </p>
                   </div>
                 </div>
               ))}
