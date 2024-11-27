@@ -112,7 +112,7 @@ const Orders = ({ token, searchQuery }) => {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-base font-semibold">฿{order.amount}</p>
+                <p className="font-bold text-lg">฿{order.amount}</p>
                 <p className="text-sm text-gray-600">
                   จำนวนรายการ: {order.items.length}
                 </p>

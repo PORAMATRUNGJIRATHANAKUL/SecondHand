@@ -108,7 +108,7 @@ const Login = () => {
         required
       />
       <div className="w-full flex justify-between text-sm mt-[-8px]">
-        <p className="cursor-pointer">ลืมรหัสผ่าน?</p>
+        <p className="cursor-pointer"></p>
         {currentState === "เข้าสู่ระบบ" ? (
           <p
             onClick={() => setCurrentState("สมัครสมาชิก")}

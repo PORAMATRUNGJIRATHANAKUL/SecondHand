@@ -353,21 +353,13 @@ const Ordershopme = ({ searchQuery }) => {
                     onChange={(event) => statusHandler(event, order._id)}
                     value={order.status}
                     className={`w-[180px] p-2 border rounded font-medium text-sm ${
-                      order.items.some(
-                        (item) => item.status === "ได้รับสินค้าแล้ว"
-                      )
+                      order.status === "ได้รับสินค้าแล้ว"
                         ? "bg-gray-100 text-gray-500"
                         : "bg-gray-50"
                     }`}
-                    disabled={order.items.some(
-                      (item) => item.status === "ได้รับสินค้าแล้ว"
-                    )}
+                    disabled={order.status === "ได้รับสินค้าแล้ว"}
                   >
                     <option value="รอดำเนินการ">รอดำเนินการ</option>
-                    <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
-                    <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
-                    <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
-                    <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
                     <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
                   </select>
 
@@ -381,15 +373,11 @@ const Ordershopme = ({ searchQuery }) => {
                       setShowShippingModal(true);
                     }}
                     className={`w-[180px] px-4 py-2 rounded text-sm transition-colors ${
-                      order.items.some(
-                        (item) => item.status === "ได้รับสินค้าแล้ว"
-                      )
+                      order.status === "ได้รับสินค้าแล้ว"
                         ? "bg-gray-100 text-gray-500 cursor-not-allowed"
                         : "bg-black text-white hover:bg-gray-800"
                     }`}
-                    disabled={order.items.some(
-                      (item) => item.status === "ได้รับสินค้าแล้ว"
-                    )}
+                    disabled={order.status === "ได้รับสินค้าแล้ว"}
                   >
                     {order.trackingNumber
                       ? "ข้อมูลจัดส่ง"
