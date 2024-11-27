@@ -1,6 +1,6 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 export const ShopContext = createContext();
@@ -12,7 +12,7 @@ const ShopContextProvider = (props) => {
   const [search, setSearch] = useState("");
   const [user, setUser] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
-  const [cartItems, setCartItems] = useState({});
+  const [cartItems, setCartItems] = useState([]);
   const [products, setProducts] = useState([]);
   const [token, setToken] = useState("");
   const [shopReviews, setShopReviews] = useState([]);
@@ -112,18 +112,24 @@ const ShopContextProvider = (props) => {
       return;
     }
 
-    let cartData = structuredClone(cartItems);
+    const cartData = [...cartItems];
 
-    if (cartData[productId]) {
-      if (cartData[productId][size]) {
-        cartData[productId][size] += quantity;
+    if (cartData.find((item) => item.productId === productId)) {
+      const itemIndex = cartData.findIndex(
+        (item) =>
+          item.productId === productId &&
+          item.size === size &&
+          item.color === color
+      );
+      if (itemIndex !== -1) {
+        cartData[itemIndex].quantity += quantity;
       } else {
-        cartData[productId][size] = quantity;
+        cartData.push({ productId, size, color, quantity });
       }
     } else {
-      cartData[productId] = {};
-      cartData[productId][size] = quantity;
+      cartData.push({ productId, size, color, quantity });
     }
+
     setCartItems(cartData);
 
     if (token) {
@@ -175,20 +181,24 @@ const ShopContextProvider = (props) => {
     }
   };
 
-  const getCartAmount = () => {
+  const getCartAmount = useCallback(() => {
     let totalAmount = 0;
-    for (const items in cartItems) {
-      let itemInfo = products.find((product) => product._id === items);
-      for (const item in cartItems[items]) {
-        try {
-          if (cartItems[items][item] > 0) {
-            totalAmount += itemInfo.price * cartItems[items][item];
-          }
-        } catch (error) {}
+    if (cartItems.length === 0) {
+      return 0;
+    }
+
+    for (let i = 0; i < cartItems.length; i++) {
+      let itemInfo = products.find(
+        (product) => product._id === cartItems[i].productId
+      );
+      for (const size in cartItems[i]) {
+        if (cartItems[i][size] > 0) {
+          totalAmount += itemInfo.price * cartItems[i][size];
+        }
       }
     }
     return totalAmount;
-  };
+  }, [cartItems, products]);
 
   const getProductsData = async () => {
     try {
@@ -245,10 +255,10 @@ const ShopContextProvider = (props) => {
   useEffect(() => {
     if (!token && localStorage.getItem("token")) {
       setToken(localStorage.getItem("token"));
-      getUserCart(localStorage.getItem("token"));
+      // getUserCart(localStorage.getItem("token"));
     }
     if (token) {
-      getUserCart(token);
+      // getUserCart(token);
       fetchUserProfile(token);
     }
   }, [token]);

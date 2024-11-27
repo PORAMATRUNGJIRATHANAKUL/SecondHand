@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
     bankName: { type: String, default: "" },
     bankAccount: { type: String, default: "" },
     bankAccountName: { type: String, default: "" },
-    cartData: { type: Object, default: {} },
+    cartData: { type: Array, default: [] },
   },
   { minimize: false }
 );

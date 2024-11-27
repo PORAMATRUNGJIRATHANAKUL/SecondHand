@@ -1,9 +1,8 @@
+import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { ShopContext } from "../context/ShopContext";
-import Title from "../components/Title";
 import { assets } from "../assets/assets";
 import CartTotal from "../components/CartTotal";
-import axios from "axios";
+import { ShopContext } from "../context/ShopContext";
 
 const Modal = ({ isOpen, onClose, message }) => {
   if (!isOpen) return null;
@@ -48,39 +47,18 @@ const Cart = () => {
       try {
         const response = await axios.post("/api/cart/get");
         if (response.data.success) {
-          const cartFromServer = response.data.cart;
+          const filteredCart = response.data.cart.filter(
+            (item) => item.productId
+          );
+          setCartData(filteredCart);
         }
       } catch (error) {
         console.error("Error fetching cart:", error);
       }
     };
 
-    fetchCart();
+    // fetchCart();
   }, []);
-
-  useEffect(() => {
-    if (products.length > 0) {
-      const tempData = [];
-      for (const itemId in cartItems) {
-        for (const size in cartItems[itemId]) {
-          if (cartItems[itemId][size] > 0) {
-            const productData = products.find(
-              (product) => product._id === itemId
-            );
-            const color = productData.colors[0];
-
-            tempData.push({
-              _id: itemId,
-              size: size,
-              color: color,
-              quantity: cartItems[itemId][size],
-            });
-          }
-        }
-      }
-      setCartData(tempData);
-    }
-  }, [cartItems, products]);
 
   const handleQuantityChange = (
     item,
@@ -89,7 +67,7 @@ const Cart = () => {
     isTyping = false
   ) => {
     if (isTyping && (newValue === "" || newValue === "0")) {
-      updateQuantity(item._id, item.size, 1);
+      updateQuantity(item.productId, item.size, 1);
       return;
     }
 
@@ -109,12 +87,12 @@ const Cart = () => {
       );
       setIsModalOpen(true);
       if (isTyping) {
-        updateQuantity(item._id, item.size, item.quantity);
+        updateQuantity(item.productId, item.size, item.quantity);
       }
       return;
     }
 
-    updateQuantity(item._id, item.size, newQuantity);
+    updateQuantity(item.productId, item.size, newQuantity);
   };
 
   return (
@@ -124,13 +102,15 @@ const Cart = () => {
       </div>
 
       <div>
-        {cartData.map((item, index) => {
+        {cartItems.map((item, index) => {
           const productData = products.find(
-            (product) => product._id === item._id
+            (product) => product._id === item.productId
           );
-          const stockItem = productData.stockItems.find(
+          const stockItem = productData?.stockItems.find(
             (stock) => stock.size === item.size && stock.color === item.color
           );
+
+          if (!productData) return null;
 
           return (
             <div
@@ -174,11 +154,7 @@ const Cart = () => {
                     </div>
                   </div>
                   <div className="text-xs sm:text-sm text-gray-500 mt-2">
-                    สินค้าคงเหลือ:{" "}
-                    {productData.stockItems.find(
-                      (stock) =>
-                        stock.size === item.size && stock.color === item.color
-                    )?.stock || 0}
+                    สินค้าคงเหลือ: {stockItem?.stock || 0}
                   </div>
                 </div>
               </div>
@@ -218,7 +194,7 @@ const Cart = () => {
                 </button>
               </div>
               <img
-                onClick={() => updateQuantity(item._id, item.size, 0)}
+                onClick={() => updateQuantity(item.productId, item.size, 0)}
                 className="w-4 mr-4 sm:w-5 cursor-pointer"
                 src={assets.bin_icon}
                 alt="ลบสินค้า"

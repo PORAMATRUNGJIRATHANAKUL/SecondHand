@@ -3,7 +3,8 @@ import { ShopContext } from "../context/ShopContext";
 import Title from "./Title";
 
 const CartTotal = () => {
-  const { currency, delivery_fee, getCartAmount } = useContext(ShopContext);
+  const { currency, delivery_fee, getCartAmount, cartItems } =
+    useContext(ShopContext);
 
   return (
     <div className="w-full">

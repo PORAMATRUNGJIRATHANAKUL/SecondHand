@@ -4,6 +4,7 @@ import productModel from "../models/productModel.js";
 // เพิ่มสินค้าลงตะกร้า
 const addToCart = async (req, res) => {
   try {
+    const userId = req.userId;
     const { productId, size, color, quantity } = req.body;
 
     // ค้นหาสินค้าเพื่อตรวจสอบสต็อก
@@ -16,6 +17,8 @@ const addToCart = async (req, res) => {
     const stockItem = product.stockItems.find(
       (item) => item.size === size && item.color === color
     );
+
+    console.log(stockItem);
 
     if (!stockItem) {
       return res.json({
@@ -32,8 +35,12 @@ const addToCart = async (req, res) => {
     }
 
     // ค้นหาหรือสร้างตะกร้าสินค้าสำหรับผู้ใช้
-    let cart = await userModel.findOne({ userId });
+    let cart = await userModel.findById(userId);
+
+    console.log(cart);
+
     if (!cart) {
+      log;
       cart = new userModel({ userId, cartData: [] });
     }
 
@@ -66,7 +73,8 @@ const addToCart = async (req, res) => {
 // อัพเดทตะกร้าสินค้า
 const updateCart = async (req, res) => {
   try {
-    const { userId, itemId, size, color, quantity } = req.body;
+    const userId = req.userId;
+    const { itemId, size, color, quantity } = req.body;
 
     const userData = await userModel.findById(userId);
     let cartData = await userData.cartData;
@@ -87,7 +95,7 @@ const updateCart = async (req, res) => {
 // ดึงข้อมูลตะกร้าสินค้าของผู้ใช้
 const getUserCart = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.userId;
 
     const userData = await userModel.findById(userId);
     let cartData = await userData.cartData;
