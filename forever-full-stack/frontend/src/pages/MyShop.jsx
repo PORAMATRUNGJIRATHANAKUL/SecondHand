@@ -76,7 +76,11 @@ const MyShop = () => {
           <Ordershopme token={token} searchQuery={searchQuery} />
         )}
         {activeTab === "payments" && (
-          <Qrcode token={token} searchQuery={searchQuery} />
+          <Qrcode
+            token={token}
+            searchQuery={searchQuery}
+            setActiveTab={setActiveTab}
+          />
         )}
       </div>
     </div>

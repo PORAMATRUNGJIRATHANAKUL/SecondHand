@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 
-const Qrcode = ({ searchQuery }) => {
+const Qrcode = ({ searchQuery, setActiveTab }) => {
   const { backendUrl, token, currency } = useContext(ShopContext);
   const [payments, setPayments] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(null);
@@ -43,9 +43,7 @@ const Qrcode = ({ searchQuery }) => {
 
       if (response.data.success) {
         toast.success("ยืนยันการชำระเงินสำเร็จ");
-        navigate("/Ordershopme", {
-          state: { verifiedOrderId: id },
-        });
+        setActiveTab("orders");
       } else {
         toast.error("ไม่สามารถยืนยันการชำระเงินได้");
       }

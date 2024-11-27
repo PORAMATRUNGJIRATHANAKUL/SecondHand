@@ -109,8 +109,7 @@ const List = ({ searchQuery }) => {
           <div>ชื่อสินค้า</div>
           <div>หมวดหมู่</div>
           <div className="text-right">ราคา</div>
-          <div className="text-center">ไซส์</div>
-          <div className="text-center">สี</div>
+          <div className="text-center">สี/ไซส์</div>
           <div className="text-center">คงเหลือ</div>
           <div className="text-center">จัดการ</div>
         </div>
@@ -148,22 +147,33 @@ const List = ({ searchQuery }) => {
             </div>
 
             {/* ไซส์ */}
-            <div className="hidden md:flex items-center justify-center">
-              <span className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-                {item.sizes.join(", ")}
-              </span>
-            </div>
+            <div className="hidden md:flex flex-col items-center justify-center gap-1">
+              {item.sizes.map((size) => (
+                <div key={size} className="flex flex-col gap-1">
+                  {item.colors.map((color) => {
+                    const stockItem = item.stockItems.find(
+                      (stock) => stock.size === size && stock.color === color
+                    );
+                    const stockCount = stockItem ? stockItem.stock : 0;
 
-            {/* สี */}
-            <div className="hidden md:flex items-center justify-center gap-1">
-              {item.colors.map((color, idx) => (
-                <div
-                  key={idx}
-                  className={`w-6 h-6 rounded-full ${getColorClass(
-                    color
-                  )} shadow-sm hover:scale-110 transition-transform`}
-                  title={getColorName(color)}
-                />
+                    return stockCount > 0 ? (
+                      <div
+                        key={`${size}-${color}`}
+                        className="text-sm flex items-center gap-1"
+                      >
+                        <div
+                          className={`w-3 h-3 rounded-full ${getColorClass(
+                            color
+                          )}`}
+                          title={getColorName(color)}
+                        />
+                        <span className="bg-gray-100 px-2 py-0.5 rounded-full">
+                          {size}: {stockCount}
+                        </span>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
               ))}
             </div>
 
