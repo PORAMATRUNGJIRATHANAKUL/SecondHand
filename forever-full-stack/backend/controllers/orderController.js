@@ -4,7 +4,7 @@ import { v2 as cloudinary } from "cloudinary";
 import multer from "multer";
 import path from "path";
 import productModel from "../models/productModel.js";
-
+import userOrderModel from "../models/userOrderModel.js";
 // global variables
 const currency = "thb";
 const deliveryCharge = 10;
@@ -112,20 +112,44 @@ const placeOrder = async (req, res) => {
       }
     }
 
-    const orderData = {
+    const userOrderItems = items.map((item) => {
+      return {
+        ...item,
+        status: "รอดำเนินการ",
+      };
+    });
+
+    const userOrderData = {
       userId,
-      items,
-      address,
+      items: userOrderItems,
       amount,
+      address,
       paymentMethod,
-      payment: paymentMethod === "QR Code",
-      paymentProof,
-      status: "รอดำเนินการ",
       date: Date.now(),
     };
 
-    const newOrder = new orderModel(orderData);
-    await newOrder.save();
+    const newUserOrder = new userOrderModel(userOrderData);
+    await newUserOrder.save();
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      const shopOrderData = {
+        userId: item.owner._id,
+        userOrderId: newUserOrder._id,
+        items: [item],
+        address,
+        amount: item.price * item.quantity,
+        paymentMethod,
+        payment: paymentMethod === "QR Code",
+        paymentProof,
+        status: "รอดำเนินการ",
+        date: Date.now(),
+      };
+
+      const newOrder = new orderModel(shopOrderData);
+      await newOrder.save();
+    }
 
     await userModel.findByIdAndUpdate(userId, { cartData: [] });
 
@@ -227,7 +251,7 @@ const allOrders = async (req, res) => {
 const userOrders = async (req, res) => {
   try {
     const { userId } = req.body;
-    const orders = await orderModel.find({ userId });
+    const orders = await userOrderModel.find({ userId });
     res.json({ success: true, orders });
   } catch (error) {
     console.log(error);
@@ -238,6 +262,7 @@ const userOrders = async (req, res) => {
 // update order status from Admin Panel
 const updateStatus = async (req, res) => {
   try {
+    const userId = req.userId;
     const { orderId, status, payment, trackingNumber, shippingProvider } =
       req.body;
 
@@ -253,6 +278,19 @@ const updateStatus = async (req, res) => {
       updateData,
       { new: true }
     );
+
+    const userOrder = await userOrderModel.findById(updatedOrder.userOrderId);
+
+    const updatedItems = userOrder.items.map((item) => {
+      if (item.owner._id.toString() === userId) {
+        return { ...item, status };
+      }
+      return item;
+    });
+
+    userOrder.items = updatedItems;
+
+    await userOrder.save();
 
     res.json({
       success: true,
@@ -305,7 +343,7 @@ const getQRCodePaymentList = async (req, res) => {
 };
 
 // เพิ่มฟังก์ชันใหม่ แก้ในนี้
-const getOrdersByUserId = async (req, res) => {
+const getShopOrdersByUserId = async (req, res) => {
   try {
     const userId = req.userId;
 
@@ -333,6 +371,7 @@ const getOrdersByUserId = async (req, res) => {
 // เพิ่มฟังก์ชันใหม่สำหรับอัพเดทข้อมูลการจัดส่ง
 const updateShippingInfo = async (req, res) => {
   try {
+    const userId = req.userId;
     const { orderId, trackingNumber, shippingProvider } = req.body;
 
     const updatedOrder = await orderModel.findByIdAndUpdate(
@@ -351,6 +390,23 @@ const updateShippingInfo = async (req, res) => {
         message: "ไม่พบออเดอร์ที่ระบุ",
       });
     }
+
+    const userOrder = await userOrderModel.findById(updatedOrder.userOrderId);
+
+    const updatedItems = userOrder.items.map((item) => {
+      if (item.owner._id.toString() === userId) {
+        return {
+          ...item,
+          status: "จัดส่งแล้ว",
+          trackingNumber,
+          shippingProvider,
+        };
+      }
+      return item;
+    });
+
+    userOrder.items = updatedItems;
+    await userOrder.save();
 
     res.json({
       success: true,
@@ -375,6 +431,6 @@ export {
   updateStatus,
   getQRCodePaymentList,
   deleteOrder,
-  getOrdersByUserId,
+  getShopOrdersByUserId,
   updateShippingInfo,
 };

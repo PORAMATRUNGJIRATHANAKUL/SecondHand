@@ -112,7 +112,7 @@ const ShopContextProvider = (props) => {
       return;
     }
 
-    const cartData = [...cartItems];
+    let cartData = Array.isArray(cartItems) ? [...cartItems] : [];
 
     if (cartData.find((item) => item.productId === productId)) {
       const itemIndex = cartData.findIndex(

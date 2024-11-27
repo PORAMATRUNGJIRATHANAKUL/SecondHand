@@ -628,7 +628,7 @@ const PlaceOrder = () => {
               <button
                 disabled={method === ""}
                 type="submit"
-                className="bg-black text-white px-16 py-3 text-sm disabled:opacity-50 cursor-not-allowed"
+                className="bg-black text-white px-16 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 สั่งซื้อสินค้า
               </button>

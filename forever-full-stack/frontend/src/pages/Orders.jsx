@@ -113,40 +113,54 @@ const Orders = () => {
                       : order.paymentMethod}
                   </span>
                 </p>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <p className="text-sm">{order.status}</p>
-                </div>
               </div>
             </div>
 
             {/* แสดงรายการสินค้าในออเดอร์ */}
             <div className="space-y-4">
               {order.items.map((item, itemIndex) => (
-                <div key={itemIndex} className="flex items-start gap-6 text-sm">
-                  <img className="w-16 sm:w-20" src={item.image[0]} alt="" />
-                  <div className="flex-1">
-                    <p className="sm:text-base font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">
-                      ร้านค้า: {item.owner?.name || "ไม่ระบุ"}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-3 mt-1 text-base text-gray-700">
-                      <p>฿{item.price}</p>
-                      <p>จำนวน: {item.quantity}</p>
-                      <p>ไซส์: {item.size}</p>
-                      <div className="flex items-center gap-1">
-                        <span>สี:</span>
-                        {item.colors.map((color, colorIdx) => (
-                          <div
-                            key={colorIdx}
-                            className={`w-4 h-4 rounded-full ${getColorClass(
-                              color
-                            )}`}
-                            title={color}
-                          />
-                        ))}
+                <div
+                  key={itemIndex}
+                  className="flex justify-end items-start gap-6 text-sm"
+                >
+                  <div className="flex-1 flex">
+                    <img className="w-16 sm:w-20" src={item.image[0]} alt="" />
+                    <div>
+                      <p className="sm:text-base font-medium">{item.name}</p>
+                      <p className="text-sm text-gray-500">
+                        ร้านค้า: {item.owner?.name || "ไม่ระบุ"}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-3 mt-1 text-base text-gray-700">
+                        <p>฿{item.price}</p>
+                        <p>จำนวน: {item.quantity}</p>
+                        <p>ไซส์: {item.size}</p>
+                        <div className="flex items-center gap-1">
+                          <span>สี:</span>
+                          {item.colors.map((color, colorIdx) => (
+                            <div
+                              key={colorIdx}
+                              className={`w-4 h-4 rounded-full ${getColorClass(
+                                color
+                              )}`}
+                              title={color}
+                            />
+                          ))}
+                        </div>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 items-end">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <p className="text-sm">{item.status}</p>
+                    </div>
+                    {item.trackingNumber && item.shippingProvider && (
+                      <p className="text-sm">
+                        เลขพัสดุ: {item.trackingNumber} ขนส่งโดย:{" "}
+                        {item.shippingProvider}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -188,73 +202,6 @@ const Orders = () => {
               </button>
             </div>
 
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <div className="space-y-2">
-                {selectedOrder.trackingNumber ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-black bg-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-                        />
-                      </svg>
-                      <span className="font-medium">เลขพัสดุ:</span>
-                      <span className="text-black font-medium">
-                        {selectedOrder.trackingNumber}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-black bg-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                        />
-                      </svg>
-                      <span className="font-medium">ขนส่งโดย:</span>
-                      <span className="text-black font-medium">
-                        {selectedOrder.shippingProvider}
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-gray-500 text-center py-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-8 w-8 mx-auto mb-2 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                      />
-                    </svg>
-                    <p>ยังไม่มีข้อมูลการจัดส่ง</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
             <div className="space-y-4">
               {selectedOrder.items.map((item, idx) => (
                 <div key={idx} className="flex gap-4 border-b pb-4">
@@ -276,7 +223,14 @@ const Orders = () => {
                         <div className="w-4 h-4 rounded-full bg-gray-300"></div>
                       )}
                       <span>{item.owner?.name || "ไม่ระบุชื่อร้าน"}</span>
+                      <p className="text-gray-600 mt-2">สถานะ: {item.status}</p>
                     </div>
+                    {item.trackingNumber && item.shippingProvider && (
+                      <p className="text-sm">
+                        เลขพัสดุ: {item.trackingNumber} ขนส่งโดย:{" "}
+                        {item.shippingProvider}
+                      </p>
+                    )}
                     <p className="text-gray-600">฿{item.price}</p>
                     <div className="flex flex-wrap gap-3 mt-2 text-sm text-gray-600">
                       <p>จำนวน: {item.quantity} ชิ้น</p>
@@ -294,24 +248,10 @@ const Orders = () => {
                         ))}
                       </div>
                     </div>
-                    <p className="text-gray-600 mt-2">
-                      สถานะ: {selectedOrder.status}
-                    </p>
                   </div>
                 </div>
               ))}
             </div>
-
-            {selectedOrder.status !== "ได้รับสินค้าแล้ว" && (
-              <div className="flex justify-center">
-                <button
-                  onClick={() => updateOrderStatus(selectedOrder._id)}
-                  className="mt-4 px-6 bg-black text-white py-2 rounded-lg hover:bg-gray-800"
-                >
-                  ได้รับสินค้าแล้ว
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}

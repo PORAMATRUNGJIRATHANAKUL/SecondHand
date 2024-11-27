@@ -22,7 +22,7 @@ const Ordershopme = ({ searchQuery }) => {
     }
 
     try {
-      const response = await axios.get(backendUrl + "/api/order/my-orders", {
+      const response = await axios.get(backendUrl + "/api/order/shop-orders", {
         headers: { token },
       });
       if (response.data.success) {
