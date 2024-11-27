@@ -167,7 +167,7 @@ const Orders = ({ token, searchQuery }) => {
                 {order.paymentMethod === "QR Code" && (
                   <button
                     onClick={() => viewQRProof(order)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                    className="bg-black hover:bg-gray-800 text-white px-3 py-1 rounded text-sm"
                   >
                     ตรวจสอบการชำระเงิน
                   </button>

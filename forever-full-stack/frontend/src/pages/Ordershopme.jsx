@@ -343,7 +343,7 @@ const Ordershopme = ({ searchQuery }) => {
                   {order.paymentMethod === "QR Code" && (
                     <button
                       onClick={() => viewQRProof(order)}
-                      className="bg-black  hover:bg-gray-800 text-white px-3 py-1.5 rounded text-sm w-full transition-colors"
+                      className="bg-black hover:bg-gray-800 text-white px-3 py-1.5 rounded text-sm mx-auto block transition-colors"
                     >
                       ตรวจสอบการชำระเงิน
                     </button>
