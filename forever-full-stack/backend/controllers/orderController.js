@@ -127,7 +127,7 @@ const placeOrder = async (req, res) => {
     const newOrder = new orderModel(orderData);
     await newOrder.save();
 
-    await userModel.findByIdAndUpdate(userId, { cartData: {} });
+    await userModel.findByIdAndUpdate(userId, { cartData: [] });
 
     res.json({ success: true, message: "สร้างออเดอร์สำเร็จ" });
   } catch (error) {

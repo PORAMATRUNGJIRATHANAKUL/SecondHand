@@ -18,7 +18,7 @@ const Product = () => {
       if (item._id === productId) {
         setProductData(item);
         setImage(item.image[0]);
-        setColor(item.colors[0]);
+        // setColor(item.colors[0]);
 
         const uniqueSizes = [
           ...new Set(item.stockItems.map((stock) => stock.size)),
@@ -31,10 +31,6 @@ const Product = () => {
 
   const selectColor = (color) => {
     setColor(color);
-    const stockItem = productData.stockItems.find(
-      (item) => item.size === size && item.color === color
-    );
-    setStockCount(stockItem?.stock || 0);
   };
 
   const getColorClass = (colorName) => {
@@ -58,11 +54,16 @@ const Product = () => {
 
   const handleSizeSelect = (selectedSize) => {
     setSize(selectedSize);
-    const stockItem = productData.stockItems.find(
-      (item) => item.size === selectedSize && item.color === color
-    );
-    setStockCount(stockItem?.stock || 0);
   };
+
+  useEffect(() => {
+    if (color && size) {
+      const stockItem = productData.stockItems.find(
+        (item) => item.size === size && item.color === color
+      );
+      setStockCount(stockItem?.stock || 0);
+    }
+  }, [color, size]);
 
   const getColorName = (colorName) => {
     const colorNames = {
@@ -148,7 +149,7 @@ const Product = () => {
                   </button>
                 ))}
               </div>
-              {size && (
+              {size && color && (
                 <p className="mt-2 text-sm text-gray-600">
                   เหลือ {stockCount} ชิ้น
                 </p>
@@ -177,9 +178,9 @@ const Product = () => {
           </div>
           <button
             onClick={handleAddToCart}
-            disabled={!size || !color}
+            disabled={!size || !color || stockCount === 0}
             className={`px-8 py-3 text-sm transition-colors ${
-              !size || !color
+              !size || !color || stockCount === 0
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-black text-white active:bg-gray-700 hover:bg-gray-800"
             }`}

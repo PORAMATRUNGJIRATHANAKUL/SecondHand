@@ -160,10 +160,10 @@ const ShopContextProvider = (props) => {
     return totalCount;
   };
 
-  const updateQuantity = async (itemId, size, quantity) => {
+  const updateQuantity = async (index, quantity) => {
     let cartData = structuredClone(cartItems);
 
-    cartData[itemId][size] = quantity;
+    cartData[index].quantity = quantity;
 
     setCartItems(cartData);
 
@@ -171,7 +171,11 @@ const ShopContextProvider = (props) => {
       try {
         await axios.post(
           backendUrl + "/api/cart/update",
-          { itemId, size, quantity },
+          {
+            productId: cartData[index].productId,
+            size: cartData[index].size,
+            quantity,
+          },
           { headers: { token } }
         );
       } catch (error) {
@@ -179,6 +183,12 @@ const ShopContextProvider = (props) => {
         toast.error(error.message);
       }
     }
+  };
+
+  const deleteItemFromCart = async (index) => {
+    const cartData = structuredClone(cartItems);
+    cartData.splice(index, 1);
+    setCartItems(cartData);
   };
 
   const getCartAmount = useCallback(() => {
@@ -292,6 +302,7 @@ const ShopContextProvider = (props) => {
     getProductsData,
     getOwnerProducts,
     createReportProblem,
+    deleteItemFromCart,
   };
 
   return (

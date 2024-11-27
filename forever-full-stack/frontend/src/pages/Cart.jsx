@@ -36,8 +36,14 @@ const Modal = ({ isOpen, onClose, message }) => {
 };
 
 const Cart = () => {
-  const { products, currency, cartItems, updateQuantity, navigate } =
-    useContext(ShopContext);
+  const {
+    products,
+    currency,
+    cartItems,
+    updateQuantity,
+    navigate,
+    deleteItemFromCart,
+  } = useContext(ShopContext);
   const [cartData, setCartData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -60,24 +66,18 @@ const Cart = () => {
     // fetchCart();
   }, []);
 
-  const handleQuantityChange = (
-    item,
-    productData,
-    newValue,
-    isTyping = false
-  ) => {
-    if (isTyping && (newValue === "" || newValue === "0")) {
-      updateQuantity(item.productId, item.size, 1);
-      return;
-    }
-
-    const newQuantity = Number(newValue);
-
-    if (isNaN(newQuantity) || newQuantity < 1) return;
-
+  const handleQuantityChange = (index, newQuantity) => {
+    const item = cartItems[index];
+    const productData = products.find(
+      (product) => product._id === item.productId
+    );
     const stockItem = productData.stockItems.find(
       (stock) => stock.size === item.size && stock.color === item.color
     );
+
+    if (!stockItem) return;
+
+    if (isNaN(newQuantity) || newQuantity < 1) return;
 
     if (!stockItem || newQuantity > stockItem.stock) {
       setModalMessage(
@@ -86,13 +86,10 @@ const Cart = () => {
         } ไซส์ ${item.size} มีสินค้าคงเหลือเพียง ${stockItem?.stock || 0} ชิ้น`
       );
       setIsModalOpen(true);
-      if (isTyping) {
-        updateQuantity(item.productId, item.size, item.quantity);
-      }
       return;
     }
 
-    updateQuantity(item.productId, item.size, newQuantity);
+    updateQuantity(index, newQuantity);
   };
 
   return (
@@ -111,6 +108,7 @@ const Cart = () => {
           );
 
           if (!productData) return null;
+          if (!stockItem || stockItem.stock === 0) return null;
 
           return (
             <div
@@ -160,9 +158,7 @@ const Cart = () => {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() =>
-                    handleQuantityChange(item, productData, item.quantity - 1)
-                  }
+                  onClick={() => handleQuantityChange(index, item.quantity - 1)}
                   className="w-8 h-8 flex items-center justify-center border rounded-md hover:bg-gray-100"
                   disabled={item.quantity <= 1}
                 >
@@ -171,22 +167,13 @@ const Cart = () => {
                 <input
                   type="number"
                   value={item.quantity}
-                  onChange={(e) =>
-                    handleQuantityChange(
-                      item,
-                      productData,
-                      e.target.value,
-                      true
-                    )
-                  }
+                  onChange={(e) => handleQuantityChange(index, e.target.value)}
                   className="w-12 text-center border rounded-md px-1"
                   min="1"
                   max={stockItem?.stock || 1}
                 />
                 <button
-                  onClick={() =>
-                    handleQuantityChange(item, productData, item.quantity + 1)
-                  }
+                  onClick={() => handleQuantityChange(index, item.quantity + 1)}
                   className="w-8 h-8 flex items-center justify-center border rounded-md hover:bg-gray-100"
                   disabled={item.quantity >= (stockItem?.stock || 1)}
                 >
@@ -194,7 +181,7 @@ const Cart = () => {
                 </button>
               </div>
               <img
-                onClick={() => updateQuantity(item.productId, item.size, 0)}
+                onClick={() => deleteItemFromCart(index)}
                 className="w-4 mr-4 sm:w-5 cursor-pointer"
                 src={assets.bin_icon}
                 alt="ลบสินค้า"

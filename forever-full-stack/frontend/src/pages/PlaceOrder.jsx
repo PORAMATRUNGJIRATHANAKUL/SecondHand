@@ -92,19 +92,31 @@ const PlaceOrder = () => {
       try {
         let orderItems = [];
 
-        for (const items in cartItems) {
-          for (const item in cartItems[items]) {
-            if (cartItems[items][item] > 0) {
-              const itemInfo = structuredClone(
-                products.find((product) => product._id === items)
-              );
-              if (itemInfo) {
-                itemInfo.size = item;
-                itemInfo.quantity = cartItems[items][item];
-                orderItems.push(itemInfo);
-              }
-            }
-          }
+        // for (const items in cartItems) {
+        //   for (const item in cartItems[items]) {
+        //     if (cartItems[items][item] > 0) {
+        //       const itemInfo = structuredClone(
+        //         products.find((product) => product._id === items)
+        //       );
+        //       if (itemInfo) {
+        //         itemInfo.size = item;
+        //         itemInfo.quantity = cartItems[items][item];
+        //         orderItems.push(itemInfo);
+        //       }
+        //     }
+        //   }
+        // }
+
+        for (let i = 0; i < cartItems.length; i++) {
+          let itemInfo = products.find(
+            (product) => product._id === cartItems[i].productId
+          );
+
+          const item = cartItems[i];
+          itemInfo.size = item.size;
+          itemInfo.quantity = item.quantity;
+          itemInfo.colors = [item.color];
+          orderItems.push(itemInfo);
         }
 
         let orderData = {
@@ -124,7 +136,7 @@ const PlaceOrder = () => {
           { headers: { token } }
         );
         if (response.data.success) {
-          setCartItems({});
+          setCartItems([]);
           navigate("/orders");
         } else {
           toast.error(response.data.message);
