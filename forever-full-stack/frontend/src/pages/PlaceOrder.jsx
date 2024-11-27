@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useEffect } from "react";
 
 const PlaceOrder = () => {
-  const [method, setMethod] = useState("cod");
+  const [method, setMethod] = useState("");
   const [showQRPopup, setShowQRPopup] = useState(false);
   const [paymentProof, setPaymentProof] = useState(null);
   const [paymentProofFileName, setPaymentProofFileName] = useState(null);
@@ -626,8 +626,9 @@ const PlaceOrder = () => {
 
             <div className="w-full text-end mt-8">
               <button
+                disabled={method === ""}
                 type="submit"
-                className="bg-black text-white px-16 py-3 text-sm"
+                className="bg-black text-white px-16 py-3 text-sm disabled:opacity-50 cursor-not-allowed"
               >
                 สั่งซื้อสินค้า
               </button>

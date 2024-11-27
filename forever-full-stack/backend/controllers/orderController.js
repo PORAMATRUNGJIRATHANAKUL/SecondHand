@@ -309,8 +309,6 @@ const getOrdersByUserId = async (req, res) => {
   try {
     const userId = req.userId;
 
-    console.log(userId);
-
     const orders = await orderModel
       .find({
         "items.owner._id": userId,

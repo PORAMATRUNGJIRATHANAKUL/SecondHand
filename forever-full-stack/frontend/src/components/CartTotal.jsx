@@ -6,6 +6,8 @@ const CartTotal = () => {
   const { currency, delivery_fee, getCartAmount, cartItems } =
     useContext(ShopContext);
 
+  console.log(cartItems);
+
   return (
     <div className="w-full">
       <div className="text-2xl">
