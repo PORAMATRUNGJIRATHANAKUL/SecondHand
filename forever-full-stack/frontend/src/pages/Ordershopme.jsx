@@ -132,7 +132,7 @@ const Ordershopme = ({ searchQuery }) => {
       Green: "เขียว",
       Yellow: "เหลือง",
       Purple: "ม่วง",
-      Pink: "ชมพู",
+      Pink: "ชมู",
       Orange: "ส้ม",
       Brown: "น้ำตาล",
       Beige: "เบจ",
@@ -188,6 +188,27 @@ const Ordershopme = ({ searchQuery }) => {
                       {order.address.firstName} {order.address.lastName}
                     </p>
                     <p className="text-gray-600">{order.address.phone}</p>
+                    {order.status === "ได้รับสินค้าแล้ว" && (
+                      <div className="flex items-center text-green-600 mt-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 mr-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span className="text-sm font-medium">
+                          ลูกค้าได้รับสินค้าแล้ว
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -246,6 +267,9 @@ const Ordershopme = ({ searchQuery }) => {
                           ))}
                         </div>
                       )}
+                      <span className="text-gray-500 ml-2">
+                        {item.status === "ได้รับสินค้าแล้ว" ? "" : item.status}
+                      </span>
                     </p>
                   ))}
                 </div>
@@ -343,8 +367,16 @@ const Ordershopme = ({ searchQuery }) => {
                 <select
                   onChange={(event) => statusHandler(event, order._id)}
                   value={order.status}
-                  className="w-[180px] p-2 border rounded bg-gray-50 font-medium text-sm"
-                  disabled={order.status === "ได้รับสินค้าแล้ว"}
+                  className={`w-[180px] p-2 border rounded font-medium text-sm ${
+                    order.items.some(
+                      (item) => item.status === "ได้รับสินค้าแล้ว"
+                    )
+                      ? "bg-gray-100 text-gray-500"
+                      : "bg-gray-50"
+                  }`}
+                  disabled={order.items.some(
+                    (item) => item.status === "ได้รับสินค้าแล้ว"
+                  )}
                 >
                   <option value="รอดำเนินการ">รอดำเนินการ</option>
                   <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
@@ -352,7 +384,6 @@ const Ordershopme = ({ searchQuery }) => {
                   <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
                   <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
                   <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
-                  <option value="ได้รับสินค้าแล้ว">ได้รับสินค้าแล้ว</option>
                 </select>
 
                 <button
@@ -364,18 +395,20 @@ const Ordershopme = ({ searchQuery }) => {
                     });
                     setShowShippingModal(true);
                   }}
-                  className="w-[180px] px-4 py-2 bg-black text-white rounded text-sm hover:bg-gray-800 transition-colors"
+                  className={`w-[180px] px-4 py-2 rounded text-sm transition-colors ${
+                    order.items.some(
+                      (item) => item.status === "ได้รับสินค้าแล้ว"
+                    )
+                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                      : "bg-black text-white hover:bg-gray-800"
+                  }`}
+                  disabled={order.items.some(
+                    (item) => item.status === "ได้รับสินค้าแล้ว"
+                  )}
                 >
                   {order.trackingNumber ? "ข้อมูลจัดส่ง" : "เพิ่มข้อมูลจัดส่ง"}
                 </button>
               </div>
-
-              {/* แสดงสถานะเมื่อลูกค้าได้รับสินค้าแล้ว */}
-              {order.status === "ได้รับสินค้าแล้ว" && (
-                <div className="mt-4 text-green-600 font-medium text-sm">
-                  ✓ ลูกค้าได้รับสินค้าแล้ว
-                </div>
-              )}
             </div>
           ))}
 
@@ -473,7 +506,7 @@ const Ordershopme = ({ searchQuery }) => {
                         </div>
                       </div>
                     )}
-                    <p className="mt-1">ราคา: ฿{item.price + 50}</p>
+                    <p className="mt-1">ราคา: ฿{item.price}</p>
                   </div>
                 </div>
               ))}

@@ -21,7 +21,7 @@ const CartTotal = () => {
         </div>
         <hr />
         <div className="flex justify-between">
-          <p>ค่าจัดส่ง</p>
+          <p>ค่าบริการ</p>
           <p>
             {currency} {delivery_fee.toLocaleString()}
           </p>

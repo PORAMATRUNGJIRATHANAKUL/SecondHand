@@ -49,12 +49,13 @@ const Orders = () => {
     return colorMap[colorName] || "bg-gray-200";
   };
 
-  const updateOrderStatus = async (orderId) => {
+  const updateOrderStatus = async (orderId, shopId) => {
     try {
       const response = await axios.post(
         `${backendUrl}/api/order/status`,
         {
           orderId,
+          shopId,
           status: "ได้รับสินค้าแล้ว",
           confirmedByCustomer: true,
         },
@@ -288,8 +289,21 @@ const Orders = () => {
                     </div>
 
                     <p className="text-lg font-semibold text-black mt-2">
-                      ฿{(item.price + 50).toLocaleString()}
+                      ฿{(item.price * item.quantity + 50).toLocaleString()}
                     </p>
+
+                    {/* เพิ่มปุ่มยืนยันการรับสินค้า */}
+                    {item.status !== "ได้รับสินค้าแล้ว" &&
+                      item.trackingNumber && (
+                        <button
+                          onClick={() =>
+                            updateOrderStatus(selectedOrder._id, item.owner._id)
+                          }
+                          className="mt-4 w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors"
+                        >
+                          ยืนยันการรับสินค้า
+                        </button>
+                      )}
                   </div>
                 </div>
               ))}

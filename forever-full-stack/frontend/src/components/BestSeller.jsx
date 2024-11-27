@@ -21,9 +21,6 @@ const BestSeller = () => {
             <span className="text-gray-700 font-medium"></span>
           </p>
         </div>
-        <p className="w-3/4 m-auto text-xs sm:text-sm md:text-base text-gray-600">
-          สินค้าค้ายอดนิยมมือสอง สภาพดี มีให้เลือกหลายประเภทหลากหลายแบบ
-        </p>
       </div>
 
       <div className="w-3/4 h-auto m-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6">

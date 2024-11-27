@@ -69,7 +69,6 @@ const placeOrder = async (req, res) => {
         throw new Error(`ไม่พบสินค้ารหัส: ${item._id}`);
       }
 
-      // Find the specific size and color combination
       const stockIndex = product.stockItems.findIndex(
         (s) => s.size === item.size && s.color === item.colors[0]
       );
@@ -78,15 +77,9 @@ const placeOrder = async (req, res) => {
         throw new Error(`ไม่พบไซส์ ${item.size} และสี ${item.colors[0]}`);
       }
 
-      console.log(
-        "จำนวนสต็อกก่อนอัพเดท:",
-        product.stockItems[stockIndex].stock
-      );
       const newStock = product.stockItems[stockIndex].stock - item.quantity;
-      console.log("จำนวนสต็อกใหม่:", newStock);
 
-      // Update using findByIdAndUpdate
-      const updatedProduct = await productModel.findByIdAndUpdate(
+      await productModel.findByIdAndUpdate(
         item._id,
         {
           $set: {
@@ -96,13 +89,6 @@ const placeOrder = async (req, res) => {
         { new: true }
       );
 
-      console.log("สต็อกหลังอัพเดท:", updatedProduct.stockItems);
-
-      // Verify the update with a separate query
-      const verifyProduct = await productModel.findById(item._id);
-      console.log("ยืนยันจำนวนสต็อก:", verifyProduct.stockItems);
-
-      // If stock is 0, remove that item
       if (newStock <= 0) {
         await productModel.findByIdAndUpdate(item._id, {
           $pull: {
@@ -112,12 +98,20 @@ const placeOrder = async (req, res) => {
       }
     }
 
-    const userOrderItems = items.map((item) => {
-      return {
-        ...item,
-        status: "รอดำเนินการ",
-      };
-    });
+    // Group items by shop owner
+    const itemsByShop = items.reduce((acc, item) => {
+      const shopId = item.owner._id;
+      if (!acc[shopId]) {
+        acc[shopId] = [];
+      }
+      acc[shopId].push(item);
+      return acc;
+    }, {});
+
+    const userOrderItems = items.map((item) => ({
+      ...item,
+      status: "รอดำเนินการ",
+    }));
 
     const userOrderData = {
       userId,
@@ -131,15 +125,19 @@ const placeOrder = async (req, res) => {
     const newUserOrder = new userOrderModel(userOrderData);
     await newUserOrder.save();
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+    // Create shop orders grouped by shop
+    for (const [shopId, shopItems] of Object.entries(itemsByShop)) {
+      const shopTotal = shopItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
 
       const shopOrderData = {
-        userId: item.owner._id,
+        userId: shopId,
         userOrderId: newUserOrder._id,
-        items: [item],
+        items: shopItems,
         address,
-        amount: item.price * item.quantity,
+        amount: shopTotal,
         paymentMethod,
         payment: paymentMethod === "QR Code",
         paymentProof,
@@ -264,43 +262,58 @@ const userOrders = async (req, res) => {
 const updateStatus = async (req, res) => {
   try {
     const userId = req.userId;
-    const { orderId, status, payment, trackingNumber, shippingProvider } =
-      req.body;
+    const { orderId, status, confirmedByCustomer, shopId } = req.body;
 
-    const updateData = {
-      status,
-      ...(payment !== undefined && { payment }),
-      ...(trackingNumber && { trackingNumber }),
-      ...(shippingProvider && { shippingProvider }),
-    };
+    // คัพเดท userOrder
+    const userOrder = await userOrderModel.findById(orderId);
+    if (!userOrder) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบออเดอร์ที่ระบุ",
+      });
+    }
 
-    const updatedOrder = await orderModel.findByIdAndUpdate(
-      orderId,
-      updateData,
-      { new: true }
-    );
-
-    const userOrder = await userOrderModel.findById(updatedOrder.userOrderId);
-
+    // อัพเดทสถานะเฉพาะสินค้าของร้านที่ระบุ
     const updatedItems = userOrder.items.map((item) => {
-      if (item.owner._id.toString() === userId) {
-        return { ...item, status };
+      if (item.owner._id === shopId) {
+        return {
+          ...item,
+          status: status,
+        };
       }
       return item;
     });
 
     userOrder.items = updatedItems;
-
     await userOrder.save();
+
+    // เพิ่มการอัพเดท orderModel สำหรับร้านค้า
+    if (confirmedByCustomer) {
+      await orderModel.findOneAndUpdate(
+        {
+          userOrderId: orderId,
+          "items.owner._id": shopId,
+        },
+        {
+          $set: {
+            status: status,
+            items: updatedItems.filter((item) => item.owner._id === shopId),
+          },
+        }
+      );
+    }
 
     res.json({
       success: true,
       message: "อัพเดทข้อมูลสำเร็จ",
-      order: updatedOrder,
+      order: userOrder,
     });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: "เกิดข้อผิดพลาดในการอัพเดทส้อมูล" });
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการอัพเดทข้อมูล",
+    });
   }
 };
 
