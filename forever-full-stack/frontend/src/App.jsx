@@ -38,8 +38,8 @@ const ProtectedRoute = ({ children }) => {
 
 const App = () => {
   return (
-    <>
-      <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw] min-h-[calc(100vh-220px)]">
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-grow px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
         <ToastContainer />
         <Navbar />
         <SearchBar />
@@ -79,7 +79,7 @@ const App = () => {
         </Routes>
       </div>
       <Footer />
-    </>
+    </div>
   );
 };
 

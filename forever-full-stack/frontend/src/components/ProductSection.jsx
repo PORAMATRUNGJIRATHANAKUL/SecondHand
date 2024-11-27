@@ -48,7 +48,7 @@ const ProductSection = () => {
         </p>
       </div>
 
-      <div className="w-[85%] sm:w-3/4 h-auto m-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 gap-y-5 sm:gap-y-6">
+      <div className="w-[85%] sm:w-3/4 h-auto m-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 gap-y-5 sm:gap-y-6 mb-16">
         {displayProducts.map((item, index) => (
           <ProductItem
             key={index}
