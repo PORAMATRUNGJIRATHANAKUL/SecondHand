@@ -201,7 +201,7 @@ const Orders = () => {
           <div className="bg-white rounded-lg p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex justify-between items-center mb-6 border-b pb-4">
-              <h3 className="text-xl font-semibold">รายละเอียดสินค้า</h3>
+              <p className="text-xl font-semibold">รายละเอียดสินค้า</p>
               <button
                 onClick={() => setShowTrackingModal(false)}
                 className="text-gray-500 hover:text-gray-700 text-xl"
@@ -295,14 +295,19 @@ const Orders = () => {
                     {/* เพิ่มปุ่มยืนยันการรับสินค้า */}
                     {item.status !== "ได้รับสินค้าแล้ว" &&
                       item.trackingNumber && (
-                        <button
-                          onClick={() =>
-                            updateOrderStatus(selectedOrder._id, item.owner._id)
-                          }
-                          className="mt-4 w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors"
-                        >
-                          ยืนยันการรับสินค้า
-                        </button>
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() =>
+                              updateOrderStatus(
+                                selectedOrder._id,
+                                item.owner._id
+                              )
+                            }
+                            className="mt-4 px-6 bg-black text-white py-2 rounded-md hover:bg-gray-800 transition-colors"
+                          >
+                            ยืนยันการรับสินค้า
+                          </button>
+                        </div>
                       )}
                   </div>
                 </div>

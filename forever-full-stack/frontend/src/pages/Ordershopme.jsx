@@ -188,27 +188,6 @@ const Ordershopme = ({ searchQuery }) => {
                       {order.address.firstName} {order.address.lastName}
                     </p>
                     <p className="text-gray-600">{order.address.phone}</p>
-                    {order.status === "ได้รับสินค้าแล้ว" && (
-                      <div className="flex items-center text-green-600 mt-1">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        <span className="text-sm font-medium">
-                          ลูกค้าได้รับสินค้าแล้ว
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -275,23 +254,7 @@ const Ordershopme = ({ searchQuery }) => {
                 </div>
 
                 {order.transferredToShop && (
-                  <p className="text-gray-500">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 inline-block mr-1 text-green-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    บริษัทโอนเงินให้ร้านค้าแล้ว
-                  </p>
+                  <p className="text-gray-500">บริษัทโอนเงินให้ร้านค้าแล้ว</p>
                 )}
               </div>
 
@@ -363,51 +326,76 @@ const Ordershopme = ({ searchQuery }) => {
               )}
 
               {/* ปุ่มควบคุมที่มุมขวาล่าง */}
-              <div className="mt-4 pt-4 border-t flex justify-end items-center gap-2">
-                <select
-                  onChange={(event) => statusHandler(event, order._id)}
-                  value={order.status}
-                  className={`w-[180px] p-2 border rounded font-medium text-sm ${
-                    order.items.some(
+              <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                {order.status === "ได้รับสินค้าแล้ว" && (
+                  <div className="flex items-center text-green-600">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium">
+                      ลูกค้าได้รับสินค้าแล้ว
+                    </span>
+                  </div>
+                )}
+                <div className="flex gap-2 ml-auto">
+                  <select
+                    onChange={(event) => statusHandler(event, order._id)}
+                    value={order.status}
+                    className={`w-[180px] p-2 border rounded font-medium text-sm ${
+                      order.items.some(
+                        (item) => item.status === "ได้รับสินค้าแล้ว"
+                      )
+                        ? "bg-gray-100 text-gray-500"
+                        : "bg-gray-50"
+                    }`}
+                    disabled={order.items.some(
                       (item) => item.status === "ได้รับสินค้าแล้ว"
-                    )
-                      ? "bg-gray-100 text-gray-500"
-                      : "bg-gray-50"
-                  }`}
-                  disabled={order.items.some(
-                    (item) => item.status === "ได้รับสินค้าแล้ว"
-                  )}
-                >
-                  <option value="รอดำเนินการ">รอดำเนินการ</option>
-                  <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
-                  <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
-                  <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
-                  <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
-                  <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
-                </select>
+                    )}
+                  >
+                    <option value="รอดำเนินการ">รอดำเนินการ</option>
+                    <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
+                    <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
+                    <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
+                    <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
+                    <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
+                  </select>
 
-                <button
-                  onClick={() => {
-                    setSelectedOrder(order);
-                    setShippingInfo({
-                      trackingNumber: order.trackingNumber || "",
-                      shippingProvider: order.shippingProvider || "",
-                    });
-                    setShowShippingModal(true);
-                  }}
-                  className={`w-[180px] px-4 py-2 rounded text-sm transition-colors ${
-                    order.items.some(
+                  <button
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setShippingInfo({
+                        trackingNumber: order.trackingNumber || "",
+                        shippingProvider: order.shippingProvider || "",
+                      });
+                      setShowShippingModal(true);
+                    }}
+                    className={`w-[180px] px-4 py-2 rounded text-sm transition-colors ${
+                      order.items.some(
+                        (item) => item.status === "ได้รับสินค้าแล้ว"
+                      )
+                        ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                        : "bg-black text-white hover:bg-gray-800"
+                    }`}
+                    disabled={order.items.some(
                       (item) => item.status === "ได้รับสินค้าแล้ว"
-                    )
-                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                      : "bg-black text-white hover:bg-gray-800"
-                  }`}
-                  disabled={order.items.some(
-                    (item) => item.status === "ได้รับสินค้าแล้ว"
-                  )}
-                >
-                  {order.trackingNumber ? "ข้อมูลจัดส่ง" : "เพิ่มข้อมูลจัดส่ง"}
-                </button>
+                    )}
+                  >
+                    {order.trackingNumber
+                      ? "ข้อมูลจัดส่ง"
+                      : "เพิ่มข้อมูลจัดส่ง"}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
