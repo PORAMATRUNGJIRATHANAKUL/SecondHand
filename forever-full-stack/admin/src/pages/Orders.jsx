@@ -100,21 +100,19 @@ const Orders = ({ token, searchQuery }) => {
 
   return (
     <div className="p-4">
-      <h3 className="text-xl font-semibold mb-4">
-        รายการสินค้าของแต่ละร้านค้า
-      </h3>
+      <p className="mb-2">รายการสินค้าของแต่ละร้านค้า</p>
       <div className="space-y-4">
         {filteredOrders.map((order, index) => (
           <div className="bg-white rounded-lg shadow p-4" key={index}>
             <div className="flex justify-between items-center mb-4">
               <div>
-                <p className="font-medium text-lg">ร้าน: {order.owner.name}</p>
-                <p className="text-gray-600">
+                <p className="text-base">ร้าน: {order.owner.name}</p>
+                <p className="text-sm text-gray-600">
                   วันที่: {new Date(order.date).toLocaleDateString()}
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-lg">฿{order.amount}</p>
+                <p className="text-base font-semibold">฿{order.amount}</p>
                 <p className="text-sm text-gray-600">
                   จำนวนรายการ: {order.items.length}
                 </p>
