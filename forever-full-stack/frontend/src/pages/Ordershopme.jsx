@@ -222,31 +222,53 @@ const Ordershopme = ({ searchQuery }) => {
               </div>
 
               {/* รายการสินค้า */}
-              <div className="mb-4">
-                {order.items.map((item, index) => (
-                  <p
-                    key={index}
-                    className="flex items-center gap-2 py-1 flex-wrap"
-                  >
-                    <span className="font-medium">{item.name}</span>
-                    <span className="text-gray-500">x{item.quantity}</span>
-                    <span className="text-gray-500">ไซส์ {item.size}</span>
-                    {item.colors && (
-                      <div className="flex items-center gap-1">
-                        <span className="text-gray-500">สี:</span>
-                        {item.colors.map((color, colorIdx) => (
-                          <div
-                            key={colorIdx}
-                            className={`w-4 h-4 rounded-full ${getColorClass(
-                              color
-                            )}`}
-                            title={getColorName(color)}
-                          />
-                        ))}
-                      </div>
-                    )}
+              <div className="mb-4 flex justify-between flex-wrap">
+                <div>
+                  {order.items.map((item, index) => (
+                    <p
+                      key={index}
+                      className="flex items-center gap-2 py-1 flex-wrap"
+                    >
+                      <span className="font-medium">{item.name}</span>
+                      <span className="text-gray-500">x{item.quantity}</span>
+                      <span className="text-gray-500">ไซส์ {item.size}</span>
+                      {item.colors && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">สี:</span>
+                          {item.colors.map((color, colorIdx) => (
+                            <div
+                              key={colorIdx}
+                              className={`w-4 h-4 rounded-full ${getColorClass(
+                                color
+                              )}`}
+                              title={getColorName(color)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </p>
+                  ))}
+                </div>
+
+                {order.transferredToShop && (
+                  <p className="text-gray-500">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 inline-block mr-1 text-green-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    บริษัทโอนเงินให้ร้านค้าแล้ว
                   </p>
-                ))}
+                )}
               </div>
 
               {/* ข้อมูลการกำระเงินและที่อยู่ */}

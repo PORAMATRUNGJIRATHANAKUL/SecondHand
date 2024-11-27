@@ -181,6 +181,7 @@ const placeOrderQRCode = async (req, res) => {
       amount,
       paymentMethod: "QR Code",
       payment: false,
+      transferredToShop: false,
       date: Date.now(),
     };
 
@@ -303,6 +304,50 @@ const updateStatus = async (req, res) => {
   }
 };
 
+const transferToShop = async (req, res) => {
+  try {
+    const { orderId, transferredToShop } = req.body;
+
+    const updatedOrder = await orderModel.findById(orderId);
+
+    updatedOrder.transferredToShop = transferredToShop;
+
+    await updatedOrder.save();
+
+    res.json({ success: true, order: updatedOrder });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// QR Code Payment Orders
+const getQRCodePaymentOrders = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const orders = await orderModel.find({
+      paymentMethod: "QR Code",
+    });
+
+    const paymentList = await Promise.all(
+      orders.map(async (order) => {
+        const owner = await userModel.findById(
+          order.userId,
+          "name profileImage displayName"
+        );
+
+        return { ...order._doc, owner };
+      })
+    );
+
+    res.json({ success: true, orders: paymentList });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 // QR Code Payment List
 const getQRCodePaymentList = async (req, res) => {
   try {
@@ -325,7 +370,6 @@ const getQRCodePaymentList = async (req, res) => {
         const buyer = await userModel.findById(order.userId);
 
         return {
-          // buyer: order.address.firstName + " " + order.address.lastName,
           buyer: buyer.name,
           productNames: productNames,
           price: order.amount,
@@ -429,8 +473,10 @@ export {
   allOrders,
   userOrders,
   updateStatus,
+  getQRCodePaymentOrders,
   getQRCodePaymentList,
   deleteOrder,
   getShopOrdersByUserId,
   updateShippingInfo,
+  transferToShop,
 };

@@ -17,65 +17,17 @@ const Orders = ({ token, searchQuery }) => {
     }
 
     try {
-      const response = await axios.post(
-        backendUrl + "/api/order/list",
-        {},
+      const response = await axios.get(
+        backendUrl + "/api/order/shop-qr-orders",
         { headers: { token } }
       );
-      if (response.data.success) {
+      if (response.data.success && response.data.orders.length > 0) {
         setOrders(response.data.orders.reverse());
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
       toast.error(error.message);
-    }
-  };
-
-  const statusHandler = async (event, orderId) => {
-    try {
-      const response = await axios.post(
-        backendUrl + "/api/order/status",
-        { orderId, status: event.target.value },
-        { headers: { token } }
-      );
-      if (response.data.success) {
-        await fetchAllOrders();
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(response.data.message);
-    }
-  };
-
-  const viewQRProof = (order) => {
-    setSelectedOrder(order);
-    setShowQRProof(true);
-  };
-
-  const viewProducts = (order) => {
-    setSelectedOrder(order);
-    setShowProducts(true);
-  };
-
-  const deleteOrder = async (orderId) => {
-    if (window.confirm("คุณแน่ใจหรือไม่ที่จะลบออเดอร์นี้?")) {
-      try {
-        const response = await axios.delete(
-          `${backendUrl}/api/order/delete/${orderId}`,
-          { headers: { token } }
-        );
-
-        if (response.data.success) {
-          toast.success("ลบออเดอร์สำเร็จ");
-          await fetchAllOrders();
-        } else {
-          toast.error(response.data.message);
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("ไม่สามารถลบออเดอร์ได้");
-      }
     }
   };
 
@@ -96,6 +48,28 @@ const Orders = ({ token, searchQuery }) => {
       Beige: "bg-[#F5F5DC]",
     };
     return colorMap[colorName] || "bg-gray-200";
+  };
+
+  const updateTransferStatus = async (orderId, status) => {
+    try {
+      const response = await axios.post(
+        backendUrl + "/api/order/transfer-status",
+        { orderId, transferredToShop: status },
+        { headers: { token } }
+      );
+      if (response.data.success) {
+        setOrders(
+          orders.map((order) =>
+            order._id === orderId
+              ? { ...order, transferredToShop: status }
+              : order
+          )
+        );
+        toast.success("อัพเดทสถานะการโอนเงินสำเร็จ");
+      }
+    } catch (error) {
+      toast.error("ไม่สามารถอัพเดทสถานะการโอนเงินได้");
+    }
   };
 
   useEffect(() => {
@@ -125,7 +99,7 @@ const Orders = ({ token, searchQuery }) => {
       <div>
         {filteredOrders.map((order, index) => (
           <div
-            className="grid grid-cols-1 sm:grid-cols-[0.5fr_2fr_1fr] lg:grid-cols-[0.5fr_2fr_1fr_1fr_1fr] gap-3 items-start border-2 border-gray-200 p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700"
+            className="grid grid-cols-1 sm:grid-cols-[0.5fr_2fr_1fr_1fr_1fr_1fr] gap-3 items-start border-2 border-gray-200 p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700"
             key={index}
           >
             <img
@@ -134,6 +108,16 @@ const Orders = ({ token, searchQuery }) => {
               alt=""
               onClick={() => viewProducts(order)}
             />
+            <div>
+              {order.items.map((item, index) => (
+                <div key={index} className="mb-2">
+                  <p className="font-medium">ร้าน: {order.owner.name}</p>
+                  <p>สินค้า: {item.name}</p>
+                  <p>จำนวน: {item.quantity}</p>
+                  <p>ราคา: ฿{item.price * item.quantity}</p>
+                </div>
+              ))}
+            </div>
             <div>
               {order.items.map((item, index) => (
                 <p
@@ -162,22 +146,6 @@ const Orders = ({ token, searchQuery }) => {
                   )}
                 </p>
               ))}
-              <p className="mt-3 mb-2 font-medium">
-                {order.address.firstName + " " + order.address.lastName}
-              </p>
-              <div>
-                <p>{order.address.street + ","}</p>
-                <p>
-                  {order.address.city +
-                    ", " +
-                    order.address.state +
-                    ", " +
-                    order.address.country +
-                    ", " +
-                    order.address.zipcode}
-                </p>
-              </div>
-              <p>{order.address.phone}</p>
             </div>
             <div>
               <p className="text-sm sm:text-[15px]">
@@ -196,25 +164,21 @@ const Orders = ({ token, searchQuery }) => {
               <p>วันที่: {new Date(order.date).toLocaleDateString()}</p>
             </div>
             <p className="text-sm sm:text-[15px]">฿{order.amount}</p>
+
             <div className="flex flex-col gap-2">
-              <select
-                onChange={(event) => statusHandler(event, order._id)}
-                value={order.status}
-                className="p-2 font-semibold w-full"
-              >
-                <option value="รอดำเนินการ">รอดำเนินการ</option>
-                <option value="รับออเดอร์แล้ว">รับออเดอร์แล้ว</option>
-                <option value="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง</option>
-                <option value="กำลังแพ็คสินค้า">กำลังแพ็คสินค้า</option>
-                <option value="กำลังจัดส่ง">กำลังจัดส่ง</option>
-                <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
-              </select>
-              <button
-                onClick={() => deleteOrder(order._id)}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded w-full text-sm"
-              >
-                ลบออเดอร์
-              </button>
+              <div className="mt-2">
+                <p>สถานะการโอนให้ร้านค้า:</p>
+                <select
+                  value={order.transferredToShop}
+                  onChange={(e) =>
+                    updateTransferStatus(order._id, e.target.value === "true")
+                  }
+                  className="mt-1 p-1 border rounded w-full"
+                >
+                  <option value={false}>ยังไม่โอน</option>
+                  <option value={true}>โอนแล้ว</option>
+                </select>
+              </div>
             </div>
           </div>
         ))}

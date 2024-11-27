@@ -6,10 +6,12 @@ import {
   allOrders,
   userOrders,
   updateStatus,
+  getQRCodePaymentOrders,
   getQRCodePaymentList,
   deleteOrder,
   getShopOrdersByUserId,
   updateShippingInfo,
+  transferToShop,
 } from "../controllers/orderController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
@@ -35,7 +37,9 @@ orderRouter.post(
 // User Feature
 orderRouter.post("/userorders", authUser, userOrders);
 orderRouter.get("/shop-orders", authUser, getShopOrdersByUserId);
+orderRouter.get("/shop-qr-orders", adminAuth, getQRCodePaymentOrders);
 
+orderRouter.post("/transfer-status", adminAuth, transferToShop);
 // QR Code Payment List
 orderRouter.get("/qr-payment-list", authUser, getQRCodePaymentList);
 
