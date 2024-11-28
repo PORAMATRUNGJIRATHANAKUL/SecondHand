@@ -13,6 +13,8 @@ const addProduct = async (req, res) => {
       subCategory,
       sizes,
       colors,
+      shippingType,
+      shippingCost,
       bestseller,
       stockItems,
     } = req.body;
@@ -54,6 +56,8 @@ const addProduct = async (req, res) => {
       date: Date.now(),
       stockItems: JSON.parse(stockItems),
       owner,
+      shippingType,
+      shippingCost,
     };
 
     const product = new productModel(productData);

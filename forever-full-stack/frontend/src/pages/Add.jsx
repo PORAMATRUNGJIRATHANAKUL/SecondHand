@@ -23,6 +23,9 @@ const Add = () => {
 
   const [stockItems, setStockItems] = useState([]);
 
+  const [shippingType, setShippingType] = useState("free");
+  const [shippingCost, setShippingCost] = useState("");
+
   const sizeData = {
     clothing: {
       tops: ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"],
@@ -154,6 +157,12 @@ const Add = () => {
       image3 && formData.append("image3", image3);
       image4 && formData.append("image4", image4);
 
+      formData.append("shippingType", shippingType);
+      formData.append(
+        "shippingCost",
+        shippingType === "paid" ? shippingCost : "0"
+      );
+
       const response = await axios.post(
         backendUrl + "/api/product/add",
         formData,
@@ -161,7 +170,7 @@ const Add = () => {
       );
 
       if (response.data.success) {
-        toast.success("เพิ่มสินค้าสำเร็จ");
+        toast.success("เหพิ่มสินค้าสำเร็จ");
         // Reset all fields
         setName("");
         setDescription("");
@@ -173,6 +182,8 @@ const Add = () => {
         setSizes([]);
         setColors([]);
         setStockItems([]);
+        setShippingType("free");
+        setShippingCost("");
       } else {
         toast.error("ไม่สามารถเพิ่มสินค้าได้");
       }
@@ -451,6 +462,42 @@ const Add = () => {
             />
             <span className="text-gray-700">เพิ่มในสินค้าขายดี</span>
           </label>
+        </div>
+
+        {/* Add Shipping Section before the Submit Button */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-lg font-medium mb-4">ค่าจัดส่ง</h2>
+          <div className="space-y-4">
+            <select
+              value={shippingType}
+              onChange={(e) => setShippingType(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="free">ไม่มีค่าจัดส่ง</option>
+              <option value="paid">ขนส่งเอกชน</option>
+            </select>
+
+            {shippingType === "paid" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ราคาค่าจัดส่ง (บาท)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={shippingCost}
+                    onChange={(e) => setShippingCost(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0.00"
+                    required
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    บาท
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Submit Button */}

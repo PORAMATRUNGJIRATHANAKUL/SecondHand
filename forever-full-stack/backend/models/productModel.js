@@ -14,6 +14,8 @@ const productSchema = new mongoose.Schema({
   stockItems: { type: Array, required: true },
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
   isApproved: { type: Boolean, default: false },
+  shippingType: { type: String, enum: ["free", "paid"], default: "free" },
+  shippingCost: { type: Number, default: 0 },
 });
 
 const productModel =
