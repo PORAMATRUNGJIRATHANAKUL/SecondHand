@@ -110,7 +110,7 @@ const Ordershopme = ({ searchQuery }) => {
 
     const searchLower = searchQuery.toLowerCase().trim();
 
-    const name = order.address.name.toLowerCase();
+    const name = order.address?.name?.toLowerCase() || "";
     if (name.includes(searchLower)) return true;
 
     const hasMatchingItem = order.items.some((item) =>
@@ -185,9 +185,11 @@ const Ordershopme = ({ searchQuery }) => {
                   />
                   <div>
                     <p className="font-medium text-lg">
-                      {order.address.firstName} {order.address.lastName}
+                      {order.address?.name || "ไม่ระบุชื่อ"}
                     </p>
-                    <p className="text-gray-600">{order.address.phone}</p>
+                    <p className="text-gray-600">
+                      {order.address?.phone || "ไม่ระบุเบอร์โทร"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -262,17 +264,27 @@ const Ordershopme = ({ searchQuery }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-600 mb-1">ที่อยู่จัดส่ง:</p>
-                  <p className="font-medium">{order.address.name}</p>
-                  <p>{order.address.addressLine1}</p>
-                  {order.address.addressLine2 && (
+                  <p className="font-medium">
+                    {order.address?.name || "ไม่ระบุชื่อ"}
+                  </p>
+                  <p>โทร: {order.address?.phoneNumber || "ไม่ระบุเบอร์โทร"}</p>
+                  <p>{order.address?.addressLine1 || ""}</p>
+                  {order.address?.addressLine2 && (
                     <p>{order.address.addressLine2}</p>
                   )}
                   <p>
-                    {order.address.district} {order.address.province}{" "}
-                    {order.address.postalCode}
+                    {order.address?.district &&
+                      `เขต/อำเภอ ${order.address.district}`}
                   </p>
-                  <p>{order.address.country}</p>
-                  <p className="mt-1">โทร: {order.address.phoneNumber}</p>
+                  <p>
+                    {order.address?.province &&
+                      `จังหวัด ${order.address.province}`}
+                  </p>
+                  <p>
+                    {order.address?.postalCode &&
+                      `รหัสไปรษณีย์ ${order.address.postalCode}`}
+                  </p>
+                  <p>{order.address?.country || "ประเทศไทย"}</p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -291,11 +303,9 @@ const Ordershopme = ({ searchQuery }) => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span>สถานะการชำระเงิน:</span>
-
-                    {order.paymentMethod === "QR Code" && (
+                    {order.paymentMethod === "QR Code" ? (
                       <span>{order.payment ? "ชำระแล้ว" : "รอชำระ"}</span>
-                    )}
-                    {order.paymentMethod === "ชำระเงินปลายทาง" && (
+                    ) : (
                       <span>
                         {order.status === "ได้รับสินค้าแล้ว"
                           ? "ชำระแล้ว"

@@ -842,14 +842,18 @@ const PlaceOrder = () => {
                             {/* Product Details */}
                             <div className="space-y-2 text-sm mb-4">
                               <div className="flex justify-between items-center text-gray-600">
-                                <span>ราคาสินค้า (1 ชิ้น)</span>
-                                <span>฿{product.price.toLocaleString()}</span>
+                                <span>ราคาสินค้า ({quantity} ชิ้น)</span>
+                                <span>
+                                  ฿{(product.price * quantity).toLocaleString()}
+                                </span>
                               </div>
                               <div className="flex justify-between items-center text-gray-600">
-                                <span>ค่าจัดส่ง</span>
+                                <span>ค่าจัดส่ง ({quantity} ชิ้น)</span>
                                 <span>
                                   ฿
-                                  {(product.shippingCost || 0).toLocaleString()}
+                                  {(
+                                    (product.shippingCost || 0) * quantity
+                                  ).toLocaleString()}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center font-medium text-gray-900 border-t pt-2">
@@ -857,46 +861,13 @@ const PlaceOrder = () => {
                                 <span>
                                   ฿
                                   {(
-                                    product.price + (product.shippingCost || 0)
+                                    (product.price +
+                                      (product.shippingCost || 0)) *
+                                    quantity
                                   ).toLocaleString()}
                                 </span>
                               </div>
                             </div>
-
-                            {/* ถ้ามีการแสดงราคารวมตามจำนวนชิ้น ให้เพิ่มส่วนนี้ */}
-                            {quantity > 1 && (
-                              <div className="mt-2 pt-2 border-t">
-                                <div className="flex justify-between items-center text-gray-600 text-sm">
-                                  <span>ราคารวม ({quantity} ชิ้น)</span>
-                                  <span>
-                                    ฿
-                                    {(
-                                      product.price * quantity
-                                    ).toLocaleString()}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between items-center text-gray-600 text-sm">
-                                  <span>ค่าจัดส่งรวม</span>
-                                  <span>
-                                    ฿
-                                    {(
-                                      (product.shippingCost || 0) * quantity
-                                    ).toLocaleString()}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between items-center font-medium text-gray-900 mt-1">
-                                  <span>รวมทั้งสิ้น</span>
-                                  <span>
-                                    ฿
-                                    {(
-                                      (product.price +
-                                        (product.shippingCost || 0)) *
-                                      quantity
-                                    ).toLocaleString()}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
                           </div>
                         </div>
 
