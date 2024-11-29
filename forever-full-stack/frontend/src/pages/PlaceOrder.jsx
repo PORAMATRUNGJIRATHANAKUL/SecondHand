@@ -97,12 +97,25 @@ const PlaceOrder = () => {
         return;
       }
 
+      // สรวจสอบว่าทุกสินค้ามีที่อยู่จัดส่ง
+      const allItemsHaveAddress = cartItems.every(
+        (item) => itemAddresses[item.productId] || selectedAddress
+      );
+
+      if (!allItemsHaveAddress) {
+        toast.error("กรุณาเลือกที่อยู่จัดส่งสำหรับทุกสินค้า");
+        return;
+      }
+
       // สร้างรายการสินค้าที่จะส่งไป API
       const orderItems = cartItems.map((item) => {
         const product = products.find((p) => p._id === item.productId);
         if (!product) {
           throw new Error(`ไม่พบข้อมูลสินค้ารหัส ${item.productId}`);
         }
+
+        // ใช้ที่อยู่เฉพาะของสินค้า หรือที่อยู่หลักถ้าไม่มีที่อยู่เฉพาะ
+        const itemAddress = itemAddresses[item.productId] || selectedAddress;
 
         return {
           _id: item.productId,
@@ -112,9 +125,9 @@ const PlaceOrder = () => {
           size: item.size,
           colors: [item.color],
           owner: product.owner,
-          shippingCost: 50,
+          shippingCost: product.shippingCost || 50,
           image: product.image?.[0] || product.images?.[0] || "",
-          address: selectedAddress,
+          address: itemAddress,
         };
       });
 
@@ -181,6 +194,22 @@ const PlaceOrder = () => {
   // ฟังก์ชันสำหรับจัดการการส่งฟอร์ม
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+
+    // เพิ่มการตรวจสอบที่อยู่
+    if (!selectedAddress) {
+      toast.error("กรุณาเลือกที่อยู่จัดส่ง");
+      return;
+    }
+
+    // ตรวจสอบว่าทุกสินค้ามีที่อยู่จัดส่ง
+    const allItemsHaveAddress = cartItems.every(
+      (item) => itemAddresses[item.productId] || selectedAddress
+    );
+
+    if (!allItemsHaveAddress) {
+      toast.error("กรุณาเลือกที่อยู่จัดส่งสำหรับทุกสินค้า");
+      return;
+    }
 
     if (!method) {
       toast.error("กรุณาเลือกวิธีการชำระเงิน");
@@ -270,6 +299,11 @@ const PlaceOrder = () => {
           );
           if (defaultAddress) {
             setSelectedAddress(defaultAddress);
+            const initialItemAddresses = {};
+            cartItems.forEach((item) => {
+              initialItemAddresses[item.productId] = defaultAddress;
+            });
+            setItemAddresses(initialItemAddresses);
           }
         }
       } catch (error) {
@@ -278,10 +312,18 @@ const PlaceOrder = () => {
       }
     };
     fetchAddresses();
-  }, [backendUrl, token]);
+  }, [backendUrl, token, cartItems]);
 
-  const handleAddAddress = async (e) => {
+  const handleSubmitAddress = async (e) => {
     e.preventDefault();
+    if (editingAddressId) {
+      handleUpdateAddress(editingAddressId);
+    } else {
+      handleAddAddress(e);
+    }
+  };
+
+  const handleAddAddress = async () => {
     try {
       const response = await axios.post(
         `${backendUrl}/api/user/address`,
@@ -417,11 +459,6 @@ const PlaceOrder = () => {
     }
   };
 
-  // เพิ่ม console.log เพื่อดีบัก
-  useEffect(() => {
-    console.log("itemAddresses updated:", itemAddresses);
-  }, [itemAddresses]);
-
   // ปรับปรุงการจัดการเมื่อคลิกเลือกที่อยู่จาก dropdown
   const handleAddressSelection = (address, productId) => {
     handleSelectAddress(address, productId);
@@ -437,21 +474,21 @@ const PlaceOrder = () => {
       );
 
       if (response.data.success) {
-        setAddresses(
-          addresses.map((addr) => ({
-            ...addr,
-            isDefault: addr._id === addressId,
-          }))
+        const updatedAddresses = addresses.map((addr) => ({
+          ...addr,
+          isDefault: addr._id === addressId,
+        }));
+        setAddresses(updatedAddresses);
+
+        const newDefaultAddress = updatedAddresses.find(
+          (addr) => addr._id === addressId
         );
+        setSelectedAddress(newDefaultAddress);
 
-        const defaultAddress = addresses.find((addr) => addr._id === addressId);
-        setSelectedAddress(defaultAddress);
-
-        // อัพเดทที่อยู่ในรายการสินค้า
         const newItemAddresses = { ...itemAddresses };
-        Object.keys(newItemAddresses).forEach((key) => {
-          if (newItemAddresses[key]?._id === addressId) {
-            newItemAddresses[key] = { ...defaultAddress, isDefault: true };
+        cartItems.forEach((item) => {
+          if (!newItemAddresses[item.productId]) {
+            newItemAddresses[item.productId] = newDefaultAddress;
           }
         });
         setItemAddresses(newItemAddresses);
@@ -467,23 +504,22 @@ const PlaceOrder = () => {
     }
   };
 
-  // ปรับปุงการจัดกลุมสินค้าตามร้านค้า
+  // ปรับปุ่งการจัดกลุมสินค้าตามร้านค้า
   const groupedByStore = cartItems.reduce((groups, item) => {
     const product = products.find((p) => p._id === item.productId);
     if (!product) return groups;
 
     const storeId = product.owner?._id || "unknown";
 
-    // ถ้ายังไม่มีกลุ่มร้านค้านี้ ให้สร้างใหม่
     if (!groups[storeId]) {
       groups[storeId] = {
         storeId,
         storeName: product.owner?.name || "ไม่ระบุชื่อร้าน",
         storeImage: product.owner?.profileImage,
         items: [],
-        totalItems: 0, // เพิ่มการนับจำนวนชิ้นรวม
-        totalAmount: 0, // เพิ่มยอดรวม
-        totalShipping: 0, // เพิ่มค่าส่งรวม
+        totalItems: 0,
+        totalAmount: 0,
+        totalShipping: 0,
       };
     }
 
@@ -491,7 +527,9 @@ const PlaceOrder = () => {
     groups[storeId].items.push({ ...item, product });
     groups[storeId].totalItems += item.quantity;
     groups[storeId].totalAmount += product.price * item.quantity;
-    groups[storeId].totalShipping += 50 * item.quantity; // ค่าส่ง 50 บาทต่อชิ้น
+    // คำนวณค่าจัดส่งตามค่าจัดส่งของสินค้าแต่ละชิ้น
+    groups[storeId].totalShipping +=
+      (product.shippingCost || 0) * item.quantity;
 
     return groups;
   }, {});
@@ -800,29 +838,64 @@ const PlaceOrder = () => {
                               </div>
                             </div>
 
-                            {/* Product Pricing Details */}
-                            <div className="space-y-2 text-sm border-t pt-3">
+                            {/* Product Details */}
+                            <div className="space-y-2 text-sm mb-4">
                               <div className="flex justify-between items-center text-gray-600">
-                                <span>ราคาสินค้า ({quantity} ชิ้น)</span>
-                                <span>
-                                  ฿{(product.price * quantity).toLocaleString()}
-                                </span>
+                                <span>ราคาสินค้า (1 ชิ้น)</span>
+                                <span>฿{product.price.toLocaleString()}</span>
                               </div>
                               <div className="flex justify-between items-center text-gray-600">
                                 <span>ค่าจัดส่ง</span>
-                                <span>฿{(50 * quantity).toLocaleString()}</span>
+                                <span>
+                                  ฿
+                                  {(product.shippingCost || 0).toLocaleString()}
+                                </span>
                               </div>
                               <div className="flex justify-between items-center font-medium text-gray-900 border-t pt-2">
                                 <span>รวมทั้งสิ้น</span>
                                 <span>
                                   ฿
                                   {(
-                                    product.price * quantity +
-                                    50 * quantity
+                                    product.price + (product.shippingCost || 0)
                                   ).toLocaleString()}
                                 </span>
                               </div>
                             </div>
+
+                            {/* ถ้ามีการแสดงราคารวมตามจำนวนชิ้น ให้เพิ่มส่วนนี้ */}
+                            {quantity > 1 && (
+                              <div className="mt-2 pt-2 border-t">
+                                <div className="flex justify-between items-center text-gray-600 text-sm">
+                                  <span>ราคารวม ({quantity} ชิ้น)</span>
+                                  <span>
+                                    ฿
+                                    {(
+                                      product.price * quantity
+                                    ).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center text-gray-600 text-sm">
+                                  <span>ค่าจัดส่งรวม</span>
+                                  <span>
+                                    ฿
+                                    {(
+                                      (product.shippingCost || 0) * quantity
+                                    ).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center font-medium text-gray-900 mt-1">
+                                  <span>รวมทั้งสิ้น</span>
+                                  <span>
+                                    ฿
+                                    {(
+                                      (product.price +
+                                        (product.shippingCost || 0)) *
+                                      quantity
+                                    ).toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -1063,7 +1136,40 @@ const PlaceOrder = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 สรุปคำสั่งซื้อ
               </h2>
-              <CartTotal />
+              <div className="space-y-4">
+                {Object.values(groupedByStore).map((store) => (
+                  <div key={store.storeId} className="border-b pb-4">
+                    <p className="font-medium text-gray-900">
+                      {store.storeName}
+                    </p>
+                    <div className="mt-2 space-y-2">
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>ยอดสินค้า</span>
+                        <span>฿{store.totalAmount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>ค่าจัดส่ง</span>
+                        <span>฿{store.totalShipping.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div className="pt-4">
+                  <div className="flex justify-between font-medium text-gray-900">
+                    <span>ยอดรวมทั้งหมด</span>
+                    <span>
+                      ฿
+                      {Object.values(groupedByStore)
+                        .reduce(
+                          (total, store) =>
+                            total + store.totalAmount + store.totalShipping,
+                          0
+                        )
+                        .toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Payment Method Section - ลบส่วนที่อยู่จัดส่งออก */}
@@ -1080,8 +1186,14 @@ const PlaceOrder = () => {
                     checked={method === "Cash on Delivery"}
                     onChange={(e) => setMethod(e.target.value)}
                     className="h-4 w-4 text-blue-600"
+                    disabled={!selectedAddress}
                   />
-                  <label htmlFor="cod" className="ml-3 text-gray-700">
+                  <label
+                    htmlFor="cod"
+                    className={`ml-3 ${
+                      !selectedAddress ? "text-gray-400" : "text-gray-700"
+                    }`}
+                  >
                     ชำระเงินปลายทาง
                   </label>
                 </div>
@@ -1093,20 +1205,41 @@ const PlaceOrder = () => {
                     checked={method === "QR Code"}
                     onChange={(e) => setMethod(e.target.value)}
                     className="h-4 w-4 text-blue-600"
+                    disabled={!selectedAddress}
                   />
-                  <label htmlFor="qr" className="ml-3 text-gray-700">
+                  <label
+                    htmlFor="qr"
+                    className={`ml-3 ${
+                      !selectedAddress ? "text-gray-400" : "text-gray-700"
+                    }`}
+                  >
                     QR Code
                   </label>
                 </div>
               </div>
+
+              {!selectedAddress && (
+                <div className="mt-4 text-sm text-red-500">
+                  * กรุณาเลือกที่อยู่จัดส่งก่อนเลือกวิธีการชำระเงิน
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
             <button
               onClick={onSubmitHandler}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              disabled={!selectedAddress || !method}
+              className={`w-full py-3 px-4 rounded-lg transition-colors duration-200 ${
+                selectedAddress && method
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
             >
-              ยืนยันคำสั่งซื้อ
+              {!selectedAddress
+                ? "กรุณาเลือกที่อยู่จัดส่ง"
+                : !method
+                ? "กรุณาเลือกวิธีการชำระเงิน"
+                : "ยืนยันคำสั่งซื้อ"}
             </button>
           </div>
         </div>
@@ -1242,7 +1375,9 @@ const PlaceOrder = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">เพิ่มที่อยู่ใหม่</h3>
+              <h3 className="text-lg font-semibold">
+                {editingAddressId ? "แก้ไขที่อยู่" : "เพิ่มที่อยู่ใหม่"}
+              </h3>
               <button
                 onClick={() => {
                   setShowAddressForm(false);
@@ -1266,7 +1401,7 @@ const PlaceOrder = () => {
               </button>
             </div>
 
-            <form onSubmit={handleAddAddress} className="space-y-4">
+            <form onSubmit={handleAddressSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   ชื่อ-นามสกุล

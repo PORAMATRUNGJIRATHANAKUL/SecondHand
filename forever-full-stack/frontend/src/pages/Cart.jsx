@@ -117,7 +117,6 @@ const Cart = () => {
         groups[storeId] = {
           storeName: product.owner?.name || "ไม่ระบุชื่อร้าน",
           items: [],
-          shipping: product.shippingType === "paid" ? product.shippingCost : 0,
         };
       }
 
@@ -125,6 +124,7 @@ const Cart = () => {
         ...item,
         product,
         subtotal: product.price * item.quantity,
+        shippingCost: product.shippingCost * item.quantity,
       });
 
       return groups;
@@ -132,10 +132,10 @@ const Cart = () => {
 
     const total = Object.values(groupedByStore).reduce((sum, store) => {
       const storeSubtotal = store.items.reduce(
-        (total, item) => total + item.subtotal,
+        (total, item) => total + item.subtotal + item.shippingCost,
         0
       );
-      return sum + storeSubtotal + store.shipping;
+      return sum + storeSubtotal;
     }, 0);
 
     return (
@@ -143,6 +143,10 @@ const Cart = () => {
         {Object.values(groupedByStore).map((store, index) => {
           const storeSubtotal = store.items.reduce(
             (total, item) => total + item.subtotal,
+            0
+          );
+          const storeShipping = store.items.reduce(
+            (total, item) => total + item.shippingCost,
             0
           );
 
@@ -200,14 +204,14 @@ const Cart = () => {
                   <span>ค่าจัดส่ง</span>
                   <span>
                     {currency}
-                    {store.shipping.toLocaleString()}
+                    {storeShipping.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm font-medium text-gray-900">
                   <span>รวมทั้งหมด</span>
                   <span>
                     {currency}
-                    {(storeSubtotal + store.shipping).toLocaleString()}
+                    {(storeSubtotal + storeShipping).toLocaleString()}
                   </span>
                 </div>
               </div>

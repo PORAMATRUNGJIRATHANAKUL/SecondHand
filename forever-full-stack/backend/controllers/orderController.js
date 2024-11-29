@@ -113,6 +113,9 @@ const placeOrder = async (req, res) => {
           );
         }
 
+        // ดึงค่าจัดส่งจากข้อมูลสินค้า
+        const shippingCost = product.shippingCost || 0;
+
         return {
           ...item,
           name: product.name,
@@ -124,6 +127,7 @@ const placeOrder = async (req, res) => {
             email: product.owner.email,
             profileImage: product.owner.profileImage,
           },
+          shippingCost: shippingCost * item.quantity, // คำนวณค่าจัดส่งตามจำนวนสินค้า
         };
       })
     );
@@ -211,6 +215,7 @@ const placeOrder = async (req, res) => {
 
     // Create shop orders grouped by shop with shipping addresses
     for (const [shopId, shopItems] of Object.entries(itemsByShop)) {
+      // คำนวณยอดรวมโดยรวมค่าจัดส่งของแต่ละชิ้น
       const shopTotal = shopItems.reduce(
         (sum, item) => sum + (item.price * item.quantity + item.shippingCost),
         0
@@ -220,7 +225,7 @@ const placeOrder = async (req, res) => {
         userId,
         userOrderId: newUserOrder._id,
         items: shopItems,
-        amount: shopTotal,
+        amount: shopTotal, // ยอดรวมที่รวมค่าจัดส่งแล้ว
         paymentMethod,
         payment: paymentMethod === "QR Code",
         paymentProof,
