@@ -225,7 +225,7 @@ const placeOrder = async (req, res) => {
         userId,
         userOrderId: newUserOrder._id,
         items: shopItems,
-        amount: shopTotal, // ยอดรวมที่รวมค่าจัดส่งแล้ว
+        amount: shopTotal,
         paymentMethod,
         payment: paymentMethod === "QR Code",
         paymentProof,
@@ -515,19 +515,40 @@ const getShopOrdersByUserId = async (req, res) => {
         "items.owner._id": userId,
       })
       .populate({
-        path: "items.product",
-        select: "name image price",
-      })
-      .populate({
         path: "userId",
         select: "name email profileImage",
       })
-      .sort({ createdAt: -1 });
+      .populate({
+        path: "userOrderId",
+        select: "items status",
+      })
+      .sort({ date: -1 });
 
-    res.json({ success: true, orders });
+    // จัดรูปแบบข้อมูลให้ตรงกับที่ frontend ต้องการ
+    const formattedOrders = orders.map((order) => {
+      const orderObj = order.toObject();
+      return {
+        ...orderObj,
+        items: orderObj.items
+          .filter((item) => item.owner._id.toString() === userId.toString())
+          .map((item) => ({
+            ...item,
+            image: Array.isArray(item.image) ? item.image : [item.image],
+          })),
+      };
+    });
+
+    res.json({
+      success: true,
+      orders: formattedOrders,
+    });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: error.message });
+    console.error("Error in getShopOrdersByUserId:", error);
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการดึงข้อมูลออเดอร์",
+      error: error.message,
+    });
   }
 };
 

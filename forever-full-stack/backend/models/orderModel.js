@@ -1,8 +1,12 @@
 import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
-  userId: { type: String, required: true },
-  userOrderId: { type: String, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
+  userOrderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "userOrder",
+    required: true,
+  },
   items: [
     {
       _id: { type: String, required: true },
@@ -13,7 +17,11 @@ const orderSchema = new mongoose.Schema({
       colors: [{ type: String, required: true }],
       image: [{ type: String }],
       owner: {
-        _id: { type: String, required: true },
+        _id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "user",
+          required: true,
+        },
         name: { type: String, required: true },
         email: { type: String },
         profileImage: { type: String },
@@ -40,7 +48,7 @@ const orderSchema = new mongoose.Schema({
   paymentProof: { type: String, default: null },
   paymentDate: { type: Date },
   transferredToShop: { type: Boolean, default: false },
-  date: { type: Number, required: true },
+  date: { type: Date, default: Date.now, required: true },
 });
 
 const orderModel =

@@ -1,6 +1,4 @@
-import React, { useContext, useState, useRef, useCallback } from "react";
-import Title from "../components/Title";
-import CartTotal from "../components/CartTotal";
+import React, { useContext, useState, useRef } from "react";
 import { assets } from "../assets/assets";
 import { ShopContext } from "../context/ShopContext";
 import axios from "axios";
@@ -151,7 +149,7 @@ const PlaceOrder = () => {
 
         // อัพโหลดหลักฐานการชำระเงินก่อน
         const uploadResponse = await axios.post(
-          `${backendUrl}/api/upload/payment-proof`,
+          `${backendUrl}/api/order/verify-qr`,
           formData,
           {
             headers: {
@@ -162,7 +160,7 @@ const PlaceOrder = () => {
         );
 
         if (uploadResponse.data.success) {
-          orderData.paymentProof = uploadResponse.data.url;
+          orderData.paymentProof = uploadResponse.data.paymentProofPath;
         } else {
           throw new Error("ไม่สามารถอัพโหลดหลักฐานการชำระเงินได้");
         }
@@ -648,6 +646,9 @@ const PlaceOrder = () => {
       );
     }
   };
+
+  // Add new state for QR code verification
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1184,7 +1185,10 @@ const PlaceOrder = () => {
                     id="cod"
                     value="Cash on Delivery"
                     checked={method === "Cash on Delivery"}
-                    onChange={(e) => setMethod(e.target.value)}
+                    onChange={(e) => {
+                      setMethod(e.target.value);
+                      setPaymentProof(null); // Reset payment proof when switching to COD
+                    }}
                     className="h-4 w-4 text-blue-600"
                     disabled={!selectedAddress}
                   />
@@ -1216,6 +1220,66 @@ const PlaceOrder = () => {
                     QR Code
                   </label>
                 </div>
+
+                {/* Show QR Code section when QR payment is selected */}
+                {method === "QR Code" && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="mb-4">
+                      <img
+                        src={qrcodePaymentImage}
+                        alt="QR Code Payment"
+                        className="w-48 h-48 mx-auto"
+                      />
+                      <p className="text-center text-sm text-gray-600 mt-2">
+                        สแกน QR Code เพื่อชำระเงินจำนวน{" "}
+                        <span className="font-semibold">
+                          ฿
+                          {Object.values(groupedByStore)
+                            .reduce(
+                              (total, store) =>
+                                total + store.totalAmount + store.totalShipping,
+                              0
+                            )
+                            .toLocaleString()}
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium text-gray-700">
+                        แนบสลิปการโอนเงิน:
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        ref={fileInputRef}
+                        className="hidden"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex-1 bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 text-sm"
+                        >
+                          แนบสลิปการโอนเงิน
+                        </button>
+                        {paymentProof && (
+                          <button
+                            onClick={() => setShowSlipPreview(true)}
+                            className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 text-sm"
+                          >
+                            ตรวจสอบสลิปการโอนเงิน
+                          </button>
+                        )}
+                      </div>
+                      {paymentProof && (
+                        <p className="text-sm text-green-600">
+                          ✓ อัพโหลดสลิปเรียบร้อยแล้ว: {paymentProofFileName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {!selectedAddress && (
@@ -1231,7 +1295,7 @@ const PlaceOrder = () => {
               disabled={!selectedAddress || !method}
               className={`w-full py-3 px-4 rounded-lg transition-colors duration-200 ${
                 selectedAddress && method
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  ? "bg-black text-white hover:bg-gray-800"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
             >
@@ -1304,14 +1368,14 @@ const PlaceOrder = () => {
                 <div className="flex gap-4">
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                    className="flex-1 bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 text-sm"
                   >
-                    เลือกไฟล์
+                    แนบสลิป
                   </button>
                   {paymentProof && (
                     <button
                       onClick={() => setShowSlipPreview(true)}
-                      className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded hover:bg-gray-200"
+                      className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 text-sm"
                     >
                       ดูสลิป
                     </button>
