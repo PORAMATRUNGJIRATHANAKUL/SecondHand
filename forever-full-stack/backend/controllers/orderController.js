@@ -59,65 +59,111 @@ const upload = multer({ storage: storage });
 
 const placeOrder = async (req, res) => {
   try {
-    const { userId, items, amount, address, paymentMethod, paymentProof } =
+    const { userId, items, amount, paymentMethod, paymentProof, address } =
       req.body;
 
-    // Update stock for each item
-    for (const item of items) {
-      const product = await productModel.findById(item._id);
-      if (!product) {
-        throw new Error(`ไม่พบสินค้ารหัส: ${item._id}`);
-      }
+    console.log(items);
 
+    console.log("--------------------------------------------------");
+    // Check stock and get full product data
+    const itemsWithFullData = await Promise.all(
+      items.map(async (item) => {
+        const product = await productModel
+          .findById(item._id)
+          .populate("owner", "name email profileImage");
+        if (!product) {
+          throw new Error(`ไม่พบสินค้ารหัส: ${item._id}`);
+        }
+
+        const stockItem = product.stockItems.find(
+          (s) => s.size === item.size && s.color === item.colors[0]
+        );
+
+        if (!stockItem) {
+          throw new Error(
+            `ไม่พบสต็อกสินค้า ${product.name} ไซส์ ${item.size} สี ${item.colors[0]}`
+          );
+        }
+
+        if (stockItem.stock < item.quantity) {
+          throw new Error(
+            `สินค้า ${product.name} มีไม่เพียงพอ (เหลือ ${stockItem.stock} ชิ้น, ต้องการ ${item.quantity} ชิ้น)`
+          );
+        }
+
+        // ดึงค่าจัดส่งจากข้อมูลสินค้า
+        const shippingCost = product.shippingCost || 0;
+
+        return {
+          ...item,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          owner: {
+            _id: product.owner._id,
+            name: product.owner.name,
+            email: product.owner.email,
+            profileImage: product.owner.profileImage,
+          },
+          shippingCost: shippingCost * item.quantity, // คำนวณค่าจัดส่งตามจำนวนสินค้า
+          shippingAddress: {
+            name: item.address.name,
+            addressLine1: item.address.addressLine1,
+            addressLine2: item.address.addressLine2 || "",
+            district: item.address.district,
+            province: item.address.province,
+            postalCode: item.address.postalCode,
+            phoneNumber: item.address.phoneNumber,
+            country: item.address.country || "ประเทศไทย",
+          },
+        };
+      })
+    );
+
+    // Update stock for all items
+    for (const item of itemsWithFullData) {
+      const product = await productModel.findById(item._id);
       const stockIndex = product.stockItems.findIndex(
         (s) => s.size === item.size && s.color === item.colors[0]
       );
-
-      if (stockIndex === -1) {
-        throw new Error(`ไม่พบไซส์ ${item.size} และสี ${item.colors[0]}`);
-      }
-
-      const newStock = product.stockItems[stockIndex].stock - item.quantity;
 
       await productModel.findByIdAndUpdate(
         item._id,
         {
           $set: {
-            [`stockItems.${stockIndex}.stock`]: newStock,
+            [`stockItems.${stockIndex}.stock`]:
+              product.stockItems[stockIndex].stock - item.quantity,
           },
         },
         { new: true }
       );
-
-      if (newStock <= 0) {
-        await productModel.findByIdAndUpdate(item._id, {
-          $pull: {
-            stockItems: { size: item.size, color: item.colors[0] },
-          },
-        });
-      }
     }
 
-    // Group items by shop owner
-    const itemsByShop = items.reduce((acc, item) => {
+    // Group items by shop owner and add shipping address to each item
+    const itemsByShop = itemsWithFullData.reduce((acc, item) => {
       const shopId = item.owner._id;
       if (!acc[shopId]) {
         acc[shopId] = [];
       }
-      acc[shopId].push(item);
+      acc[shopId].push({
+        ...item,
+        shippingCost: item.shippingCost || 0,
+        status: "รอดำเนินการ",
+      });
       return acc;
     }, {});
 
-    const userOrderItems = items.map((item) => ({
+    // Create user order with shipping addresses
+    const userOrderItems = itemsWithFullData.map((item) => ({
       ...item,
       status: "รอดำเนินการ",
+      shippingCost: item.shippingCost || 0,
     }));
 
     const userOrderData = {
       userId,
       items: userOrderItems,
       amount,
-      address,
       paymentMethod,
       date: Date.now(),
     };
@@ -125,18 +171,18 @@ const placeOrder = async (req, res) => {
     const newUserOrder = new userOrderModel(userOrderData);
     await newUserOrder.save();
 
-    // Create shop orders grouped by shop
+    // Create shop orders grouped by shop with shipping addresses
     for (const [shopId, shopItems] of Object.entries(itemsByShop)) {
+      // คำนวณยอดรวมโดยรวมค่าจัดส่งของแต่ละชิ้น
       const shopTotal = shopItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) => sum + (item.price * item.quantity + item.shippingCost),
         0
       );
 
       const shopOrderData = {
-        userId: shopId,
+        userId,
         userOrderId: newUserOrder._id,
         items: shopItems,
-        address,
         amount: shopTotal,
         paymentMethod,
         payment: paymentMethod === "QR Code",
@@ -149,12 +195,20 @@ const placeOrder = async (req, res) => {
       await newOrder.save();
     }
 
+    // Clear user's cart
     await userModel.findByIdAndUpdate(userId, { cartData: [] });
 
-    res.json({ success: true, message: "สร้างออเดอร์สำเร็จ" });
+    res.json({
+      success: true,
+      message: "สร้างออเดอร์สำเร็จ",
+      orderId: newUserOrder._id,
+    });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: error.message });
+    console.error("Error in placeOrder:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -261,58 +315,71 @@ const userOrders = async (req, res) => {
 // update order status from Admin Panel
 const updateStatus = async (req, res) => {
   try {
+    const { orderId, itemId, status } = req.body;
     const userId = req.userId;
-    const { orderId, status, confirmedByCustomer, shopId } = req.body;
 
-    // คัพเดท userOrder
-    const userOrder = await userOrderModel.findById(orderId);
-    if (!userOrder) {
+    // ตรวจสอบข้อมูลที่จำเป็น
+    if (!orderId || !itemId || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "กรุณาระบุข้อมูลให้ครบถ้วน",
+      });
+    }
+
+    // อัพเดท orderModel
+    const order = await orderModel.findById(orderId);
+    if (!order) {
       return res.status(404).json({
         success: false,
         message: "ไม่พบออเดอร์ที่ระบุ",
       });
     }
 
-    // อัพเดทสถานะเฉพาะสินค้าของร้านที่ระบุ
-    const updatedItems = userOrder.items.map((item) => {
-      if (item.owner._id === shopId) {
+    // อัพเดทสถานะของสินค้าที่ระบุ
+    const updatedItems = order.items.map((item) => {
+      if (item._id.toString() === itemId) {
         return {
-          ...item,
+          ...item.toObject(),
           status: status,
         };
       }
       return item;
     });
 
-    userOrder.items = updatedItems;
-    await userOrder.save();
+    order.items = updatedItems;
+    await order.save();
 
-    // เพิ่มการอัพเดท orderModel สำหรับร้านค้า
-    if (confirmedByCustomer) {
-      await orderModel.findOneAndUpdate(
-        {
-          userOrderId: orderId,
-          "items.owner._id": shopId,
-        },
-        {
-          $set: {
+    // อัพเดท userOrderModel
+    const userOrder = await userOrderModel.findOne({
+      _id: order.userOrderId,
+    });
+
+    if (userOrder) {
+      const updatedUserOrderItems = userOrder.items.map((item) => {
+        if (item._id.toString() === itemId) {
+          return {
+            ...item.toObject(),
             status: status,
-            items: updatedItems.filter((item) => item.owner._id === shopId),
-          },
+          };
         }
-      );
+        return item;
+      });
+
+      userOrder.items = updatedUserOrderItems;
+      await userOrder.save();
     }
 
     res.json({
       success: true,
-      message: "อัพเดทข้อมูลสำเร็จ",
-      order: userOrder,
+      message: "อัพเดทสถานะสำเร็จ",
+      order: order,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error in updateStatus:", error);
     res.status(500).json({
       success: false,
-      message: "เกิดข้อผิดพลาดในการอัพเดทข้อมูล",
+      message: "เกิดข้อผิดพลาดในการอัพเดทสถานะ",
+      error: error.message,
     });
   }
 };
@@ -409,72 +476,119 @@ const getShopOrdersByUserId = async (req, res) => {
         "items.owner._id": userId,
       })
       .populate({
-        path: "items.product",
-        select: "name image price",
-      })
-      .populate({
         path: "userId",
         select: "name email profileImage",
       })
-      .sort({ createdAt: -1 });
+      .populate({
+        path: "userOrderId",
+        select: "items status",
+      })
+      .sort({ date: -1 });
 
-    res.json({ success: true, orders });
+    // จัดรูปแบบข้อมูลให้ตรงกับที่ frontend ต้องการ
+    const formattedOrders = orders.map((order) => {
+      const orderObj = order.toObject();
+      return {
+        ...orderObj,
+        items: orderObj.items
+          .filter((item) => item.owner._id.toString() === userId.toString())
+          .map((item) => ({
+            ...item,
+            image: Array.isArray(item.image) ? item.image : [item.image],
+          })),
+      };
+    });
+
+    res.json({
+      success: true,
+      orders: formattedOrders,
+    });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: error.message });
+    console.error("Error in getShopOrdersByUserId:", error);
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการดึงข้อมูลออเดอร์",
+      error: error.message,
+    });
   }
 };
 
 // เพิ่มฟังก์ชันใหม่สำหรับอัพเดทข้อมูลการจัดส่ง
 const updateShippingInfo = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { orderId, trackingNumber, shippingProvider } = req.body;
+    const { orderId, itemId, trackingNumber, shippingProvider, size } =
+      req.body;
 
-    const updatedOrder = await orderModel.findByIdAndUpdate(
-      orderId,
-      {
-        trackingNumber,
-        shippingProvider,
-        status: "จัดส่งแล้ว", // อัพเดทสถานะเป็นจัดส่งแล้วอัตโนมัติ
-      },
-      { new: true }
-    );
+    // ตรวจสอบข้อมูลที่จำเป็น
+    if (!orderId || !trackingNumber || !shippingProvider) {
+      return res.status(400).json({
+        success: false,
+        message: "กรุณาระบุข้อมูลให้ครบถ้วน",
+      });
+    }
 
-    if (!updatedOrder) {
+    // อัพเดทข้อมูลใน orderModel
+    const order = await orderModel.findById(orderId);
+    if (!order) {
       return res.status(404).json({
         success: false,
         message: "ไม่พบออเดอร์ที่ระบุ",
       });
     }
 
-    const userOrder = await userOrderModel.findById(updatedOrder.userOrderId);
-
-    const updatedItems = userOrder.items.map((item) => {
-      if (item.owner._id.toString() === userId) {
+    // ถ้ามี itemId ให้อัพเดทเฉพาะ item นั้น
+    // ถ้าไม่มี itemId ให้อัพเดททุก item ในออเดอร์
+    const updatedItems = order.items.map((item) => {
+      if (!itemId || item._id.toString() === itemId || item.size === size) {
         return {
           ...item,
-          status: "จัดส่งแล้ว",
           trackingNumber,
           shippingProvider,
+          status: "จัดส่งแล้ว",
         };
       }
       return item;
     });
 
-    userOrder.items = updatedItems;
+    order.items = updatedItems;
+    await order.save();
+
+    // อัพเดทข้อมูลใน userOrderModel ด้วย
+    const userOrder = await userOrderModel.findById(order.userOrderId);
+
+    if (!userOrder) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบข้อมูลการสั่งซื้อของผู้ใช้",
+      });
+    }
+
+    const updatedUserOrderItems = userOrder.items.map((item) => {
+      if (!itemId || item._id.toString() === itemId || item.size === size) {
+        return {
+          ...item,
+          trackingNumber,
+          shippingProvider,
+          status: "จัดส่งแล้ว",
+        };
+      }
+      return item;
+    });
+
+    userOrder.items = updatedUserOrderItems;
     await userOrder.save();
 
-    res.json({
+    return res.status(200).json({
       success: true,
       message: "อัพเดทข้อมูลการจัดส่งสำเร็จ",
-      order: updatedOrder,
+      order: order,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in updateShippingInfo:", error);
     res.status(500).json({
       success: false,
       message: "เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง",
+      error: error.message,
     });
   }
 };

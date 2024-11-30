@@ -18,8 +18,6 @@ const Product = () => {
       if (item._id === productId) {
         setProductData(item);
         setImage(item.image[0]);
-        // setColor(item.colors[0]);
-
         const uniqueSizes = [
           ...new Set(item.stockItems.map((stock) => stock.size)),
         ];
@@ -100,23 +98,23 @@ const Product = () => {
   return productData ? (
     <div className="border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100">
       {/*----------- Product Data-------------- */}
-      <div className="flex gap-12 sm:gap-12 flex-col sm:flex-row">
+      <div className="flex gap-12 sm:gap-12 flex-col sm:flex-row max-w-7xl mx-auto px-4">
         {/*---------- Product Images------------- */}
         <div className="flex-1 flex flex-col-reverse gap-3 sm:flex-row">
-          <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-scroll justify-between sm:justify-normal sm:w-[18.7%] w-full">
+          <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-auto max-h-[500px] justify-between sm:justify-normal sm:w-[18.7%] w-full">
             {productData.image.map((item, index) => (
               <img
                 onClick={() => setImage(item)}
                 src={item}
                 key={index}
-                className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer"
+                className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity rounded-lg"
                 alt={`รูปสินค้า ${index + 1}`}
               />
             ))}
           </div>
           <div className="w-full sm:w-[80%]">
             <img
-              className="w-full h-auto"
+              className="w-full h-auto rounded-lg shadow-md"
               src={image}
               alt={`รูปสินค้า ${productData.name}`}
             />
@@ -124,89 +122,111 @@ const Product = () => {
         </div>
 
         {/* -------- Product Info ---------- */}
-        <div className="flex-1">
-          <h1 className="font-medium text-2xl mt-2">{productData.name}</h1>
-          <p className="mt-5 text-3xl font-medium">
-            ฿{productData.price.toLocaleString()}
-          </p>
-          <p className="mt-5 text-gray-500 md:w-4/5">
-            {productData.description}
-          </p>
-          <div className="flex flex-col gap-4 my-8">
-            <div>
-              <p className="mb-2">เลือกไซส์</p>
-              <div className="flex gap-2">
-                {availableSizes.map((item, index) => (
-                  <button
-                    onClick={() => handleSizeSelect(item)}
-                    className={`border py-2 px-4 bg-gray-100 hover:border-orange-500 transition-colors
-                      ${
-                        item === size ? "border-orange-500" : "border-gray-300"
-                      }`}
-                    key={index}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-              {size && color && (
-                <p className="mt-2 text-sm text-gray-600">
-                  เหลือ {stockCount} ชิ้น
-                </p>
-              )}
-            </div>
-            <div>
-              <p className="mb-2">เลือกสี</p>
-              <div className="flex gap-3">
-                {productData.colors.map((item, index) => (
-                  <div
-                    key={index}
-                    onClick={() => selectColor(item)}
-                    className={`w-8 h-8 rounded-full cursor-pointer ${getColorClass(
-                      item
-                    )} 
-                      ${
-                        item === color
-                          ? "ring-2 ring-orange-500 ring-offset-2"
-                          : ""
-                      }`}
-                    title={getColorName(item)}
-                  />
-                ))}
-              </div>
+        <div className="flex-1 space-y-6">
+          <div className="border-b pb-4">
+            <h1 className="font-medium text-2xl mb-2">{productData.name}</h1>
+            <div className="space-y-2">
+              <p className="text-3xl font-medium text-gray-900">
+                ฿{productData.price.toLocaleString()}
+              </p>
+              <p className="text-gray-500">
+                ค่าจัดส่ง: ฿{productData.shippingCost.toLocaleString()}
+              </p>
             </div>
           </div>
-          <button
-            onClick={handleAddToCart}
-            disabled={!size || !color || stockCount === 0}
-            className={`px-8 py-3 text-sm transition-colors ${
-              !size || !color || stockCount === 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-black text-white active:bg-gray-700 hover:bg-gray-800"
-            }`}
-          >
-            เพิ่มลงตะกร้า
-          </button>
+
+          <div className="space-y-4">
+            <p className="text-gray-600 leading-relaxed">
+              {productData.description}
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <p className="font-medium mb-3">เลือกไซส์</p>
+                <div className="flex flex-wrap gap-2">
+                  {availableSizes.map((item, index) => (
+                    <button
+                      onClick={() => handleSizeSelect(item)}
+                      className={`border py-2 px-4 rounded-md transition-all
+                        ${
+                          item === size
+                            ? "border-black bg-black text-white"
+                            : "border-gray-300 hover:border-gray-500 hover:bg-gray-50"
+                        }`}
+                      key={index}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="font-medium mb-3">เลือกสี</p>
+                <div className="flex flex-wrap gap-3">
+                  {productData.colors.map((item, index) => (
+                    <div
+                      key={index}
+                      onClick={() => selectColor(item)}
+                      className={`w-10 h-10 rounded-full cursor-pointer ${getColorClass(
+                        item
+                      )} 
+                        ${
+                          item === color
+                            ? "ring-2 ring-black ring-offset-2"
+                            : "hover:ring-2 hover:ring-gray-300 hover:ring-offset-1"
+                        }`}
+                      title={getColorName(item)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {size && color && (
+              <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded-md inline-block">
+                เหลือ {stockCount} ชิ้น
+              </p>
+            )}
+
+            <div className="flex justify-center">
+              <button
+                onClick={handleAddToCart}
+                disabled={!size || !color || stockCount === 0}
+                className={`px-12 py-3 rounded-lg font-medium transition-all
+                  ${
+                    !size || !color || stockCount === 0
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-black text-white hover:bg-gray-800 active:bg-gray-900"
+                  }
+                `}
+              >
+                เพิ่มลงตะกร้า
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ---------- Description & Review Section ------------- */}
-      <div className="mt-20">
-        <div className="flex">
-          <b className="border px-5 py-3 text-sm">รายละเอียด</b>
+      {/* ---------- Description Section ------------- */}
+      <div className="mt-16 max-w-7xl mx-auto px-4">
+        <div className="border-b">
+          <h2 className="text-lg font-medium pb-3">รายละเอียด</h2>
         </div>
-        <div className="flex flex-col gap-4 px-6 py-6 text-sm text-gray-500">
-          <p>สินค้าของแท้ 100%</p>
-          <p>รองรับการเก็บเงินปลายทาง</p>
-          <p>เปลี่ยนคืนสินค้าได้ภายใน 7 วัน</p>
+        <div className="py-6 space-y-3 text-gray-600">
+          <p>• สินค้าของแท้ 100%</p>
+          <p>• รองรับการเก็บเงินปลายทาง</p>
+          <p>• เปลี่ยนคืนสินค้าได้ภายใน 7 วัน</p>
         </div>
       </div>
 
-      {/* --------- display related products ---------- */}
-      <RelatedProducts
-        category={productData.category}
-        subCategory={productData.subCategory}
-      />
+      {/* --------- Related Products ---------- */}
+      <div className="mt-16">
+        <RelatedProducts
+          category={productData.category}
+          subCategory={productData.subCategory}
+        />
+      </div>
     </div>
   ) : (
     <div className="opacity-0"></div>
