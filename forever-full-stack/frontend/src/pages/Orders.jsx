@@ -246,7 +246,7 @@ const Orders = () => {
                             </div>
                           </div>
 
-                          {item.trackingNumber && item.shippingProvider && (
+                          {item.trackingNumber && (
                             <div className="mt-2 p-2 bg-gray-50 rounded-md">
                               <div className="flex flex-col gap-1">
                                 <p className="text-sm text-gray-700">
