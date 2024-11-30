@@ -3,7 +3,6 @@ import { assets } from "../assets/assets";
 import { Link, NavLink } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { BiSearch, BiShoppingBag, BiUser, BiMenu } from "react-icons/bi";
-
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
   const [profileImage, setProfileImage] = useState("");
@@ -14,7 +13,6 @@ const Navbar = () => {
     token,
     setToken,
     setCartItems,
-    backendUrl,
     user,
     fetchUserProfile,
   } = useContext(ShopContext);

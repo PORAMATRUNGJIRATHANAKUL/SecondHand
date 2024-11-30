@@ -10,6 +10,11 @@ const Orders = ({ token, searchQuery }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showQRProof, setShowQRProof] = useState(false);
   const [showProducts, setShowProducts] = useState(false);
+  const [trackingInfo, setTrackingInfo] = useState({
+    orderId: "",
+    trackingNumber: "",
+    shippingProvider: "",
+  });
 
   const fetchAllOrders = async () => {
     if (!token) {
@@ -51,6 +56,10 @@ const Orders = ({ token, searchQuery }) => {
   };
 
   const updateTransferStatus = async (orderId, status) => {
+    if (!window.confirm("ยืนยันการเปลี่ยนสถานะการโอนเงิน")) {
+      return;
+    }
+
     try {
       const response = await axios.post(
         backendUrl + "/api/order/transfer-status",
@@ -69,6 +78,54 @@ const Orders = ({ token, searchQuery }) => {
       }
     } catch (error) {
       toast.error("ไม่สามารถอัพเดทสถานะการโอนเงินได้");
+    }
+  };
+
+  const updateTrackingInfo = async (orderId) => {
+    try {
+      if (!trackingInfo.trackingNumber || !trackingInfo.shippingProvider) {
+        toast.error("กรุณากรอกข้อมูลการจัดส่งให้ครบถ้วน");
+        return;
+      }
+
+      const response = await axios.post(
+        backendUrl + "/api/order/update-tracking",
+        {
+          orderId,
+          trackingNumber: trackingInfo.trackingNumber,
+          shippingProvider: trackingInfo.shippingProvider,
+          status: "จัดส่งแล้ว",
+        },
+        { headers: { token } }
+      );
+
+      if (response.data.success) {
+        setOrders(
+          orders.map((order) =>
+            order._id === orderId
+              ? {
+                  ...order,
+                  trackingNumber: trackingInfo.trackingNumber,
+                  shippingProvider: trackingInfo.shippingProvider,
+                  status: "จัดส่งแล้ว",
+                }
+              : order
+          )
+        );
+        toast.success("อัพเดทข้อมูลการจัดส่งสำเร็จ");
+
+        setTrackingInfo({
+          orderId: "",
+          trackingNumber: "",
+          shippingProvider: "",
+        });
+      } else {
+        toast.error(
+          response.data.message || "ไม่สามารถอัพเดทข้อมูลการจัดส่งได้"
+        );
+      }
+    } catch (error) {
+      toast.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง");
     }
   };
 
@@ -171,18 +228,20 @@ const Orders = ({ token, searchQuery }) => {
                   </button>
                 )}
               </div>
-              <div className="w-48">
-                <p className="mb-1">สถานะการโอนให้ร้านค้า:</p>
-                <select
-                  value={order.transferredToShop}
-                  onChange={(e) =>
-                    updateTransferStatus(order._id, e.target.value === "true")
-                  }
-                  className="w-full p-2 border rounded"
-                >
-                  <option value={false}>ยังไม่โอน</option>
-                  <option value={true}>โอนแล้ว</option>
-                </select>
+              <div className="flex gap-4">
+                <div className="w-48">
+                  <p className="mb-1">สถานะการโอนให้ร้านค้า:</p>
+                  <select
+                    value={order.transferredToShop}
+                    onChange={(e) =>
+                      updateTransferStatus(order._id, e.target.value === "true")
+                    }
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value={false}>ยังไม่โอน</option>
+                    <option value={true}>โอนแล้ว</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

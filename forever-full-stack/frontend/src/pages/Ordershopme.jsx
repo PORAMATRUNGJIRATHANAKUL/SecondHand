@@ -35,11 +35,15 @@ const Ordershopme = ({ searchQuery }) => {
     }
   };
 
-  const statusHandler = async (event, orderId) => {
+  const statusHandler = async (event, orderId, itemId) => {
     try {
       const response = await axios.post(
         backendUrl + "/api/order/status",
-        { orderId, status: event.target.value },
+        {
+          orderId,
+          itemId,
+          status: event.target.value,
+        },
         { headers: { token } }
       );
       if (response.data.success) {
@@ -110,7 +114,7 @@ const Ordershopme = ({ searchQuery }) => {
 
     const searchLower = searchQuery.toLowerCase().trim();
 
-    const name = order.address.name.toLowerCase();
+    const name = order.shippingAddress?.name?.toLowerCase() || "";
     if (name.includes(searchLower)) return true;
 
     const hasMatchingItem = order.items.some((item) =>
@@ -140,253 +144,311 @@ const Ordershopme = ({ searchQuery }) => {
     return colorNames[colorName] || colorName;
   };
 
-  const updateShippingInfo = async (orderId) => {
+  const updateShippingInfo = async (orderId, itemId) => {
     try {
+      if (!shippingInfo.trackingNumber || !shippingInfo.shippingProvider) {
+        toast.error("กรุณากรอกเลขพัสดุและเลือกบริษัทขนส่ง");
+        return;
+      }
+
       const response = await axios.post(
         `${backendUrl}/api/order/shipping`,
         {
-          orderId,
-          ...shippingInfo,
+          size: selectedOrder.currentItem.size,
+          orderId: selectedOrder._id,
+          itemId: selectedOrder.currentItem._id,
+          trackingNumber: shippingInfo.trackingNumber,
+          shippingProvider: shippingInfo.shippingProvider,
         },
-        { headers: { token } }
+        {
+          headers: { token },
+        }
       );
 
       if (response.data.success) {
         toast.success("อัพเดทข้อมูลการจัดส่งสำเร็จ");
         setShowShippingModal(false);
-        fetchAllOrders();
+        setShippingInfo({
+          trackingNumber: "",
+          shippingProvider: "",
+        });
+        await fetchAllOrders();
       } else {
-        toast.error("ไม่สามารถอัพเดทข้อมูลการจัดส่งได้");
+        toast.error(
+          response.data.message || "ไม่สามารถอัพเดทข้อมูลการจัดส่งได้"
+        );
       }
     } catch (error) {
-      console.error(error);
-      toast.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง");
+      console.error("Error updating shipping info:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง"
+      );
     }
+  };
+
+  const groupOrdersByDate = (orders) => {
+    const groupedOrders = {};
+    orders.forEach((order) => {
+      const orderDate = new Date(order.date).toLocaleDateString("th-TH");
+
+      if (!groupedOrders[orderDate]) {
+        groupedOrders[orderDate] = [];
+      }
+
+      groupedOrders[orderDate].push(order);
+    });
+    return groupedOrders;
   };
 
   return (
     <div>
       <div className="p-4">
         <h3 className="text-xl font-semibold mb-4">รายการสั่งซื้อลูกค้า</h3>
-        <div className="space-y-4">
-          {filteredOrders.map((order, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-md p-4 relative"
-            >
-              {/* ส่วนหัวของการ์ด */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-4">
-                  <img
-                    className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
-                    src={order.items[0].image[0]}
-                    alt="รูปสินค้า"
-                    onClick={() => viewProducts(order)}
-                  />
-                  <div>
-                    <p className="font-medium text-lg">
-                      {order.address.firstName} {order.address.lastName}
-                    </p>
-                    <p className="text-gray-600">{order.address.phone}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <p className="text-lg font-semibold">
-                    ฿{order.amount.toLocaleString()}
-                  </p>
-                  <button
-                    onClick={() => {
-                      if (window.confirm("คุณต้องการลบออเดอร์นี้ใช่หรือไม่?")) {
-                        deleteOrder(order._id);
-                      }
-                    }}
-                    className="text-gray-400 hover:text-red-500 transition-colors p-2"
-                    title="ลบออเดอร์"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* รายการสินค้า */}
-              <div className="mb-4 flex justify-between flex-wrap">
-                <div>
-                  {order.items.map((item, index) => (
-                    <p
-                      key={index}
-                      className="flex items-center gap-2 py-1 flex-wrap"
-                    >
-                      <span className="font-medium">{item.name}</span>
-                      <span className="text-gray-500">x{item.quantity}</span>
-                      <span className="text-gray-500">ไซส์ {item.size}</span>
-                      {item.colors && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">สี:</span>
-                          {item.colors.map((color, colorIdx) => (
-                            <div
-                              key={colorIdx}
-                              className={`w-4 h-4 rounded-full ${getColorClass(
-                                color
-                              )}`}
-                              title={getColorName(color)}
-                            />
-                          ))}
+        <div className="space-y-8">
+          {Object.entries(groupOrdersByDate(filteredOrders))
+            .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+            .map(([date, dateOrders]) => (
+              <div key={date} className="border-b pb-6">
+                <h3 className="text-lg font-medium mb-4">วันที่: {date}</h3>
+                <div className="space-y-6">
+                  {dateOrders.map((order) => (
+                    <div key={order._id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-4">
+                          <h4 className="text-lg font-medium">
+                            คำสั่งซื้อ #{order._id.slice(-6)}
+                          </h4>
+                          <div className="text-sm bg-gray-100 px-2 py-1 rounded">
+                            {order.items.reduce(
+                              (total, item) => total + item.quantity,
+                              0
+                            )}{" "}
+                            ชิ้น
+                          </div>
+                          <div className="text-sm font-medium">
+                            ยอดรวม: ฿
+                            {order.items
+                              .reduce(
+                                (total, item) =>
+                                  total +
+                                  (item.price + item.shippingCost) *
+                                    item.quantity,
+                                0
+                              )
+                              .toLocaleString()}
+                          </div>
+                          {order.transferredToShop && (
+                            <div>
+                              <span className="text-green-500">
+                                บริษัทโอนเงินแล้ว
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <span className="text-gray-500 ml-2">
-                        {item.status === "ได้รับสินค้าแล้ว" ? "" : item.status}
-                      </span>
-                    </p>
+                        <div className="flex items-center gap-4">
+                          <div className="text-sm">
+                            <span className="text-gray-600">
+                              วันที่สั่งซื้อ:{" "}
+                            </span>
+                            {new Date(order.date).toLocaleDateString("th-TH")}
+                          </div>
+                          <div className="text-sm">
+                            <span className="text-gray-600">ชำระเงิน: </span>
+                            {order.paymentMethod === "QR Code"
+                              ? "โอนเงิน"
+                              : "เก็บเงินปลายทาง"}
+                          </div>
+                          {order.paymentMethod === "QR Code" && (
+                            <button
+                              onClick={() => viewQRProof(order)}
+                              className="bg-black hover:bg-gray-800 text-white px-3 py-1.5 rounded text-sm"
+                            >
+                              ตรวจสอบการชำระเงิน
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  "คุณต้องการลบสินค้านี้ใช่หรือไม่?"
+                                )
+                              ) {
+                                deleteOrder(order._id);
+                              }
+                            }}
+                            className="text-gray-400 hover:text-red-500 transition-colors p-2"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        {order.items.map((item, itemIndex) => (
+                          <div
+                            key={itemIndex}
+                            className="bg-white rounded-lg shadow-md p-4 relative mb-4"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex items-center gap-4">
+                                <img
+                                  className="w-24 h-24 object-cover rounded"
+                                  src={item.image[0]}
+                                  alt={item.name}
+                                />
+                                <div>
+                                  <h4 className="font-medium text-lg">
+                                    {item.name}
+                                  </h4>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-gray-600">
+                                      จำนวน: {item.quantity}
+                                    </span>
+                                    <span className="text-gray-600">
+                                      ไซส์: {item.size}
+                                    </span>
+                                  </div>
+                                  {item.colors && (
+                                    <div className="flex items-center gap-1 mt-1">
+                                      <span className="text-gray-600">สี:</span>
+                                      {item.colors.map((color, colorIdx) => (
+                                        <div
+                                          key={colorIdx}
+                                          className={`w-4 h-4 rounded-full ${getColorClass(
+                                            color
+                                          )}`}
+                                          title={getColorName(color)}
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
+                                  <p className="font-medium mt-1">
+                                    ฿
+                                    {(
+                                      item.price + item.shippingCost
+                                    ).toLocaleString()}{" "}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
+                              <div>
+                                <h5 className="font-medium mb-2">
+                                  ที่อยู่จัดส่ง:
+                                </h5>
+                                <p>
+                                  {item.shippingAddress?.name || "ไม่ระบุชื่อ"}
+                                </p>
+                                <p>
+                                  โทร:{" "}
+                                  {item.shippingAddress?.phoneNumber ||
+                                    "ไม่ระบุเบอร์โทร"}
+                                </p>
+                                <p>
+                                  {item.shippingAddress?.addressLine1 || ""}
+                                </p>
+                                {item.shippingAddress?.addressLine2 && (
+                                  <p>{item.shippingAddress.addressLine2}</p>
+                                )}
+                                <p>
+                                  {item.shippingAddress?.district &&
+                                    `เขต/อำเภอ ${item.shippingAddress.district}`}
+                                </p>
+                                <p>
+                                  {item.shippingAddress?.province &&
+                                    `จังหวัด ${item.shippingAddress.province}`}
+                                </p>
+                                <p>
+                                  {item.shippingAddress?.postalCode &&
+                                    `รหัสไปรษณีย์ ${item.shippingAddress.postalCode}`}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="mt-4 flex justify-between items-center">
+                              <div className="flex-1">
+                                {item.trackingNumber && (
+                                  <div className="bg-gray-50 p-3 rounded-md inline-block">
+                                    <p className="text-sm font-medium">
+                                      เลขพัสดุ: {item.trackingNumber}
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                      ขนส่ง: {item.shippingProvider}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex gap-2">
+                                <select
+                                  onChange={(event) =>
+                                    statusHandler(event, order._id, item._id)
+                                  }
+                                  value={item.status}
+                                  className={`w-[180px] p-2 border rounded font-medium text-sm ${
+                                    item.status === "ได้���ับสินค้าแล้ว"
+                                      ? "bg-gray-100 text-gray-500"
+                                      : "bg-gray-50"
+                                  }`}
+                                  disabled={item.status === "ได้รับสินค้าแล้ว"}
+                                >
+                                  <option value="รอดำเนินการ">
+                                    รอดำเนินการ
+                                  </option>
+                                  <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
+                                </select>
+
+                                <button
+                                  onClick={() => {
+                                    setSelectedOrder({
+                                      _id: order._id,
+                                      currentItem: {
+                                        _id: item._id,
+                                        ...item,
+                                      },
+                                    });
+                                    setShippingInfo({
+                                      trackingNumber: item.trackingNumber || "",
+                                      shippingProvider:
+                                        item.shippingProvider || "",
+                                    });
+                                    setShowShippingModal(true);
+                                  }}
+                                  className={`w-[180px] px-4 py-2 rounded text-sm transition-colors ${
+                                    item.status === "ได้รับสินค้าแล้ว"
+                                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                      : "bg-black text-white hover:bg-gray-800"
+                                  }`}
+                                  disabled={item.status === "ได้รับสินค้าแล้ว"}
+                                >
+                                  {item.trackingNumber
+                                    ? "แก้ไขข้อมูลจัดส่ง"
+                                    : "เพิ่มข้อมูลจัดส่ง"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
-
-                {order.transferredToShop && (
-                  <p className="text-gray-500">บริษัทโอนเงินให้ร้านค้าแล้ว</p>
-                )}
               </div>
-
-              {/* ข้อมูลการกำระเงินและที่อยู่ */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-600 mb-1">ที่อยู่จัดส่ง:</p>
-                  <p className="font-medium">{order.address.name}</p>
-                  <p>{order.address.addressLine1}</p>
-                  {order.address.addressLine2 && (
-                    <p>{order.address.addressLine2}</p>
-                  )}
-                  <p>
-                    {order.address.district} {order.address.province}{" "}
-                    {order.address.postalCode}
-                  </p>
-                  <p>{order.address.country}</p>
-                  <p className="mt-1">โทร: {order.address.phoneNumber}</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span>วันที่สั่งซื้อ:</span>
-                    <span>
-                      {new Date(order.date).toLocaleDateString("th-TH")}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>วิธีชำระเงิน:</span>
-                    <span>
-                      {order.paymentMethod === "QR Code"
-                        ? "โอนเงิน"
-                        : "เก็บเงินปลายทาง"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>สถานะการชำระเงิน:</span>
-
-                    {order.paymentMethod === "QR Code" && (
-                      <span>{order.payment ? "ชำระแล้ว" : "รอชำระ"}</span>
-                    )}
-                    {order.paymentMethod === "ชำระเงินปลายทาง" && (
-                      <span>
-                        {order.status === "ได้รับสินค้าแล้ว"
-                          ? "ชำระแล้ว"
-                          : "รอชำระ"}
-                      </span>
-                    )}
-                  </div>
-                  {order.paymentMethod === "QR Code" && (
-                    <button
-                      onClick={() => viewQRProof(order)}
-                      className="bg-black hover:bg-gray-800 text-white px-3 py-1.5 rounded text-sm mx-auto block transition-colors"
-                    >
-                      ตรวจสอบการชำระเงิน
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* ส้อมูลการจัดส่ง (ถ้ามี) */}
-              {order.trackingNumber && (
-                <div className="mt-4 bg-gray-50 p-3 rounded-md">
-                  <p className="text-sm text-gray-600">ข้อมูลการจัดส่ง:</p>
-                  <p className="font-medium">
-                    เลขพัสดุ: {order.trackingNumber}
-                  </p>
-                  <p className="font-medium">ขนส่ง: {order.shippingProvider}</p>
-                </div>
-              )}
-
-              {/* ปุ่มควบคุมที่มุมขวาล่าง */}
-              <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                {order.status === "ได้รับสินค้าแล้ว" && (
-                  <div className="flex items-center text-green-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span className="text-sm font-medium">
-                      ลูกค้าได้รับสินค้าแล้ว
-                    </span>
-                  </div>
-                )}
-                <div className="flex gap-2 ml-auto">
-                  <select
-                    onChange={(event) => statusHandler(event, order._id)}
-                    value={order.status}
-                    className={`w-[180px] p-2 border rounded font-medium text-sm ${
-                      order.status === "ได้รับสินค้าแล้ว"
-                        ? "bg-gray-100 text-gray-500"
-                        : "bg-gray-50"
-                    }`}
-                    disabled={order.status === "ได้รับสินค้าแล้ว"}
-                  >
-                    <option value="รอดำเนินการ">รอดำเนินการ</option>
-                    <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
-                  </select>
-
-                  <button
-                    onClick={() => {
-                      setSelectedOrder(order);
-                      setShippingInfo({
-                        trackingNumber: order.trackingNumber || "",
-                        shippingProvider: order.shippingProvider || "",
-                      });
-                      setShowShippingModal(true);
-                    }}
-                    className={`w-[180px] px-4 py-2 rounded text-sm transition-colors ${
-                      order.status === "ได้รับสินค้าแล้ว"
-                        ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                        : "bg-black text-white hover:bg-gray-800"
-                    }`}
-                    disabled={order.status === "ได้รับสินค้าแล้ว"}
-                  >
-                    {order.trackingNumber
-                      ? "ข้อมูลจัดส่ง"
-                      : "เพิ่มข้อมูลจัดส่ง"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
 
           {filteredOrders.length === 0 && (
             <div className="text-center py-8 text-gray-500">
@@ -501,7 +563,7 @@ const Ordershopme = ({ searchQuery }) => {
                         </div>
                       </div>
                     )}
-                    <p className="mt-1">ราคา: ฿{item.price}</p>
+                    <p className="mt-1">ราค: ฿{item.price}</p>
                   </div>
                 </div>
               ))}
@@ -577,7 +639,7 @@ const Ordershopme = ({ searchQuery }) => {
 
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={() => updateShippingInfo(selectedOrder._id)}
+                  onClick={() => updateShippingInfo()}
                   className="flex-1 bg-black text-white py-2.5 rounded-md hover:bg-gray-800 transition-colors"
                 >
                   บันทึกข้อมูล
