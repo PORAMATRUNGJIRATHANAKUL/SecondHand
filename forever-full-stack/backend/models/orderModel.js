@@ -49,6 +49,8 @@ const orderSchema = new mongoose.Schema({
   paymentDate: { type: Date },
   transferredToShop: { type: Boolean, default: false },
   date: { type: Date, default: Date.now, required: true },
+  trackingNumber: { type: String },
+  shippingProvider: { type: String },
 });
 
 const orderModel =

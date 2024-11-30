@@ -110,7 +110,7 @@ const Ordershopme = ({ searchQuery }) => {
 
     const searchLower = searchQuery.toLowerCase().trim();
 
-    const name = order.address?.name?.toLowerCase() || "";
+    const name = order.shippingAddress?.name?.toLowerCase() || "";
     if (name.includes(searchLower)) return true;
 
     const hasMatchingItem = order.items.some((item) =>
@@ -142,25 +142,60 @@ const Ordershopme = ({ searchQuery }) => {
 
   const updateShippingInfo = async (orderId) => {
     try {
+      if (!shippingInfo.trackingNumber || !shippingInfo.shippingProvider) {
+        toast.error("กรุณากรอกเลขพัสดุและเลือกบริษัทขนส่ง");
+        return;
+      }
+
       const response = await axios.post(
         `${backendUrl}/api/order/shipping`,
         {
           orderId,
-          ...shippingInfo,
+          itemId: selectedOrder.items[0]._id,
+          trackingNumber: shippingInfo.trackingNumber,
+          shippingProvider: shippingInfo.shippingProvider,
         },
-        { headers: { token } }
+        {
+          headers: { token },
+        }
       );
 
       if (response.data.success) {
+        // อัพเดท orders state ด้วยข้อมูลใหม่
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === orderId
+              ? {
+                  ...order,
+                  items: order.items.map((item) =>
+                    item._id === selectedOrder.items[0]._id
+                      ? {
+                          ...item,
+                          trackingNumber: shippingInfo.trackingNumber,
+                          shippingProvider: shippingInfo.shippingProvider,
+                          status: "จัดส่งแล้ว",
+                        }
+                      : item
+                  ),
+                }
+              : order
+          )
+        );
+
         toast.success("อัพเดทข้อมูลการจัดส่งสำเร็จ");
         setShowShippingModal(false);
-        fetchAllOrders();
-      } else {
-        toast.error("ไม่สามารถอัพเดทข้อมูลการจัดส่งได้");
+        setShippingInfo({
+          trackingNumber: "",
+          shippingProvider: "",
+        });
+        await fetchAllOrders(); // รีโหลดข้อมูลทั้งหมด
       }
     } catch (error) {
-      console.error(error);
-      toast.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง");
+      console.error("Error updating shipping info:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง"
+      );
     }
   };
 
@@ -185,10 +220,11 @@ const Ordershopme = ({ searchQuery }) => {
                   />
                   <div>
                     <p className="font-medium text-lg">
-                      {order.address?.name || "ไม่ระบุชื่อ"}
+                      {order.items[0].shippingAddress?.name || "ไม่ระบุชื่อ"}
                     </p>
                     <p className="text-gray-600">
-                      {order.address?.phone || "ไม่ระบุเบอร์โทร"}
+                      {order.items[0].shippingAddress?.phoneNumber ||
+                        "ไม่ระบุเบอร์โทร"}
                     </p>
                   </div>
                 </div>
@@ -265,26 +301,32 @@ const Ordershopme = ({ searchQuery }) => {
                 <div>
                   <p className="text-gray-600 mb-1">ที่อยู่จัดส่ง:</p>
                   <p className="font-medium">
-                    {order.address?.name || "ไม่ระบุชื่อ"}
+                    {order.items[0].shippingAddress?.name || "ไม่ระบุชื่อ"}
                   </p>
-                  <p>โทร: {order.address?.phoneNumber || "ไม่ระบุเบอร์โทร"}</p>
-                  <p>{order.address?.addressLine1 || ""}</p>
-                  {order.address?.addressLine2 && (
-                    <p>{order.address.addressLine2}</p>
+                  <p>
+                    โทร:{" "}
+                    {order.items[0].shippingAddress?.phoneNumber ||
+                      "ไม่ระบุเบอร์โทร"}
+                  </p>
+                  <p>{order.items[0].shippingAddress?.addressLine1 || ""}</p>
+                  {order.items[0].shippingAddress?.addressLine2 && (
+                    <p>{order.items[0].shippingAddress.addressLine2}</p>
                   )}
                   <p>
-                    {order.address?.district &&
-                      `เขต/อำเภอ ${order.address.district}`}
+                    {order.items[0].shippingAddress?.district &&
+                      `เขต/อำเภอ ${order.items[0].shippingAddress.district}`}
                   </p>
                   <p>
-                    {order.address?.province &&
-                      `จังหวัด ${order.address.province}`}
+                    {order.items[0].shippingAddress?.province &&
+                      `จังหวัด ${order.items[0].shippingAddress.province}`}
                   </p>
                   <p>
-                    {order.address?.postalCode &&
-                      `รหัสไปรษณีย์ ${order.address.postalCode}`}
+                    {order.items[0].shippingAddress?.postalCode &&
+                      `รหัสไปรษณีย์ ${order.items[0].shippingAddress.postalCode}`}
                   </p>
-                  <p>{order.address?.country || "ประเทศไทย"}</p>
+                  <p>
+                    {order.items[0].shippingAddress?.country || "ประเทศไทย"}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -511,7 +553,7 @@ const Ordershopme = ({ searchQuery }) => {
                         </div>
                       </div>
                     )}
-                    <p className="mt-1">ราคา: ฿{item.price}</p>
+                    <p className="mt-1">ราค: ฿{item.price}</p>
                   </div>
                 </div>
               ))}

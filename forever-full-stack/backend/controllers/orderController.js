@@ -555,59 +555,70 @@ const getShopOrdersByUserId = async (req, res) => {
 // เพิ่มฟังก์ชันใหม่สำหรับอัพเดทข้อมูลการจัดส่ง
 const updateShippingInfo = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { orderId, itemId, trackingNumber, shippingProvider } = req.body;
+    const { orderId, trackingNumber, shippingProvider } = req.body;
+    console.log("Received data:", {
+      orderId,
+      trackingNumber,
+      shippingProvider,
+    });
 
-    // Update shipping info for specific item in shop order
-    const updatedOrder = await orderModel.findOneAndUpdate(
-      {
-        _id: orderId,
-        "items._id": itemId,
-      },
-      {
-        $set: {
-          "items.$.trackingNumber": trackingNumber,
-          "items.$.shippingProvider": shippingProvider,
-          "items.$.status": "จัดส่งแล้ว",
-        },
-      },
-      { new: true }
-    );
-
-    if (!updatedOrder) {
-      return res.status(404).json({
+    if (!orderId || !trackingNumber || !shippingProvider) {
+      return res.status(400).json({
         success: false,
-        message: "ไม่พบออเดอร์ทรือสินค้าที่ระบุ",
+        message: "กรุณาระบุข้อมูลให้ครบถ้วน",
       });
     }
 
-    // Update corresponding item in user order
-    const userOrder = await userOrderModel.findOneAndUpdate(
-      {
-        _id: updatedOrder.userOrderId,
-        "items._id": itemId,
-      },
-      {
-        $set: {
-          "items.$.trackingNumber": trackingNumber,
-          "items.$.shippingProvider": shippingProvider,
-          "items.$.status": "จัดส่งแล้ว",
-        },
-      },
-      { new: true }
-    );
+    // อัพเดทข้อมูลการจัดส่งในทั้ง order และ userOrder
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบออเดอร์ที่ระบุ",
+      });
+    }
 
-    res.json({
+    // อัพเดทข้อมูลการจัดส่งสำหรับทุก item ในออเดอร์
+    order.items = order.items.map((item) => ({
+      ...item.toObject(),
+      trackingNumber,
+      shippingProvider,
+      status: "จัดส่งแล้ว",
+    }));
+
+    // อัพเดทขถานะหลักของออเดอร์
+    order.status = "จัดส่งแล้ว";
+
+    // อัพเดท userOrder ด้วย
+    const userOrder = await userOrderModel.findById(order.userOrderId);
+    if (userOrder) {
+      userOrder.items = userOrder.items.map((item) => {
+        if (item.owner._id.toString() === req.userId) {
+          return {
+            ...item,
+            trackingNumber,
+            shippingProvider,
+            status: "จัดส่งแล้ว",
+          };
+        }
+        return item;
+      });
+      await userOrder.save();
+    }
+
+    const updatedOrder = await order.save();
+
+    return res.status(200).json({
       success: true,
       message: "อัพเดทข้อมูลการจัดส่งสำเร็จ",
       order: updatedOrder,
-      userOrder,
     });
   } catch (error) {
     console.error("Error in updateShippingInfo:", error);
     res.status(500).json({
       success: false,
       message: "เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง",
+      error: error.message,
     });
   }
 };

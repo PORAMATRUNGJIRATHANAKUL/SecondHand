@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
-import Title from "../components/Title";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -49,7 +48,12 @@ const Orders = () => {
     return colorMap[colorName] || "bg-gray-200";
   };
 
-  const updateOrderStatus = async (orderId, shopId) => {
+  const updateOrderStatus = async (
+    orderId,
+    shopId,
+    trackingNumber,
+    shippingProvider
+  ) => {
     try {
       const response = await axios.post(
         `${backendUrl}/api/order/status`,
@@ -58,6 +62,8 @@ const Orders = () => {
           shopId,
           status: "ได้รับสินค้าแล้ว",
           confirmedByCustomer: true,
+          trackingNumber,
+          shippingProvider,
         },
         { headers: { token } }
       );
@@ -100,7 +106,12 @@ const Orders = () => {
             paymentMethod: order.paymentMethod,
           };
         }
-        groups[shopId].items.push(item);
+        const itemWithShipping = {
+          ...item,
+          trackingNumber: item.trackingNumber || null,
+          shippingProvider: item.shippingProvider || null,
+        };
+        groups[shopId].items.push(itemWithShipping);
         return groups;
       }, {});
 
@@ -235,10 +246,18 @@ const Orders = () => {
                             </div>
                           </div>
 
-                          {item.trackingNumber && (
-                            <div className="mt-2 text-xs text-gray-500 space-y-0.5">
-                              <p>เลขพัสดุ: {item.trackingNumber}</p>
-                              <p>ขนส่ง: {item.shippingProvider}</p>
+                          {item.trackingNumber && item.shippingProvider && (
+                            <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                              <div className="flex flex-col gap-1">
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-medium">เลขพัสดุ:</span>{" "}
+                                  {item.trackingNumber}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-medium">ขนส่ง:</span>{" "}
+                                  {item.shippingProvider}
+                                </p>
+                              </div>
                             </div>
                           )}
 
@@ -478,7 +497,9 @@ const Orders = () => {
                                   onClick={() =>
                                     updateOrderStatus(
                                       selectedOrder._id,
-                                      item.owner._id
+                                      item.owner._id,
+                                      item.trackingNumber,
+                                      item.shippingProvider
                                     )
                                   }
                                   className="mt-4 w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium"
