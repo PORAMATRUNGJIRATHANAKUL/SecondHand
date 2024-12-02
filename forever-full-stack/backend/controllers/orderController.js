@@ -674,6 +674,59 @@ const contactShop = async (req, res) => {
   }
 };
 
+const getCustomerIssues = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const issues = await contactModel
+      .find({ shopId: userId })
+      .populate("userId", "name")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      issues,
+    });
+  } catch (error) {
+    console.error("Error fetching customer issues:", error);
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการดึงข้อมูลปัญหาของลูกค้า",
+    });
+  }
+};
+
+const updateIssueStatus = async (req, res) => {
+  try {
+    const { issueId, status } = req.body;
+    const userId = req.userId;
+
+    const issue = await contactModel.findOneAndUpdate(
+      { _id: issueId, shopId: userId },
+      { status },
+      { new: true }
+    );
+
+    if (!issue) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบข้อมูลปัญหาที่ระบุ",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "อัพเดทสถานะสำเร็จ",
+      issue,
+    });
+  } catch (error) {
+    console.error("Error updating issue status:", error);
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการอัพเดทสถานะ",
+    });
+  }
+};
+
 export {
   placeOrder,
   placeOrderQRCode,
@@ -688,4 +741,6 @@ export {
   updateShippingInfo,
   transferToShop,
   contactShop,
+  getCustomerIssues,
+  updateIssueStatus,
 };

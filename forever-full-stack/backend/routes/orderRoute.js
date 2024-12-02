@@ -13,6 +13,8 @@ import {
   updateShippingInfo,
   transferToShop,
   contactShop,
+  getCustomerIssues,
+  updateIssueStatus,
 } from "../controllers/orderController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
@@ -57,5 +59,9 @@ orderRouter.post(
   ]),
   contactShop
 );
+
+// Add these routes
+orderRouter.get("/customer-issues", authUser, getCustomerIssues);
+orderRouter.post("/update-issue-status", authUser, updateIssueStatus);
 
 export default orderRouter;

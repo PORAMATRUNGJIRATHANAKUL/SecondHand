@@ -15,6 +15,8 @@ const Ordershopme = ({ searchQuery }) => {
     trackingNumber: "",
     shippingProvider: "",
   });
+  const [showIssueModal, setShowIssueModal] = useState(false);
+  const [customerIssues, setCustomerIssues] = useState([]);
 
   const fetchAllOrders = async () => {
     if (!token) {
@@ -32,6 +34,23 @@ const Ordershopme = ({ searchQuery }) => {
       }
     } catch (error) {
       toast.error(error.message);
+    }
+  };
+
+  const fetchCustomerIssues = async () => {
+    if (!token) return;
+    try {
+      const response = await axios.get(
+        `${backendUrl}/api/order/customer-issues`,
+        {
+          headers: { token },
+        }
+      );
+      if (response.data.success) {
+        setCustomerIssues(response.data.issues);
+      }
+    } catch (error) {
+      toast.error("ไม่สามารถดึงข้อมูลปัญหาของลูกค้าได้");
     }
   };
 
@@ -122,6 +141,7 @@ const Ordershopme = ({ searchQuery }) => {
 
   useEffect(() => {
     fetchAllOrders();
+    fetchCustomerIssues();
   }, [token]);
 
   const filteredOrders = orders.filter((order) => {
@@ -216,10 +236,39 @@ const Ordershopme = ({ searchQuery }) => {
     return groupedOrders;
   };
 
+  const handleIssueStatus = async (issueId, newStatus) => {
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/order/update-issue-status`,
+        {
+          issueId,
+          status: newStatus,
+        },
+        { headers: { token } }
+      );
+
+      if (response.data.success) {
+        toast.success("อัพเดทสถานะสำเร็จ");
+        await fetchCustomerIssues();
+      }
+    } catch (error) {
+      toast.error("ไม่สามารถอัพเดทสถานะได้");
+    }
+  };
+
   return (
     <div>
       <div className="p-4">
-        <h3 className="text-xl font-semibold mb-4">รายการสั่งซื้อลูกค้า</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold">รายการสั่งซื้อลูกค้า</h3>
+          <button
+            onClick={() => setShowIssueModal(true)}
+            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+          >
+            ปัญหาจากลูกค้า{" "}
+            {customerIssues.length > 0 && `(${customerIssues.length})`}
+          </button>
+        </div>
         <div className="space-y-8">
           {Object.entries(groupOrdersByDate(filteredOrders))
             .sort((a, b) => new Date(b[0]) - new Date(a[0]))
@@ -367,7 +416,7 @@ const Ordershopme = ({ searchQuery }) => {
                                   ที่อยู่จัดส่ง:
                                 </h5>
                                 <p>
-                                  {item.shippingAddress?.name || "ไม่ระบุชื่อ"}
+                                  {item.shippingAddress?.name || "ไม่ระบุชือ"}
                                 </p>
                                 <p>
                                   โทร:{" "}
@@ -669,6 +718,116 @@ const Ordershopme = ({ searchQuery }) => {
                   ยกเลิก
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showIssueModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">ปัญหาจากลูกค้า</h2>
+              <button
+                onClick={() => setShowIssueModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {customerIssues.map((issue) => (
+                <div key={issue._id} className="border rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">ข้อมูลการติดต่อ</h3>
+                      <div className="space-y-2">
+                        <p className="text-sm">
+                          <span className="text-gray-600">เลขออเดอร์:</span>{" "}
+                          <span className="font-medium">#{issue.orderId}</span>
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-gray-600">เบอร์โทรติดต่อ:</span>{" "}
+                          <span className="font-medium">{issue.phone}</span>
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-gray-600">วันที่แจ้ง:</span>{" "}
+                          <span className="font-medium">
+                            {new Date(issue.createdAt).toLocaleDateString(
+                              "th-TH",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold mb-2">รายละเอียดปัญหา</h3>
+                      <p className="text-gray-700 text-sm mb-4">
+                        {issue.description}
+                      </p>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">สถานะ:</span>
+                        <select
+                          value={issue.status}
+                          onChange={(e) =>
+                            handleIssueStatus(issue._id, e.target.value)
+                          }
+                          className="text-sm border rounded px-2 py-1"
+                        >
+                          <option value="pending">รอดำเนินการ</option>
+                          <option value="in_progress">กำลังดำเนินการ</option>
+                          <option value="resolved">แก้ไขแล้ว</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {issue.images && issue.images.length > 0 && (
+                    <div className="mt-4">
+                      <h3 className="font-semibold mb-2">รูปภาพประกอบ</h3>
+                      <div className="flex gap-2 flex-wrap">
+                        {issue.images.map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`รูปภาพปัญหา ${index + 1}`}
+                            className="w-32 h-32 object-cover rounded-lg"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {customerIssues.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  ไม่พบรายการปัญหาจากลูกค้า
+                </div>
+              )}
             </div>
           </div>
         </div>
