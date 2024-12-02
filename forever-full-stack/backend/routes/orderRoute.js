@@ -12,6 +12,7 @@ import {
   getShopOrdersByUserId,
   updateShippingInfo,
   transferToShop,
+  contactShop,
 } from "../controllers/orderController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
@@ -45,5 +46,16 @@ orderRouter.get("/qr-payment-list", authUser, getQRCodePaymentList);
 
 // Shipping Features
 orderRouter.post("/shipping", authUser, updateShippingInfo);
+
+// Add new route for contact
+orderRouter.post(
+  "/contact",
+  authUser,
+  upload.fields([
+    { name: "images", maxCount: 5 },
+    { name: "video", maxCount: 1 },
+  ]),
+  contactShop
+);
 
 export default orderRouter;

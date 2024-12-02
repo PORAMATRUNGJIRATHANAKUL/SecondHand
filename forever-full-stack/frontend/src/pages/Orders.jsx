@@ -8,6 +8,17 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    images: [],
+    video: null,
+    description: "",
+    phone: "",
+    shopId: "",
+    orderId: "",
+    productId: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadOrderData = async () => {
     try {
@@ -127,6 +138,99 @@ const Orders = () => {
     const itemPrice = item.price * item.quantity;
     const shipping = item.shippingCost || 0;
     return itemPrice + shipping;
+  };
+
+  const handleFileUpload = (e, type) => {
+    const files = Array.from(e.target.files);
+
+    files.forEach((file) => {
+      if (type === "image" && !file.type.startsWith("image/")) {
+        toast.error("กรุณาอัพโหลดไฟล์รูปภาพเท่านั้น");
+        return;
+      }
+      if (type === "video" && !file.type.startsWith("video/")) {
+        toast.error("กรุณาอัพโหลดไฟล์วิดีโอเท่านั้น");
+        return;
+      }
+    });
+
+    if (type === "image") {
+      setContactForm((prev) => ({
+        ...prev,
+        images: [...prev.images, ...files],
+      }));
+    } else {
+      setContactForm((prev) => ({
+        ...prev,
+        video: files[0],
+      }));
+    }
+  };
+
+  const removeFile = (index, type) => {
+    if (type === "image") {
+      setContactForm((prev) => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index),
+      }));
+    } else {
+      setContactForm((prev) => ({
+        ...prev,
+        video: null,
+      }));
+    }
+  };
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      contactForm.images.forEach((image) => {
+        formData.append("images", image);
+      });
+      if (contactForm.video) {
+        formData.append("video", contactForm.video);
+      }
+      formData.append("description", contactForm.description);
+      formData.append("phone", contactForm.phone);
+      formData.append("shopId", contactForm.shopId);
+      formData.append("orderId", contactForm.orderId);
+      formData.append("productId", contactForm.productId);
+
+      const response = await axios.post(
+        `${backendUrl}/api/order/contact`,
+        formData,
+        {
+          headers: {
+            token,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("ส่งข้อมูลการติดต่อเรียบร้อยแล้ว");
+        setShowContactModal(false);
+        setContactForm({
+          images: [],
+          video: null,
+          description: "",
+          phone: "",
+          shopId: "",
+          orderId: "",
+          productId: "",
+        });
+      }
+    } catch (error) {
+      console.error("Error submitting contact:", error);
+      toast.error(
+        error.response?.data?.message || "เกิดข้อผิดพลาดในการส่งข้อมูล"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -300,7 +404,7 @@ const Orders = () => {
               <div className="flex justify-between items-center">
                 <div className="text-sm">
                   <p className="font-medium text-gray-900">
-                    รวมการสั่งซื้อ:{" "}
+                    รวมการการสั่งซื้อ:{" "}
                     <span className="text-base">
                       ฿
                       {order.shops
@@ -516,7 +620,18 @@ const Orders = () => {
                     ))}
                   </div>
                   <div className="flex gap-4">
-                    <button className="mt-4 w-full px-4 py-2 bg-neutral-300 text-black rounded-md hover:bg-gray-800 transition-colors text-sm font-medium">
+                    <button
+                      onClick={() => {
+                        setContactForm((prev) => ({
+                          ...prev,
+                          shopId: shop.items[0].owner._id,
+                          orderId: selectedOrder._id,
+                          productId: shop.items[0]._id,
+                        }));
+                        setShowContactModal(true);
+                      }}
+                      className="mt-4 w-full px-4 py-2 bg-neutral-300 text-black rounded-md hover:bg-gray-800 transition-colors text-sm font-medium"
+                    >
                       ติดต่อร้านค้า
                     </button>
 
@@ -527,6 +642,141 @@ const Orders = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {showContactModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full max-w-2xl">
+            <div className="px-6 py-4 border-b">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">ติดต่อร้านค้า</h2>
+                <button
+                  onClick={() => setShowContactModal(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <span className="text-2xl">×</span>
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleContactSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  รูปภาพ (สูงสุด 5 รูป)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => handleFileUpload(e, "image")}
+                  className="w-full"
+                  disabled={contactForm.images.length >= 5}
+                />
+                <div className="flex gap-2 mt-2">
+                  {contactForm.images.map((image, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={`preview ${index}`}
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index, "image")}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  วิดีโอ (ไฟล์เดียว)
+                </label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) => handleFileUpload(e, "video")}
+                  className="w-full"
+                  disabled={contactForm.video}
+                />
+                {contactForm.video && (
+                  <div className="relative mt-2">
+                    <video
+                      className="w-full h-40 object-cover rounded"
+                      controls
+                    >
+                      <source src={URL.createObjectURL(contactForm.video)} />
+                    </video>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(0, "video")}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  รายละเอียดปัญหา
+                </label>
+                <textarea
+                  value={contactForm.description}
+                  onChange={(e) =>
+                    setContactForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  className="w-full p-2 border rounded-md"
+                  rows="4"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  เบอร์โทรติดต่อ
+                </label>
+                <input
+                  type="tel"
+                  value={contactForm.phone}
+                  onChange={(e) =>
+                    setContactForm((prev) => ({
+                      ...prev,
+                      phone: e.target.value,
+                    }))
+                  }
+                  className="w-full p-2 border rounded-md"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowContactModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:bg-gray-400"
+                >
+                  {isSubmitting ? "กำลังส่ง..." : "ส่งข้อมูล"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

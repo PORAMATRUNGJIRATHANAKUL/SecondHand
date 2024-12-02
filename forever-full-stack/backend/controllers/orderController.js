@@ -5,6 +5,7 @@ import multer from "multer";
 import path from "path";
 import productModel from "../models/productModel.js";
 import userOrderModel from "../models/userOrderModel.js";
+import contactModel from "../models/contactModel.js";
 // global variables
 const currency = "thb";
 const deliveryCharge = 10;
@@ -485,30 +486,38 @@ const getShopOrdersByUserId = async (req, res) => {
       })
       .sort({ date: -1 });
 
-    // จัดรูปแบบข้อมูลให้ตรงกับที่ frontend ต้องการ
-    const formattedOrders = orders.map((order) => {
-      const orderObj = order.toObject();
-      return {
-        ...orderObj,
-        items: orderObj.items
-          .filter((item) => item.owner._id.toString() === userId.toString())
-          .map((item) => ({
-            ...item,
-            image: Array.isArray(item.image) ? item.image : [item.image],
-          })),
-      };
-    });
+    const formattedOrders = await Promise.all(
+      orders.map(async (order) => {
+        const orderObj = order.toObject();
 
-    res.json({
+        const contact = await contactModel
+          .findOne({
+            orderId: order._id,
+            shopId: userId,
+          })
+          .sort({ createdAt: -1 });
+
+        return {
+          ...orderObj,
+          items: orderObj.items
+            .filter((item) => item.owner._id.toString() === userId.toString())
+            .map((item) => ({
+              ...item,
+              image: Array.isArray(item.image) ? item.image : [item.image],
+            })),
+          contact: contact || null,
+        };
+      })
+    );
+
+    res.status(200).json({
       success: true,
       orders: formattedOrders,
     });
   } catch (error) {
-    console.error("Error in getShopOrdersByUserId:", error);
     res.status(500).json({
       success: false,
-      message: "เกิดข้อผิดพลาดในการดึงข้อมูลออเดอร์",
-      error: error.message,
+      message: error.message,
     });
   }
 };
@@ -536,10 +545,9 @@ const updateShippingInfo = async (req, res) => {
       });
     }
 
-    // ถ้ามี itemId ให้อัพเดทเฉพาะ item นั้น
-    // ถ้าไม่มี itemId ให้อัพเดททุก item ในออเดอร์
+    // ถัพเดทเฉพาะ item ที่ตรงกับ itemId และ size
     const updatedItems = order.items.map((item) => {
-      if (!itemId || item._id.toString() === itemId || item.size === size) {
+      if (item._id.toString() === itemId && item.size === size) {
         return {
           ...item,
           trackingNumber,
@@ -564,7 +572,7 @@ const updateShippingInfo = async (req, res) => {
     }
 
     const updatedUserOrderItems = userOrder.items.map((item) => {
-      if (!itemId || item._id.toString() === itemId || item.size === size) {
+      if (item._id.toString() === itemId && item.size === size) {
         return {
           ...item,
           trackingNumber,
@@ -593,6 +601,58 @@ const updateShippingInfo = async (req, res) => {
   }
 };
 
+const contactShop = async (req, res) => {
+  try {
+    const { description, phone, shopId, orderId, productId } = req.body;
+    const userId = req.userId;
+
+    // Handle file uploads
+    const images = req.files["images"]
+      ? await Promise.all(
+          req.files["images"].map((file) =>
+            cloudinary.uploader.upload(file.path)
+          )
+        )
+      : [];
+
+    const video = req.files["video"]
+      ? await cloudinary.uploader.upload(req.files["video"][0].path, {
+          resource_type: "video",
+        })
+      : null;
+
+    // Create contact record (you'll need to create a contactModel)
+    const contactData = {
+      userId,
+      shopId,
+      orderId,
+      productId,
+      description,
+      phone,
+      images: images.map((img) => img.secure_url),
+      video: video?.secure_url,
+      status: "pending",
+      createdAt: new Date(),
+    };
+
+    // Save to database (you'll need to create this model)
+    const contact = await contactModel.create(contactData);
+
+    res.status(200).json({
+      success: true,
+      message: "ส่งข้อมูลการติดต่อเรียบร้อยแล้ว",
+      contact,
+    });
+  } catch (error) {
+    console.error("Error in contactShop:", error);
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการส่งข้อมูลการติดต่อ",
+      error: error.message,
+    });
+  }
+};
+
 export {
   placeOrder,
   placeOrderQRCode,
@@ -606,4 +666,5 @@ export {
   getShopOrdersByUserId,
   updateShippingInfo,
   transferToShop,
+  contactShop,
 };

@@ -144,7 +144,7 @@ const Ordershopme = ({ searchQuery }) => {
     return colorNames[colorName] || colorName;
   };
 
-  const updateShippingInfo = async (orderId, itemId) => {
+  const updateShippingInfo = async () => {
     try {
       if (!shippingInfo.trackingNumber || !shippingInfo.shippingProvider) {
         toast.error("กรุณากรอกเลขพัสดุและเลือกบริษัทขนส่ง");
@@ -154,9 +154,9 @@ const Ordershopme = ({ searchQuery }) => {
       const response = await axios.post(
         `${backendUrl}/api/order/shipping`,
         {
-          size: selectedOrder.currentItem.size,
           orderId: selectedOrder._id,
           itemId: selectedOrder.currentItem._id,
+          size: selectedOrder.currentItem.size,
           trackingNumber: shippingInfo.trackingNumber,
           shippingProvider: shippingInfo.shippingProvider,
         },
@@ -220,6 +220,7 @@ const Ordershopme = ({ searchQuery }) => {
                             คำสั่งซื้อ #{order._id.slice(-6)}
                           </h4>
                           <div className="text-sm bg-gray-100 px-2 py-1 rounded">
+                            รายการสินค้าทั้งหมด:{" "}
                             {order.items.reduce(
                               (total, item) => total + item.quantity,
                               0
@@ -400,7 +401,7 @@ const Ordershopme = ({ searchQuery }) => {
                                   }
                                   value={item.status}
                                   className={`w-[180px] p-2 border rounded font-medium text-sm ${
-                                    item.status === "ได้���ับสินค้าแล้ว"
+                                    item.status === "ได้   ับสินค้าแล้ว"
                                       ? "bg-gray-100 text-gray-500"
                                       : "bg-gray-50"
                                   }`}

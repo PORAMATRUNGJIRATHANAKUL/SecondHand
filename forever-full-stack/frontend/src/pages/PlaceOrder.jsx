@@ -769,6 +769,22 @@ const PlaceOrder = () => {
                                       โทร: {itemAddresses[index].phoneNumber}
                                     </p>
                                   </div>
+                                ) : selectedAddress ? (
+                                  <div className="text-sm text-gray-600">
+                                    <p className="font-medium">
+                                      {selectedAddress.name}
+                                    </p>
+                                    <p>{selectedAddress.addressLine1}</p>
+                                    {selectedAddress.addressLine2 && (
+                                      <p>{selectedAddress.addressLine2}</p>
+                                    )}
+                                    <p>
+                                      จ.{selectedAddress.district}, อ.
+                                      {selectedAddress.province}
+                                    </p>
+                                    <p>{selectedAddress.postalCode}</p>
+                                    <p>โทร: {selectedAddress.phoneNumber}</p>
+                                  </div>
                                 ) : (
                                   <div className="text-sm text-red-500">
                                     กรุณาเลือกที่อยู่จัดส่ง
