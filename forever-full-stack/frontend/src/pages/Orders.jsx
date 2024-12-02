@@ -59,35 +59,41 @@ const Orders = () => {
     return colorMap[colorName] || "bg-gray-200";
   };
 
-  const updateOrderStatus = async (
-    orderId,
-    shopId,
-    trackingNumber,
-    shippingProvider
-  ) => {
+  const updateOrderStatus = async (orderId, itemId) => {
     try {
+      console.log("Sending update request with data:", {
+        orderId,
+        itemId,
+        status: "ได้รับสินค้าแล้ว",
+        confirmedByCustomer: true,
+      });
+
       const response = await axios.post(
         `${backendUrl}/api/order/status`,
         {
-          orderId,
-          shopId,
+          orderId: orderId,
+          itemId: itemId,
           status: "ได้รับสินค้าแล้ว",
           confirmedByCustomer: true,
-          trackingNumber,
-          shippingProvider,
         },
-        { headers: { token } }
+        {
+          headers: {
+            token,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       if (response.data.success) {
         toast.success("ยืนยันการรับสินค้าสำเร็จ");
         setShowTrackingModal(false);
-        loadOrderData();
+        await loadOrderData();
       } else {
-        toast.error("ไม่สามารถอัพเดทสถานะได้");
+        console.error("Update failed:", response.data);
+        toast.error(response.data.message || "ไม่สามารถอัพเดทสถานะได้");
       }
     } catch (error) {
-      console.error("Error updating status:", error);
+      console.error("Error updating status:", error.response?.data || error);
       toast.error(
         error.response?.data?.message || "เกิดข้อผิดพลาดในการอัพเดทสถานะ"
       );
@@ -500,9 +506,18 @@ const Orders = () => {
                       shopName: item.owner?.name || "ไม่ระบุร้านค้า",
                       shopImage: item.owner?.profileImage,
                       items: [],
+                      canConfirm: false,
                     };
                   }
                   shops[shopId].items.push(item);
+                  // อัพเดทสถานะ canConfirm ถ้ามีสินค้าใดๆ ที่ยังไม่ได้ยืนยัน
+                  if (
+                    item.trackingNumber &&
+                    !item.confirmedByCustomer &&
+                    item.status !== "ได้รับสินค้าแล้ว"
+                  ) {
+                    shops[shopId].canConfirm = true;
+                  }
                   return shops;
                 }, {})
               ).map((shop, index) => (
@@ -554,6 +569,7 @@ const Orders = () => {
                               </p>
                             </div>
 
+                            {/* รายละเอียดสินค้า */}
                             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                               <div className="flex items-center gap-2">
                                 <span className="text-gray-500">จำนวน:</span>
@@ -592,6 +608,7 @@ const Orders = () => {
                               </div>
                             </div>
 
+                            {/* ข้อมูลการจัดส่ง */}
                             {item.trackingNumber && (
                               <div className="mt-3 pt-3 border-t border-gray-100">
                                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -619,24 +636,45 @@ const Orders = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="flex gap-4">
+
+                  {/* ปุ่มการทำงานสำหรับทั้งร้าน */}
+                  <div className="mt-4 border-t pt-4 flex gap-2">
+                    {/* ปุ่มติดต่อร้านค้า */}
                     <button
                       onClick={() => {
                         setContactForm((prev) => ({
                           ...prev,
                           shopId: shop.items[0].owner._id,
                           orderId: selectedOrder._id,
-                          productId: shop.items[0]._id,
+                          productId: shop.items[0]._id, // ใช้สินค้าชิ้นแรกในร้าน
                         }));
                         setShowContactModal(true);
                       }}
-                      className="mt-4 w-full px-4 py-2 bg-neutral-300 text-black rounded-md hover:bg-gray-800 transition-colors text-sm font-medium"
+                      className="flex-1 px-4 py-2 bg-neutral-300 text-black rounded-md hover:bg-gray-400 transition-colors text-sm font-medium"
                     >
                       ติดต่อร้านค้า
                     </button>
 
-                    <button className="mt-4 w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium">
-                      ยืนยันการรับสินค้า
+                    {/* ปุ่มยืนยันการรับสินค้าสำหรับทั้งร้าน */}
+                    <button
+                      onClick={() => {
+                        // ยืนยันการรับสินค้าทั้งหมดในร้าน
+                        shop.items.forEach((item) => {
+                          if (
+                            item.trackingNumber &&
+                            !item.confirmedByCustomer &&
+                            item.status !== "ได้รับสินค้าแล้ว"
+                          ) {
+                            updateOrderStatus(selectedOrder._id, item._id);
+                          }
+                        });
+                      }}
+                      className="flex-1 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      disabled={!shop.canConfirm}
+                    >
+                      {shop.canConfirm
+                        ? "ยืนยันการรับสินค้าทั้งหมด"
+                        : "ยืนยันการรับสินค้าแล้ว"}
                     </button>
                   </div>
                 </div>

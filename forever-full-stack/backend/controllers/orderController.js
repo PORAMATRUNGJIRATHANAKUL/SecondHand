@@ -316,64 +316,85 @@ const userOrders = async (req, res) => {
 // update order status from Admin Panel
 const updateStatus = async (req, res) => {
   try {
-    const { orderId, itemId, status } = req.body;
+    const { orderId, itemId, status, confirmedByCustomer } = req.body;
     const userId = req.userId;
+
+    console.log("Received update request:", {
+      orderId,
+      itemId,
+      status,
+      confirmedByCustomer,
+      userId,
+    });
 
     // ตรวจสอบข้อมูลที่จำเป็น
     if (!orderId || !itemId || !status) {
       return res.status(400).json({
         success: false,
         message: "กรุณาระบุข้อมูลให้ครบถ้วน",
+        received: { orderId, itemId, status },
       });
     }
 
-    // อัพเดท orderModel
-    const order = await orderModel.findById(orderId);
-    if (!order) {
+    // ค้นหา order ด้วย userOrderId
+    const userOrder = await userOrderModel.findById(orderId);
+    if (!userOrder) {
       return res.status(404).json({
         success: false,
-        message: "ไม่พบออเดอร์ที่ระบุ",
+        message: "ไม่พบขอเดอร์ที่ระบุ",
+        orderId,
       });
     }
 
-    // อัพเดทสถานะของสินค้าที่ระบุ
-    const updatedItems = order.items.map((item) => {
+    console.log("Found userOrder:", userOrder._id);
+
+    // อัพเดทสถานะใน userOrder
+    const updatedUserOrderItems = userOrder.items.map((item) => {
       if (item._id.toString() === itemId) {
         return {
-          ...item.toObject(),
+          ...item,
           status: status,
+          confirmedByCustomer: confirmedByCustomer || false,
         };
       }
       return item;
     });
 
-    order.items = updatedItems;
-    await order.save();
+    userOrder.items = updatedUserOrderItems;
+    await userOrder.save();
 
-    // อัพเดท userOrderModel
-    const userOrder = await userOrderModel.findOne({
-      _id: order.userOrderId,
+    // ค้นหาและอัพเดท order ในร้านค้า
+    const shopOrder = await orderModel.findOne({
+      userOrderId: orderId,
     });
 
-    if (userOrder) {
-      const updatedUserOrderItems = userOrder.items.map((item) => {
+    if (shopOrder) {
+      const updatedShopItems = shopOrder.items.map((item) => {
         if (item._id.toString() === itemId) {
           return {
-            ...item.toObject(),
+            ...item,
             status: status,
+            confirmedByCustomer: confirmedByCustomer || false,
           };
         }
         return item;
       });
 
-      userOrder.items = updatedUserOrderItems;
-      await userOrder.save();
+      shopOrder.items = updatedShopItems;
+      await shopOrder.save();
     }
+
+    console.log("Update completed successfully");
+
+    // โหลดข้อมูลล่าสุดหลังจากอัพเดท
+    const updatedUserOrder = await userOrderModel.findById(orderId);
+    const updatedShopOrder = await orderModel.findOne({ userOrderId: orderId });
 
     res.json({
       success: true,
       message: "อัพเดทสถานะสำเร็จ",
-      order: order,
+      userOrder: updatedUserOrder,
+      shopOrder: updatedShopOrder,
     });
   } catch (error) {
     console.error("Error in updateStatus:", error);

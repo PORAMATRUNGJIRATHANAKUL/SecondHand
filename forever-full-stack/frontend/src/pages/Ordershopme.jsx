@@ -37,21 +37,36 @@ const Ordershopme = ({ searchQuery }) => {
 
   const statusHandler = async (event, orderId, itemId) => {
     try {
+      console.log("Updating status for:", {
+        orderId,
+        itemId,
+        newStatus: event.target.value,
+      });
+
       const response = await axios.post(
-        backendUrl + "/api/order/status",
+        `${backendUrl}/api/order/status`,
         {
           orderId,
           itemId,
           status: event.target.value,
+          confirmedByCustomer: event.target.value === "ได้รับสินค้าแล้ว",
         },
-        { headers: { token } }
+        {
+          headers: { token },
+        }
       );
+
       if (response.data.success) {
-        await fetchAllOrders();
+        toast.success("อัพเดทสถานะสำเร็จ");
+        await fetchAllOrders(); // รีโหลดข้อมูลใหม่
+      } else {
+        toast.error(response.data.message || "ไม่สามารถอัพเดทสถานะได้");
       }
     } catch (error) {
-      console.log(error);
-      toast.error(response.data.message);
+      console.error("Error updating status:", error);
+      toast.error(
+        error.response?.data?.message || "เกิดข้อผิดพลาดในการอัพเดทสถานะ"
+      );
     }
   };
 
@@ -400,16 +415,19 @@ const Ordershopme = ({ searchQuery }) => {
                                   }
                                   value={item.status}
                                   className={`w-[180px] p-2 border rounded font-medium text-sm ${
-                                    item.status === "ได้   ับสินค้าแล้ว"
+                                    item.confirmedByCustomer
                                       ? "bg-gray-100 text-gray-500"
                                       : "bg-gray-50"
                                   }`}
-                                  disabled={item.status === "ได้รับสินค้าแล้ว"}
+                                  disabled={item.confirmedByCustomer}
                                 >
                                   <option value="รอดำเนินการ">
                                     รอดำเนินการ
                                   </option>
                                   <option value="จัดส่งแล้ว">จัดส่งแล้ว</option>
+                                  <option value="ได้รับสินค้าแล้ว">
+                                    ได้รับสินค้าแล้ว
+                                  </option>
                                 </select>
 
                                 <button

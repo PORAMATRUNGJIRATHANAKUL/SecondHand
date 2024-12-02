@@ -77,7 +77,7 @@ const Orders = ({ token, searchQuery }) => {
         toast.success("อัพเดทสถานะการโอนเงินสำเร็จ");
       }
     } catch (error) {
-      toast.error("ไม่สามารถอัพเดทสถานะการโอนเงินได้");
+      toast.error("ไม่สามารถ���ัพเดทสถานะการโอนเงินได้");
     }
   };
 
@@ -126,40 +126,6 @@ const Orders = ({ token, searchQuery }) => {
       }
     } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูลการจัดส่ง");
-    }
-  };
-
-  const updateOrderStatus = async (orderId) => {
-    if (!window.confirm("ยืนยันการรับสินค้าสำเร็จ?")) {
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        backendUrl + "/api/order/update-status",
-        {
-          orderId,
-          status: "ได้รับสินค้าแล้ว",
-        },
-        { headers: { token } }
-      );
-
-      if (response.data.success) {
-        setOrders(
-          orders.map((order) =>
-            order._id === orderId
-              ? { ...order, status: "ได้รับสินค้าแล้ว" }
-              : order
-          )
-        );
-        toast.success("อัพเดทสถานะการรับสินค้าสำเร็จ");
-      } else {
-        toast.error(
-          response.data.message || "ไม่สามารถอัพเดทสถานะการรับสินค้าได้"
-        );
-      }
-    } catch (error) {
-      toast.error("เกิดข้อผิดพลาดในการอัพเดทสถานะการรับสินค้า");
     }
   };
 
@@ -224,7 +190,7 @@ const Orders = ({ token, searchQuery }) => {
                   <div className="flex-1">
                     <p className="font-medium">{item.name}</p>
                     <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>จำนวน: {item.quantity}</span>
+                      <span>จ��นวน: {item.quantity}</span>
                       <span>ไซส์: {item.size}</span>
                       {item.colors && (
                         <div className="flex items-center gap-1">
