@@ -174,11 +174,6 @@ const Review = () => {
         {sortedReviews.map((review, index) => (
           <div key={index} className="border-b py-4">
             <div className="flex items-center gap-2">
-              <img
-                src={userAvatar}
-                alt={`${review?.name}'s avatar`}
-                className="w-10 h-10 rounded-full"
-              />
               <div className="flex flex-col">
                 <span className="font-semibold">
                   {review?.name || "Anonymous"}

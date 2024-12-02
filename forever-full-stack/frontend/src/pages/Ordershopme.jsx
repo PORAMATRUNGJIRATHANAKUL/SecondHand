@@ -210,7 +210,6 @@ const Ordershopme = ({ searchQuery }) => {
             .sort((a, b) => new Date(b[0]) - new Date(a[0]))
             .map(([date, dateOrders]) => (
               <div key={date} className="border-b pb-6">
-                <h3 className="text-lg font-medium mb-4">วันที่: {date}</h3>
                 <div className="space-y-6">
                   {dateOrders.map((order) => (
                     <div key={order._id} className="border rounded-lg p-4">
