@@ -110,26 +110,27 @@ const Orders = () => {
 
   const groupItemsByShop = (orders) => {
     return orders.map((order) => {
-      const shopGroups = order.items.reduce((groups, item) => {
-        const shopId = item.owner?._id || "unknown";
-        if (!groups[shopId]) {
-          groups[shopId] = {
-            shopName: item.owner?.name || "ไม่ระบุร้านค้า",
-            shopImage: item.owner?.profileImage,
+      const shopGroups = order.items.reduce((acc, item) => {
+        const shopId = item.owner._id;
+        if (!acc[shopId]) {
+          acc[shopId] = {
+            shopId,
+            shopName: item.owner.name,
+            shopImage: item.owner.profileImage,
             items: [],
-            orderId: order._id,
-            orderDate: order.date,
-            amount: order.amount,
             paymentMethod: order.paymentMethod,
+            canConfirm: false,
           };
         }
-        const itemWithShipping = {
-          ...item,
-          trackingNumber: item.trackingNumber || null,
-          shippingProvider: item.shippingProvider || null,
-        };
-        groups[shopId].items.push(itemWithShipping);
-        return groups;
+        acc[shopId].items.push(item);
+        if (
+          item.trackingNumber &&
+          !item.confirmedByCustomer &&
+          item.status !== "ได้รับสินค้าแล้ว"
+        ) {
+          acc[shopId].canConfirm = true;
+        }
+        return acc;
       }, {});
 
       return {
@@ -239,6 +240,16 @@ const Orders = () => {
     }
   };
 
+  const renderColorDisplay = (color) => {
+    return (
+      <div
+        className="w-5 h-5 rounded-full border border-gray-200 shadow-sm"
+        style={{ backgroundColor: color }}
+        title={color}
+      />
+    );
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-xl font-medium text-gray-900 mb-6">
@@ -301,36 +312,41 @@ const Orders = () => {
                     {shop.shopImage ? (
                       <img
                         src={shop.shopImage}
-                        alt={shop.shopName}
+                        alt={shop.shopName || "Shop"}
                         className="w-7 h-7 rounded-full object-cover"
                       />
                     ) : (
                       <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
                         <span className="text-sm text-gray-500">
-                          {shop.shopName.charAt(0)}
+                          {(shop.shopName || "S").charAt(0)}
                         </span>
                       </div>
                     )}
                     <h2 className="text-sm font-medium text-gray-900">
-                      {shop.shopName}
+                      {shop.shopName || "ร้านค้า"}
                     </h2>
                   </div>
 
                   {/* Items */}
                   <div className="space-y-4">
                     {shop.items.map((item, itemIndex) => (
-                      <div key={itemIndex} className="flex gap-3">
+                      <div key={itemIndex} className="flex gap-4">
                         <img
-                          src={item.image[0]}
+                          src={
+                            Array.isArray(item.image)
+                              ? item.image[0]
+                              : item.image
+                          }
                           alt={item.name}
-                          className="w-16 h-16 object-cover rounded-md bg-gray-50 border border-gray-200"
+                          className="w-24 h-24 object-cover rounded-lg border border-gray-100"
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start">
-                            <h3 className="text-sm font-medium text-gray-900">
+                          {/* Item Details */}
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="text-base font-medium text-gray-900 mb-1">
                               {item.name}
-                            </h3>
-                            <p className="text-sm font-medium text-gray-900">
+                            </h4>
+                            <p className="text-lg font-semibold text-gray-900">
                               ฿
                               {(
                                 item.price * item.quantity +
@@ -339,64 +355,91 @@ const Orders = () => {
                             </p>
                           </div>
 
-                          <div className="flex items-center gap-3 text-sm text-gray-600 mt-1">
-                            <p>จำนวน: {item.quantity}</p>
-                            <p>ไซส์: {item.size}</p>
-                            <div className="flex items-center gap-1">
-                              <span>สี:</span>
-                              {item.colors.map((color, colorIdx) => (
+                          {/* Product Details */}
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500">จำนวน:</span>
+                              <span className="font-medium text-gray-900">
+                                {item.quantity} ชิ้น
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500">ไซส์:</span>
+                              <span className="font-medium text-gray-900">
+                                {item.size}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500">สี:</span>
+                              <div className="flex items-center gap-1">
+                                {renderColorDisplay(item.color)}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500">สถานะ:</span>
+                              <div className="flex items-center gap-1.5">
                                 <div
-                                  key={colorIdx}
-                                  className={`w-4 h-4 rounded-full ${getColorClass(
-                                    color
-                                  )} border border-gray-200`}
-                                  title={color}
-                                />
-                              ))}
+                                  className={`w-2 h-2 rounded-full ${
+                                    item.status === "ได้รับสินค้าแล้ว"
+                                      ? "bg-green-500"
+                                      : item.status === "จัดส่งแล้ว"
+                                      ? "bg-blue-500"
+                                      : "bg-yellow-500"
+                                  }`}
+                                ></div>
+                                <span className="font-medium text-gray-900">
+                                  {item.status}
+                                </span>
+                              </div>
                             </div>
                           </div>
 
-                          {item.address && (
-                            <>
-                              <div className="text-sm text-gray-600">
-                                <p className="font-medium">
-                                  {item.address.name}
-                                </p>
-                                <p>{item.address.addressLine1}</p>
-                                {item.address.addressLine2 && (
-                                  <p>{item.address.addressLine2}</p>
+                          {/* Shipping Address */}
+                          {item.shippingAddress && (
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              <h5 className="text-sm font-medium text-gray-900 mb-2">
+                                ที่อยู่จัดส่ง:
+                              </h5>
+                              <div className="text-sm text-gray-600 space-y-1">
+                                <p>{item.shippingAddress.name}</p>
+                                <p>{item.shippingAddress.phoneNumber}</p>
+                                <p>{item.shippingAddress.addressLine1}</p>
+                                {item.shippingAddress.addressLine2 && (
+                                  <p>{item.shippingAddress.addressLine2}</p>
                                 )}
                                 <p>
-                                  จ.{item.address.district}, อ.
-                                  {item.address.province}
+                                  {item.shippingAddress.district}{" "}
+                                  {item.shippingAddress.province}{" "}
+                                  {item.shippingAddress.postalCode}
                                 </p>
-                                <p>{item.address.postalCode}</p>
-                                <p>โทร: {item.address.phoneNumber}</p>
-                              </div>
-                            </>
-                          )}
-
-                          {item.trackingNumber && (
-                            <div className="mt-2 p-2 bg-gray-50 rounded-md">
-                              <div className="flex flex-col gap-1">
-                                <p className="text-sm text-gray-700">
-                                  <span className="font-medium">เลขพัสดุ:</span>{" "}
-                                  {item.trackingNumber}
-                                </p>
-                                <p className="text-sm text-gray-700">
-                                  <span className="font-medium">ขนส่ง:</span>{" "}
-                                  {item.shippingProvider}
+                                <p>
+                                  {item.shippingAddress.country || "ประเทศไทย"}
                                 </p>
                               </div>
                             </div>
                           )}
 
-                          <div className="mt-2 flex items-center gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                            <span className="text-xs text-gray-700">
-                              {item.status}
-                            </span>
-                          </div>
+                          {/* Shipping Details */}
+                          {item.trackingNumber && (
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                  <span className="text-gray-500">
+                                    เลขพัสดุ:{" "}
+                                  </span>
+                                  <span className="font-medium text-gray-900">
+                                    {item.trackingNumber}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">ขนส่ง: </span>
+                                  <span className="font-medium text-gray-900">
+                                    {item.shippingProvider}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -586,21 +629,21 @@ const Orders = () => {
                               <div className="flex items-center gap-2">
                                 <span className="text-gray-500">สี:</span>
                                 <div className="flex items-center gap-1">
-                                  {item.colors.map((color, colorIdx) => (
-                                    <div
-                                      key={colorIdx}
-                                      className={`w-5 h-5 rounded-full ${getColorClass(
-                                        color
-                                      )} border border-gray-200 shadow-sm`}
-                                      title={color}
-                                    />
-                                  ))}
+                                  {renderColorDisplay(item.color)}
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className="text-gray-500">สถานะ:</span>
                                 <div className="flex items-center gap-1.5">
-                                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                  <div
+                                    className={`w-2 h-2 rounded-full ${
+                                      item.status === "ได้รับสินค้าแล้ว"
+                                        ? "bg-green-500"
+                                        : item.status === "ัดส่งแล้ว"
+                                        ? "bg-blue-500"
+                                        : "bg-yellow-500"
+                                    }`}
+                                  ></div>
                                   <span className="font-medium text-gray-900">
                                     {item.status}
                                   </span>
@@ -637,7 +680,7 @@ const Orders = () => {
                     ))}
                   </div>
 
-                  {/* ปุ่มการทำงานสำหรับทั้งร้าน */}
+                  {/* Shop Actions - ย้ายมาไว้ในโมดัล */}
                   <div className="mt-4 border-t pt-4 flex gap-2">
                     {/* ปุ่มติดต่อร้านค้า */}
                     <button
@@ -646,7 +689,7 @@ const Orders = () => {
                           ...prev,
                           shopId: shop.items[0].owner._id,
                           orderId: selectedOrder._id,
-                          productId: shop.items[0]._id, // ใช้สินค้าชิ้นแรกในร้าน
+                          productId: shop.items[0]._id,
                         }));
                         setShowContactModal(true);
                       }}

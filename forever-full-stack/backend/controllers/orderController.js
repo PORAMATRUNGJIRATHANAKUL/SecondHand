@@ -63,26 +63,26 @@ const placeOrder = async (req, res) => {
     const { userId, items, amount, paymentMethod, paymentProof, address } =
       req.body;
 
-    console.log(items);
+    console.log("Received items:", items);
 
-    console.log("--------------------------------------------------");
     // Check stock and get full product data
     const itemsWithFullData = await Promise.all(
       items.map(async (item) => {
         const product = await productModel
-          .findById(item._id)
+          .findById(item.productId)
           .populate("owner", "name email profileImage");
+
         if (!product) {
-          throw new Error(`ไม่พบสินค้ารหัส: ${item._id}`);
+          throw new Error(`ไม่พบสินค้ารหัส: ${item.productId}`);
         }
 
         const stockItem = product.stockItems.find(
-          (s) => s.size === item.size && s.color === item.colors[0]
+          (s) => s.size === item.size && s.color === item.color
         );
 
         if (!stockItem) {
           throw new Error(
-            `ไม่พบสต็อกสินค้า ${product.name} ไซส์ ${item.size} สี ${item.colors[0]}`
+            `ไม่พบสต็อกสินค้า ${product.name} ไซส์ ${item.size} สี ${item.color}`
           );
         }
 
@@ -92,13 +92,16 @@ const placeOrder = async (req, res) => {
           );
         }
 
-        // ดึงค่าจัดส่งจากข้อมูลสินค้า
         const shippingCost = product.shippingCost || 0;
 
         return {
-          ...item,
+          _id: item.productId,
+          productId: product._id,
           name: product.name,
           price: product.price,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color,
           image: product.image,
           owner: {
             _id: product.owner._id,
@@ -106,30 +109,22 @@ const placeOrder = async (req, res) => {
             email: product.owner.email,
             profileImage: product.owner.profileImage,
           },
-          shippingCost: shippingCost * item.quantity, // คำนวณค่าจัดส่งตามจำนวนสินค้า
-          shippingAddress: {
-            name: item.address.name,
-            addressLine1: item.address.addressLine1,
-            addressLine2: item.address.addressLine2 || "",
-            district: item.address.district,
-            province: item.address.province,
-            postalCode: item.address.postalCode,
-            phoneNumber: item.address.phoneNumber,
-            country: item.address.country || "ประเทศไทย",
-          },
+          shippingCost: shippingCost * item.quantity,
+          shippingAddress: item.shippingAddress,
+          status: "รอดำเนินการ",
         };
       })
     );
 
     // Update stock for all items
     for (const item of itemsWithFullData) {
-      const product = await productModel.findById(item._id);
+      const product = await productModel.findById(item.productId);
       const stockIndex = product.stockItems.findIndex(
-        (s) => s.size === item.size && s.color === item.colors[0]
+        (s) => s.size === item.size && s.color === item.color
       );
 
       await productModel.findByIdAndUpdate(
-        item._id,
+        item.productId,
         {
           $set: {
             [`stockItems.${stockIndex}.stock`]:
@@ -140,7 +135,7 @@ const placeOrder = async (req, res) => {
       );
     }
 
-    // Group items by shop owner and add shipping address to each item
+    // Group items by shop owner
     const itemsByShop = itemsWithFullData.reduce((acc, item) => {
       const shopId = item.owner._id;
       if (!acc[shopId]) {
@@ -154,16 +149,10 @@ const placeOrder = async (req, res) => {
       return acc;
     }, {});
 
-    // Create user order with shipping addresses
-    const userOrderItems = itemsWithFullData.map((item) => ({
-      ...item,
-      status: "รอดำเนินการ",
-      shippingCost: item.shippingCost || 0,
-    }));
-
+    // Create user order
     const userOrderData = {
       userId,
-      items: userOrderItems,
+      items: itemsWithFullData,
       amount,
       paymentMethod,
       date: Date.now(),
@@ -172,9 +161,8 @@ const placeOrder = async (req, res) => {
     const newUserOrder = new userOrderModel(userOrderData);
     await newUserOrder.save();
 
-    // Create shop orders grouped by shop with shipping addresses
+    // Create shop orders
     for (const [shopId, shopItems] of Object.entries(itemsByShop)) {
-      // คำนวณยอดรวมโดยรวมค่าจัดส่งของแต่ละชิ้น
       const shopTotal = shopItems.reduce(
         (sum, item) => sum + (item.price * item.quantity + item.shippingCost),
         0
