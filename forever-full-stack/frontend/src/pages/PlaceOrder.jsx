@@ -138,7 +138,7 @@ const PlaceOrder = () => {
       );
 
       if (response.data.success) {
-        toast.success("สั่งซื้อสินค���าสำเร็จ");
+        toast.success("สั่งซื้อสินค้าสำเร็จ");
         setCartItems([]);
         navigate("/orders");
       } else {

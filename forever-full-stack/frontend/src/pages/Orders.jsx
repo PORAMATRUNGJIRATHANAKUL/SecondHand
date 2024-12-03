@@ -61,11 +61,9 @@ const Orders = () => {
 
   const updateOrderStatus = async (orderId, itemId) => {
     try {
-      console.log("Sending update request with data:", {
+      console.log("Attempting to update order status with:", {
         orderId,
         itemId,
-        status: "ได้รับสินค้าแล้ว",
-        confirmedByCustomer: true,
       });
 
       const response = await axios.post(
@@ -88,6 +86,7 @@ const Orders = () => {
         toast.success("ยืนยันการรับสินค้าสำเร็จ");
         setShowTrackingModal(false);
         await loadOrderData();
+        await fetchAllOrders();
       } else {
         console.error("Update failed:", response.data);
         toast.error(response.data.message || "ไม่สามารถอัพเดทสถานะได้");
