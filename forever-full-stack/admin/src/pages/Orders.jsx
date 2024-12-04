@@ -77,7 +77,7 @@ const Orders = ({ token, searchQuery }) => {
         toast.success("อัพเดทสถานะการโอนเงินสำเร็จ");
       }
     } catch (error) {
-      toast.error("ไม่สามารถ���ัพเดทสถานะการโอนเงินได้");
+      toast.error("ไม่สามารถอัพเดทสถานะการโอนเงินได้");
     }
   };
 
@@ -256,7 +256,7 @@ const Orders = ({ token, searchQuery }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="relative bg-white p-4 rounded-lg max-w-lg w-full">
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-semibold">สลิปการโอนเงิน</h2>
+              <h2 className="text-lg font-semibold">หลักฐานการชำระเงิน</h2>
               <button
                 onClick={() => setShowQRProof(false)}
                 className="text-gray-500 hover:text-gray-700"
