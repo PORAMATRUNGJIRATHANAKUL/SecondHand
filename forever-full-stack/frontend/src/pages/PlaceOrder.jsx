@@ -124,6 +124,31 @@ const PlaceOrder = () => {
         paymentMethod: method,
       };
 
+      if (method === "QR Code" && paymentProof) {
+        const formData = new FormData();
+        formData.append("paymentProof", paymentProof);
+
+        console.log("Uploading payment proof:", paymentProof);
+
+        const uploadResponse = await axios.post(
+          `${backendUrl}/api/order/verify-qr`,
+          formData,
+          {
+            headers: {
+              token,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        console.log("Upload response:", uploadResponse.data);
+
+        if (uploadResponse.data.success) {
+          orderData.paymentProof = uploadResponse.data.paymentProofPath;
+          console.log("Payment proof URL:", orderData.paymentProof);
+        }
+      }
+
       console.log("Final order data:", orderData);
 
       const response = await axios.post(

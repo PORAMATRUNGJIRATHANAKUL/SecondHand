@@ -28,6 +28,7 @@ const Ordershopme = ({ searchQuery }) => {
         headers: { token },
       });
       if (response.data.success) {
+        console.log("Fetched orders:", response.data.orders);
         setOrders(response.data.orders.reverse());
       } else {
         toast.error(response.data.message);
@@ -90,6 +91,7 @@ const Ordershopme = ({ searchQuery }) => {
   };
 
   const viewQRProof = (order) => {
+    console.log("Selected order for QR proof:", order);
     setSelectedOrder(order);
     setShowQRProof(true);
   };
@@ -279,9 +281,6 @@ const Ordershopme = ({ searchQuery }) => {
                     <div key={order._id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-4">
-                          <h4 className="text-lg font-medium">
-                            คำสั่งซื้อ #{order._id.slice(-6)}
-                          </h4>
                           <div className="text-sm bg-gray-100 px-2 py-1 rounded">
                             รายการสินค้าทั้งหมด:{" "}
                             {order.items.reduce(
@@ -529,7 +528,7 @@ const Ordershopme = ({ searchQuery }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="relative bg-white p-4 rounded-lg max-w-lg w-full">
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-semibold">สลิปการโอนเงิน</h2>
+              <h2 className="text-lg font-semibold">หลักฐานการชำระเงิน</h2>
               <button
                 onClick={() => setShowQRProof(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -553,21 +552,35 @@ const Ordershopme = ({ searchQuery }) => {
 
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="flex justify-center items-center h-[400px]">
-                <img
-                  src={selectedOrder.paymentProof}
-                  alt="สลิปการโอนเงิน"
-                  className="max-w-full max-h-full object-contain"
-                  onError={(e) => {
-                    e.target.src = assets.noImage;
-                    e.target.onerror = null;
-                  }}
-                />
+                {selectedOrder.paymentProof ? (
+                  <img
+                    src={selectedOrder.paymentProof}
+                    alt="สลิปการโอนเงิน"
+                    className="max-w-full max-h-full object-contain"
+                    onError={(e) => {
+                      e.target.src = assets.noImage;
+                      e.target.onerror = null;
+                    }}
+                  />
+                ) : (
+                  <div className="text-gray-500">ไม่พบหลักฐานการชำระเงิน</div>
+                )}
               </div>
               <div className="mt-2 text-sm text-gray-600">
                 <p>
                   วันที่: {new Date(selectedOrder.date).toLocaleDateString()}
                 </p>
-                <p>จำนวนเงิน: ฿{selectedOrder.amount.toLocaleString()}</p>
+                <p>
+                  จำนวนเงิน: ฿
+                  {selectedOrder.items
+                    .reduce(
+                      (total, item) =>
+                        total +
+                        (item.price + item.shippingCost) * item.quantity,
+                      0
+                    )
+                    .toLocaleString()}
+                </p>
               </div>
             </div>
           </div>

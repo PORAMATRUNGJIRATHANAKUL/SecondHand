@@ -190,7 +190,7 @@ const Orders = ({ token, searchQuery }) => {
                   <div className="flex-1">
                     <p className="font-medium">{item.name}</p>
                     <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>จ��นวน: {item.quantity}</span>
+                      <span>จำนวน: {item.quantity}</span>
                       <span>ไซส์: {item.size}</span>
                       {item.colors && (
                         <div className="flex items-center gap-1">

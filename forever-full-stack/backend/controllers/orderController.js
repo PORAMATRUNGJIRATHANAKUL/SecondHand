@@ -60,8 +60,12 @@ const upload = multer({ storage: storage });
 
 const placeOrder = async (req, res) => {
   try {
-    const { userId, items, amount, paymentMethod, paymentProof, address } =
-      req.body;
+    const { userId, items, amount, paymentMethod, paymentProof } = req.body;
+
+    console.log("Received order data:", {
+      paymentMethod,
+      paymentProof,
+    });
 
     console.log("Received items:", items);
 
@@ -179,6 +183,8 @@ const placeOrder = async (req, res) => {
         status: "รอดำเนินการ",
         date: Date.now(),
       };
+
+      console.log("Creating shop order with data:", shopOrderData);
 
       const newOrder = new orderModel(shopOrderData);
       await newOrder.save();
