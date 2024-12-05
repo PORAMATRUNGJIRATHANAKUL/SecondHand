@@ -207,7 +207,9 @@ const Orders = ({ token, searchQuery }) => {
                         </div>
                       )}
                     </div>
-                    <p className="text-sm mt-1">ราคา: ฿{order.amount}</p>
+                    <p className="text-sm mt-1">
+                      ราคา: ฿{item.price + (item.shippingCost || 0)}
+                    </p>
                   </div>
                 </div>
               ))}
