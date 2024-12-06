@@ -17,6 +17,7 @@ const Ordershopme = ({ searchQuery }) => {
   });
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [customerIssues, setCustomerIssues] = useState([]);
+  const [customShippingProvider, setCustomShippingProvider] = useState("");
 
   const fetchAllOrders = async () => {
     if (!token) {
@@ -188,6 +189,11 @@ const Ordershopme = ({ searchQuery }) => {
         return;
       }
 
+      const finalShippingProvider =
+        shippingInfo.shippingProvider === "other"
+          ? customShippingProvider
+          : shippingInfo.shippingProvider;
+
       const response = await axios.post(
         `${backendUrl}/api/order/shipping`,
         {
@@ -195,7 +201,7 @@ const Ordershopme = ({ searchQuery }) => {
           itemId: selectedOrder.currentItem._id,
           size: selectedOrder.currentItem.size,
           trackingNumber: shippingInfo.trackingNumber,
-          shippingProvider: shippingInfo.shippingProvider,
+          shippingProvider: finalShippingProvider,
         },
         {
           headers: { token },
@@ -714,8 +720,24 @@ const Ordershopme = ({ searchQuery }) => {
                   <option value="Thailand Post">ไปรษณีย์ไทย</option>
                   <option value="J&T Express">J&T Express</option>
                   <option value="Ninja Van">Ninja Van</option>
+                  <option value="other">อื่นๆ</option>
                 </select>
               </div>
+
+              {shippingInfo.shippingProvider === "other" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ระบุบริษัทขนส่ง
+                  </label>
+                  <input
+                    type="text"
+                    value={customShippingProvider}
+                    onChange={(e) => setCustomShippingProvider(e.target.value)}
+                    placeholder="กรอกชื่อบริษัทขนส่ง"
+                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              )}
 
               <div className="flex gap-3 mt-6">
                 <button
