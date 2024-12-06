@@ -26,12 +26,13 @@ const addProduct = async (req, res) => {
     const image2 = req.files.image2 && req.files.image2[0];
     const image3 = req.files.image3 && req.files.image3[0];
     const image4 = req.files.image4 && req.files.image4[0];
+    const sizeGuideImage = req.files.sizeGuide && req.files.sizeGuide[0];
 
     const images = [image1, image2, image3, image4]
       .flat()
       .filter((item) => item !== undefined);
 
-    // อัพโหลดรูปภาพไปยัง Cloudinary
+    // อัพโหลดรูปภาพสินค้าไปยัง Cloudinary
     let imagesUrl = await Promise.all(
       images.map(async (item) => {
         let result = await cloudinary.uploader.upload(item.path, {
@@ -41,6 +42,16 @@ const addProduct = async (req, res) => {
         return result.secure_url;
       })
     );
+
+    // สัพโหลดรูปภาพคำแนะนำไซส์ไปยัง Cloudinary (ถ้ามี)
+    let sizeGuideUrl = null;
+    if (sizeGuideImage) {
+      const result = await cloudinary.uploader.upload(sizeGuideImage.path, {
+        resource_type: "image",
+        timestamp: Math.round(Date.now() / 1000),
+      });
+      sizeGuideUrl = result.secure_url;
+    }
 
     // สร้างข้อมูลสินค้า
     const productData = {
@@ -58,6 +69,7 @@ const addProduct = async (req, res) => {
       owner,
       shippingType,
       shippingCost,
+      sizeGuide: sizeGuideUrl,
     };
 
     const product = new productModel(productData);
@@ -126,7 +138,7 @@ const removeProduct = async (req, res) => {
   }
 };
 
-// ลบสินค้าโดยผู้ดูแลระ���บ
+// ลบสินค้าโดยผู้ดูแลระบ
 const removeProductAdmin = async (req, res) => {
   try {
     const productId = req.body.id;

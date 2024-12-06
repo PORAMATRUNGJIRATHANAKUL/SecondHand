@@ -16,6 +16,7 @@ const productSchema = new mongoose.Schema({
   isApproved: { type: Boolean, default: false },
   shippingType: { type: String, enum: ["free", "paid"], default: "free" },
   shippingCost: { type: Number, default: 0 },
+  sizeGuide: { type: Array },
 });
 
 const productModel =

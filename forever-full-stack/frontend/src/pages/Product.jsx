@@ -12,6 +12,7 @@ const Product = () => {
   const [color, setColor] = useState("");
   const [availableSizes, setAvailableSizes] = useState([]);
   const [stockCount, setStockCount] = useState(0);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   const fetchProductData = async () => {
     products.map((item) => {
@@ -142,7 +143,31 @@ const Product = () => {
 
             <div className="space-y-4">
               <div>
-                <p className="font-medium mb-3">เลือกไซส์</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="font-medium">เลือกไซส์</p>
+                  {productData.sizeGuide && (
+                    <button
+                      onClick={() => setShowSizeGuide(true)}
+                      className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
+                    >
+                      คำแนะนำไซส์
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-4 h-4 ml-1"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {availableSizes.map((item, index) => (
                     <button
@@ -227,6 +252,41 @@ const Product = () => {
           subCategory={productData.subCategory}
         />
       </div>
+
+      {/* Add Size Guide Modal */}
+      {showSizeGuide && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg max-w-xl w-fit mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">คำแนะนำไซส์</h3>
+              <button
+                onClick={() => setShowSizeGuide(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18 18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <img
+              src={productData.sizeGuide}
+              alt="Size Guide"
+              className="w-auto h-auto max-h-[70vh]"
+            />
+          </div>
+        </div>
+      )}
     </div>
   ) : (
     <div className="opacity-0"></div>
