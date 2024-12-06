@@ -78,6 +78,9 @@ const ReportProblem = () => {
             required={!preview}
             className="w-full p-2 border rounded-md"
           />
+          <p className="text-sm text-gray-500 mt-1">
+            ขนาดไฟล์: ไม่เกิน 5MB ต่อรูป ไฟล์ที่รองรับ: JPG, PNG, WEBP
+          </p>
           {preview && (
             <div className="flex items-center gap-4 mt-2">
               <img
