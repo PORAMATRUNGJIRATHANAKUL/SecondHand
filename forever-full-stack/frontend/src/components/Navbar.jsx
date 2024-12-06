@@ -3,6 +3,8 @@ import { assets } from "../assets/assets";
 import { Link, NavLink } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { BiSearch, BiShoppingBag, BiUser, BiMenu } from "react-icons/bi";
+import { Crown } from "lucide-react";
+
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
   const [profileImage, setProfileImage] = useState("");
@@ -36,6 +38,9 @@ const Navbar = () => {
     setCartItems({});
     setProfileImage("");
   };
+
+  const isVerifiedSeller =
+    user?.bankAccount && user?.bankAccountName && user?.bankName;
 
   return (
     <div className="flex items-center justify-between py-5 font-medium">
@@ -109,12 +114,18 @@ const Navbar = () => {
               className="p-1 hover:bg-gray-100 rounded-full transition-colors"
               aria-label="เมนูผู้ใช้"
             >
-              <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-200">
+              <div className="relative">
                 <img
-                  src={profileImage || assets.profile_icon}
-                  className="w-full h-full object-cover"
-                  alt="รูปโปรไฟล์"
+                  src={user?.profileImage}
+                  alt="Profile"
+                  className="h-8 w-8 rounded-full cursor-pointer"
                 />
+                {isVerifiedSeller && (
+                  <Crown
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 w-3 h-3 text-yellow-500"
+                    title="ร้านค้าที่ยืนยันแล้ว"
+                  />
+                )}
               </div>
             </button>
           ) : (

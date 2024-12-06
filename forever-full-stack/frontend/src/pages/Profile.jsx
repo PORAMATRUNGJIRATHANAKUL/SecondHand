@@ -1,5 +1,5 @@
 import { useState, useRef, useContext } from "react";
-import { PencilIcon, CheckIcon } from "lucide-react";
+import { PencilIcon, CheckIcon, Crown } from "lucide-react";
 import { ShopContext } from "../context/ShopContext";
 
 function ProfilePage() {
@@ -25,6 +25,9 @@ function ProfilePage() {
   const fileInputRef = useRef(null);
 
   const [imageTimestamp, setImageTimestamp] = useState(Date.now());
+
+  const isVerifiedSeller =
+    user?.bankAccount && user?.bankAccountName && user?.bankName;
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
@@ -108,13 +111,21 @@ function ProfilePage() {
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <div className="flex flex-col items-center mb-6">
-        <img
-          src={previewImage || `${user?.profileImage}?t=${imageTimestamp}`}
-          alt="รูปโปรไฟล์"
-          className="w-32 h-32 rounded-full mb-4 cursor-pointer"
-          onClick={handleImageClick}
-          title={isEditing ? "คลิกเพื่อเปลี่ยนรูปโปรไฟล์" : ""}
-        />
+        <div className="relative">
+          <img
+            src={previewImage || `${user?.profileImage}?t=${imageTimestamp}`}
+            alt="รูปโปรไฟล์"
+            className="w-32 h-32 rounded-full mb-4 cursor-pointer"
+            onClick={handleImageClick}
+            title={isEditing ? "คลิกเพื่อเปลี่ยนรูปโปรไฟล์" : ""}
+          />
+          {isVerifiedSeller && (
+            <Crown
+              className="absolute top-0 right-0 w-8 h-8 text-yellow-500"
+              title="ร้านค้าที่ยืนยันแล้ว"
+            />
+          )}
+        </div>
         {isEditing && (
           <input
             type="file"
