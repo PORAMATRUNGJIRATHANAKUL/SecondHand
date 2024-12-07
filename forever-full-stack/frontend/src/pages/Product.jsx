@@ -290,33 +290,20 @@ const Product = () => {
         </div>
       </div>
 
-      {/* ---------- Description Section ------------- */}
+      {/* ---------- Reviews Section ------------- */}
       <div className="mt-16 max-w-7xl mx-auto px-4">
-        <div className="border-b">
-          <h2 className="text-lg font-medium pb-3">รายละเอียด</h2>
-        </div>
-        <div className="py-6 space-y-3 text-gray-600">
-          <p>• สินค้าของแท้ 100%</p>
-          <p>• รองรับการเก็บเงินปลายทาง</p>
-          <p>• เปลี่ยนคืนสินค้าได้ภายใน 7 วัน</p>
-        </div>
-      </div>
-
-      <div>
         {productId ? (
           reviews.length > 0 ? (
             <>
-              <div className="max-w-7xl mx-auto px-4">
-                <div className="border-b">
-                  <h2 className="text-lg font-medium pb-3">รีวิวสินค้า</h2>
-                  <p className="text-gray-600 mb-2">คะแนนคุณภาพสินค้า</p>
-                  <div className="pb-4 flex items-center gap-2">
-                    <div className="flex">{renderStars(averageRating)}</div>
-                    <span className="text-lg font-medium">{averageRating}</span>
-                    <span className="text-gray-500">
-                      ({reviews.length} รีวิว)
-                    </span>
-                  </div>
+              <div className="border-b">
+                <h2 className="text-lg font-medium pb-3">รีวิวสินค้า</h2>
+                <p className="text-gray-600 mb-2">คะแนนคุณภาพสินค้า</p>
+                <div className="pb-4 flex items-center gap-2">
+                  <div className="flex">{renderStars(averageRating)}</div>
+                  <span className="text-lg font-medium">{averageRating}</span>
+                  <span className="text-gray-500">
+                    ({reviews.length} รีวิว)
+                  </span>
                 </div>
               </div>
               {reviews.map((review) => (
@@ -324,7 +311,7 @@ const Product = () => {
                   key={review._id}
                   className="flex gap-4 max-w-7xl mx-auto px-4 py-4 border-b"
                 >
-                  <div className="w-12 h-12 rounded-full bg-gray-200">
+                  <div className="w-8 h-8 rounded-full bg-gray-200">
                     <img
                       src={review.user.profileImage}
                       alt={review.name}
@@ -360,7 +347,7 @@ const Product = () => {
               ))}
             </>
           ) : (
-            <div className="max-w-7xl mx-auto px-4">
+            <div>
               <h2 className="text-lg font-medium pb-3">ยังไม่มีรีวิวสินค้า</h2>
             </div>
           )
