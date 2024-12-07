@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import productModel from "../models/productModel.js";
+import productReview from "../models/productReviewModel.js";
 import userModel from "../models/userModel.js";
 
 // ฟังก์ชันเพิ่มสินค้า
@@ -191,6 +192,75 @@ const approveProduct = async (req, res) => {
   }
 };
 
+const addProductReview = async (req, res) => {
+  try {
+    const { rating, comment, productId } = req.body;
+    const userId = req.userId;
+
+    const product = await productModel.findById(productId);
+    if (!product) {
+      return res.json({ success: false, message: "ไม่พบสินค้า" });
+    }
+
+    const image1 = req.files.image1 && req.files.image1[0];
+    const image2 = req.files.image2 && req.files.image2[0];
+    const image3 = req.files.image3 && req.files.image3[0];
+    const image4 = req.files.image4 && req.files.image4[0];
+
+    const images = [image1, image2, image3, image4]
+      .flat()
+      .filter((item) => item !== undefined);
+
+    let imagesUrl = await Promise.all(
+      images.map(async (item) => {
+        let result = await cloudinary.uploader.upload(item.path, {
+          resource_type: "image",
+          timestamp: Math.round(Date.now() / 1000),
+        });
+        return result.secure_url;
+      })
+    );
+
+    const review = {
+      user: userId,
+      product: productId,
+      rating,
+      comment,
+      images: imagesUrl,
+    };
+
+    const newReview = new productReview(review);
+
+    await newReview.save();
+
+    res.json({ success: true, message: "เพิ่มรีวิวสำเร็จ" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "เกิดข้อผิดพลาดในการเพิ่มรีวิว" });
+  }
+};
+
+const getReviews = async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const reviews = await productReview
+      .find({ product: productId })
+      .populate({
+        path: "user",
+        select: "name email profileImage",
+      })
+      .populate({
+        path: "product",
+        select: "name",
+      });
+
+    res.json({ success: true, reviews });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "ไม่สามารถดึงข้อมูลรีวิวได้" });
+  }
+};
+
 export {
   listProducts,
   addProduct,
@@ -200,4 +270,6 @@ export {
   approveProduct,
   getProductsByOwner,
   getApprovedProducts,
+  addProductReview,
+  getReviews,
 };

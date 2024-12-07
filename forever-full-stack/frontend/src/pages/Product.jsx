@@ -5,7 +5,8 @@ import RelatedProducts from "../components/RelatedProducts";
 
 const Product = () => {
   const { productId } = useParams();
-  const { products, addToCart, getProductsData } = useContext(ShopContext);
+  const { products, addToCart, getProductsData, backendUrl } =
+    useContext(ShopContext);
   const [productData, setProductData] = useState(false);
   const [image, setImage] = useState("");
   const [size, setSize] = useState("");
@@ -13,6 +14,7 @@ const Product = () => {
   const [availableSizes, setAvailableSizes] = useState([]);
   const [stockCount, setStockCount] = useState(0);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   const fetchProductData = async () => {
     products.map((item) => {
@@ -92,9 +94,56 @@ const Product = () => {
     });
   };
 
+  const getProductReviews = async () => {
+    if (!productId) return;
+    try {
+      const response = await fetch(
+        `${backendUrl}/api/product/${productId}/reviews`
+      );
+      const data = await response.json();
+      setReviews(data.reviews);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 1; i <= 5; i++) {
+      if (i <= fullStars) {
+        stars.push(
+          <span key={i} className="text-yellow-500">
+            ★
+          </span>
+        );
+      } else if (i === fullStars + 1 && hasHalfStar) {
+        stars.push(
+          <span key={i} className="text-yellow-500">
+            ½
+          </span>
+        );
+      } else {
+        stars.push(
+          <span key={i} className="text-gray-300">
+            ☆
+          </span>
+        );
+      }
+    }
+
+    return stars;
+  };
+
   useEffect(() => {
     fetchProductData();
-  }, [productId, getProductsData]);
+  }, [productId, products]);
+
+  useEffect(() => {
+    getProductReviews();
+  }, [productId]);
 
   return productData ? (
     <div className="border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100">
@@ -243,6 +292,58 @@ const Product = () => {
           <p>• รองรับการเก็บเงินปลายทาง</p>
           <p>• เปลี่ยนคืนสินค้าได้ภายใน 7 วัน</p>
         </div>
+      </div>
+
+      <div>
+        {productId ? (
+          reviews.length > 0 ? (
+            <>
+              {reviews.map((review) => (
+                <div
+                  key={review._id}
+                  className="flex gap-4 mx-auto px-4 py-4 border-b"
+                >
+                  <div className="w-16 h-16 rounded-full bg-gray-200">
+                    <img
+                      src={review.user.profileImage}
+                      alt={review.name}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{review.user.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <div className="flex text-sm">
+                        {renderStars(review.rating)}
+                      </div>
+                      <span className="text-gray-500">
+                        {review.date.split("T")[0]}
+                      </span>
+                    </div>
+                    <p className="text-gray-600">{review.comment}</p>
+
+                    {review.images.length > 0 && (
+                      <div className="flex gap-2 mt-2">
+                        {review.images.map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`รูปรีวิว ${index + 1}`}
+                            className="w-16 h-16 object-cover rounded-md"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-lg font-medium pb-3">ยังไม่มีรีวิวสินค้า</h2>
+            </div>
+          )
+        ) : null}
       </div>
 
       {/* --------- Related Products ---------- */}

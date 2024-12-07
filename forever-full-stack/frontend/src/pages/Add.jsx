@@ -174,7 +174,7 @@ const Add = () => {
       );
 
       if (response.data.success) {
-        toast.success("เหพิ่มสินค้าสำเร็จ");
+        toast.success("เพิ่มสินค้าสำเร็จ");
         // Reset all fields
         setName("");
         setDescription("");

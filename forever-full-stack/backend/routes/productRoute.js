@@ -6,6 +6,8 @@ import {
   removeProductAdmin,
   singleProduct,
   getProductsByOwner,
+  addProductReview,
+  getReviews,
 } from "../controllers/productController.js";
 import upload from "../middleware/multer.js";
 import userAuth from "../middleware/auth.js";
@@ -24,6 +26,22 @@ productRouter.post(
   ]),
   addProduct
 );
+
+productRouter.post(
+  "/addReview",
+  userAuth,
+  upload.fields([
+    { name: "image1", maxCount: 1 },
+    { name: "image2", maxCount: 1 },
+    { name: "image3", maxCount: 1 },
+    { name: "image4", maxCount: 1 },
+  ]),
+  addProductReview
+);
+
+// get product reviews
+productRouter.get("/:productId/reviews", getReviews);
+
 productRouter.post("/remove", userAuth, removeProduct);
 productRouter.post("/removeAdmin", adminAuth, removeProductAdmin);
 productRouter.post("/single", singleProduct);
