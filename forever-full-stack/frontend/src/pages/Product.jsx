@@ -15,6 +15,7 @@ const Product = () => {
   const [stockCount, setStockCount] = useState(0);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
 
   const fetchProductData = async () => {
     products.map((item) => {
@@ -94,6 +95,12 @@ const Product = () => {
     });
   };
 
+  const calculateAverageRating = (reviews) => {
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return (sum / reviews.length).toFixed(1);
+  };
+
   const getProductReviews = async () => {
     if (!productId) return;
     try {
@@ -102,6 +109,7 @@ const Product = () => {
       );
       const data = await response.json();
       setReviews(data.reviews);
+      setAverageRating(calculateAverageRating(data.reviews));
     } catch (error) {
       console.log(error);
     }
@@ -298,12 +306,25 @@ const Product = () => {
         {productId ? (
           reviews.length > 0 ? (
             <>
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="border-b">
+                  <h2 className="text-lg font-medium pb-3">รีวิวสินค้า</h2>
+                  <p className="text-gray-600 mb-2">คะแนนคุณภาพสินค้า</p>
+                  <div className="pb-4 flex items-center gap-2">
+                    <div className="flex">{renderStars(averageRating)}</div>
+                    <span className="text-lg font-medium">{averageRating}</span>
+                    <span className="text-gray-500">
+                      ({reviews.length} รีวิว)
+                    </span>
+                  </div>
+                </div>
+              </div>
               {reviews.map((review) => (
                 <div
                   key={review._id}
-                  className="flex gap-4 mx-auto px-4 py-4 border-b"
+                  className="flex gap-4 max-w-7xl mx-auto px-4 py-4 border-b"
                 >
-                  <div className="w-16 h-16 rounded-full bg-gray-200">
+                  <div className="w-12 h-12 rounded-full bg-gray-200">
                     <img
                       src={review.user.profileImage}
                       alt={review.name}
@@ -320,7 +341,7 @@ const Product = () => {
                         {review.date.split("T")[0]}
                       </span>
                     </div>
-                    <p className="text-gray-600">{review.comment}</p>
+                    <p className="text-gray-600 mt-1">{review.comment}</p>
 
                     {review.images.length > 0 && (
                       <div className="flex gap-2 mt-2">
