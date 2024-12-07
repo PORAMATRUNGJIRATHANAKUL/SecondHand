@@ -2,13 +2,16 @@ import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import AddReviewModal from "../components/AddReviewModal";
 
 const Orders = () => {
   const { backendUrl, token, getProductsData } = useContext(ShopContext);
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [contactForm, setContactForm] = useState({
     images: [],
     video: null,
@@ -40,25 +43,6 @@ const Orders = () => {
     }
   };
 
-  const getColorClass = (colorName) => {
-    const colorMap = {
-      Black: "bg-black",
-      White: "bg-white border border-gray-300",
-      Gray: "bg-gray-500",
-      Navy: "bg-blue-900",
-      Red: "bg-red-500",
-      Blue: "bg-blue-500",
-      Green: "bg-green-500",
-      Yellow: "bg-yellow-400",
-      Purple: "bg-purple-500",
-      Pink: "bg-pink-500",
-      Orange: "bg-orange-500",
-      Brown: "bg-amber-800",
-      Beige: "bg-[#F5F5DC]",
-    };
-    return colorMap[colorName] || "bg-gray-200";
-  };
-
   const updateOrderStatus = async (orderId, itemId) => {
     try {
       console.log("Attempting to update order status with:", {
@@ -86,7 +70,6 @@ const Orders = () => {
         toast.success("ยืนยันการรับสินค้าสำเร็จ");
         setShowTrackingModal(false);
         await loadOrderData();
-        await fetchAllOrders();
       } else {
         console.error("Update failed:", response.data);
         toast.error(response.data.message || "ไม่สามารถอัพเดทสถานะได้");
@@ -394,29 +377,46 @@ const Orders = () => {
                           </div>
 
                           {/* Shipping Address */}
-                          {item.shippingAddress && (
-                            <div className="mt-3 pt-3 border-t border-gray-100">
-                              <h5 className="text-sm font-medium text-gray-900 mb-2">
-                                ที่อยู่จัดส่ง:
-                              </h5>
-                              <div className="text-sm text-gray-600 space-y-1">
-                                <p>{item.shippingAddress.name}</p>
-                                <p>{item.shippingAddress.phoneNumber}</p>
-                                <p>{item.shippingAddress.addressLine1}</p>
-                                {item.shippingAddress.addressLine2 && (
-                                  <p>{item.shippingAddress.addressLine2}</p>
-                                )}
-                                <p>
-                                  {item.shippingAddress.district}{" "}
-                                  {item.shippingAddress.province}{" "}
-                                  {item.shippingAddress.postalCode}
-                                </p>
-                                <p>
-                                  {item.shippingAddress.country || "ประเทศไทย"}
-                                </p>
+                          <div className="flex justify-between">
+                            {item.shippingAddress && (
+                              <div className="mt-3 pt-3 border-t border-gray-100">
+                                <h5 className="text-sm font-medium text-gray-900 mb-2">
+                                  ที่อยู่จัดส่ง:
+                                </h5>
+                                <div className="text-sm text-gray-600 space-y-1">
+                                  <p>{item.shippingAddress.name}</p>
+                                  <p>{item.shippingAddress.phoneNumber}</p>
+                                  <p>{item.shippingAddress.addressLine1}</p>
+                                  {item.shippingAddress.addressLine2 && (
+                                    <p>{item.shippingAddress.addressLine2}</p>
+                                  )}
+                                  <p>
+                                    {item.shippingAddress.district}{" "}
+                                    {item.shippingAddress.province}{" "}
+                                    {item.shippingAddress.postalCode}
+                                  </p>
+                                  <p>
+                                    {item.shippingAddress.country ||
+                                      "ประเทศไทย"}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
+
+                            {item.confirmedByCustomer && (
+                              <div className="flex items-end">
+                                <button
+                                  onClick={() => {
+                                    setSelectedProduct(item);
+                                    setShowReviewModal(true);
+                                  }}
+                                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                                >
+                                  รีวิวสินค้า
+                                </button>
+                              </div>
+                            )}
+                          </div>
 
                           {/* Shipping Details */}
                           {item.trackingNumber && (
@@ -469,18 +469,20 @@ const Orders = () => {
                     </span>
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    const orderData = orders.find(
-                      (o) => o._id === order.orderId
-                    );
-                    setSelectedOrder(orderData);
-                    setShowTrackingModal(true);
-                  }}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-                >
-                  รายละเอียดสินค้า
-                </button>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => {
+                      const orderData = orders.find(
+                        (o) => o._id === order.orderId
+                      );
+                      setSelectedOrder(orderData);
+                      setShowTrackingModal(true);
+                    }}
+                    className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                  >
+                    รายละเอียดสินค้า
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -530,6 +532,7 @@ const Orders = () => {
                   </p>
                 </div>
               </div>
+
               <button
                 onClick={() => setShowTrackingModal(false)}
                 className="text-gray-400 hover:text-gray-500"
@@ -724,6 +727,14 @@ const Orders = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {showReviewModal && selectedProduct && (
+        <AddReviewModal
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          product={selectedProduct}
+        />
       )}
 
       {showContactModal && (
