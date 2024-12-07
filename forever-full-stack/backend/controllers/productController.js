@@ -240,6 +240,27 @@ const addProductReview = async (req, res) => {
   }
 };
 
+const getReviews = async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const reviews = await productReview
+      .find({ product: productId })
+      .populate({
+        path: "user",
+        select: "name email profileImage",
+      })
+      .populate({
+        path: "product",
+        select: "name",
+      });
+
+    res.json({ success: true, reviews });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "ไม่สามารถดึงข้อมูลรีวิวได้" });
+  }
+};
+
 export {
   listProducts,
   addProduct,
@@ -250,4 +271,5 @@ export {
   getProductsByOwner,
   getApprovedProducts,
   addProductReview,
+  getReviews,
 };

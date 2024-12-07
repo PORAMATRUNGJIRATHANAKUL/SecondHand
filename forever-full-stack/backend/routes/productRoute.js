@@ -7,6 +7,7 @@ import {
   singleProduct,
   getProductsByOwner,
   addProductReview,
+  getReviews,
 } from "../controllers/productController.js";
 import upload from "../middleware/multer.js";
 import userAuth from "../middleware/auth.js";
@@ -37,6 +38,9 @@ productRouter.post(
   ]),
   addProductReview
 );
+
+// get product reviews
+productRouter.get("/:productId/reviews", getReviews);
 
 productRouter.post("/remove", userAuth, removeProduct);
 productRouter.post("/removeAdmin", adminAuth, removeProductAdmin);
