@@ -14,7 +14,6 @@ const Orders = () => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [contactForm, setContactForm] = useState({
     images: [],
-    video: null,
     description: "",
     phone: "",
     shopId: "",
@@ -129,45 +128,31 @@ const Orders = () => {
     return itemPrice + shipping;
   };
 
-  const handleFileUpload = (e, type) => {
+  const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
 
     files.forEach((file) => {
-      if (type === "image" && !file.type.startsWith("image/")) {
+      if (!file.type.startsWith("image/")) {
         toast.error("กรุณาอัพโหลดไฟล์รูปภาพเท่านั้น");
         return;
       }
-      if (type === "video" && !file.type.startsWith("video/")) {
-        toast.error("กรุณาอัพโหลดไฟล์วิดีโอเท่านั้น");
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("ขนาดรูปภาพต้องไม่เกิน 5MB");
         return;
       }
     });
 
-    if (type === "image") {
-      setContactForm((prev) => ({
-        ...prev,
-        images: [...prev.images, ...files],
-      }));
-    } else {
-      setContactForm((prev) => ({
-        ...prev,
-        video: files[0],
-      }));
-    }
+    setContactForm((prev) => ({
+      ...prev,
+      images: [...prev.images, ...files],
+    }));
   };
 
-  const removeFile = (index, type) => {
-    if (type === "image") {
-      setContactForm((prev) => ({
-        ...prev,
-        images: prev.images.filter((_, i) => i !== index),
-      }));
-    } else {
-      setContactForm((prev) => ({
-        ...prev,
-        video: null,
-      }));
-    }
+  const removeFile = (index) => {
+    setContactForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
   };
 
   const handleContactSubmit = async (e) => {
@@ -179,9 +164,6 @@ const Orders = () => {
       contactForm.images.forEach((image) => {
         formData.append("images", image);
       });
-      if (contactForm.video) {
-        formData.append("video", contactForm.video);
-      }
       formData.append("description", contactForm.description);
       formData.append("phone", contactForm.phone);
       formData.append("shopId", contactForm.shopId);
@@ -204,7 +186,6 @@ const Orders = () => {
         setShowContactModal(false);
         setContactForm({
           images: [],
-          video: null,
           description: "",
           phone: "",
           shopId: "",
@@ -757,9 +738,13 @@ const Orders = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   รูปภาพ (สูงสุด 5 รูป)
                 </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  • ขนาดไฟล์: ไม่เกิน 5MB ต่อรูป
+                  <br />• ไฟล์ที่รองรับ: JPG, JPEG, PNG, GIF
+                </p>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg, image/png, image/gif"
                   multiple
                   onChange={(e) => handleFileUpload(e, "image")}
                   className="w-full"
@@ -783,36 +768,6 @@ const Orders = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  วิดีโอ (ไฟล์เดียว)
-                </label>
-                <input
-                  type="file"
-                  accept="video/*"
-                  onChange={(e) => handleFileUpload(e, "video")}
-                  className="w-full"
-                  disabled={contactForm.video}
-                />
-                {contactForm.video && (
-                  <div className="relative mt-2">
-                    <video
-                      className="w-full h-40 object-cover rounded"
-                      controls
-                    >
-                      <source src={URL.createObjectURL(contactForm.video)} />
-                    </video>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(0, "video")}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
               </div>
 
               <div>
