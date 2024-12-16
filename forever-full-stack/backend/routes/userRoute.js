@@ -13,6 +13,7 @@ import {
   setDefaultAddress,
   getBanks,
   deleteBankInfo,
+  resetPassword,
 } from "../controllers/userController.js";
 import upload from "../middleware/multer.js";
 import authUser from "../middleware/auth.js";
@@ -37,4 +38,5 @@ userRouter.get("/addresses", authUser, getAddresses);
 userRouter.put("/address/:addressId/default", authUser, setDefaultAddress);
 userRouter.get("/banks", authUser, getBanks);
 userRouter.delete("/bank/:userId", authUser, deleteBankInfo);
+userRouter.post("/reset-password", resetPassword);
 export default userRouter;

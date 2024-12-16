@@ -467,6 +467,43 @@ export const deleteBankInfo = async (req, res) => {
   }
 };
 
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    // ตรวจสอบว่ามีอีเมลในระบบหรือไม่
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบอีเมลนี้ในระบบ",
+      });
+    }
+
+    // เข้ารหัสรหัสผ่านใหม่
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // อัพเดทรหัสผ่านในฐานข้อมูล
+    await userModel.findOneAndUpdate(
+      { email },
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "เปลี่ยนรหัสผ่านสำเร็จ",
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน",
+    });
+  }
+};
+
 export {
   loginUser,
   registerUser,
