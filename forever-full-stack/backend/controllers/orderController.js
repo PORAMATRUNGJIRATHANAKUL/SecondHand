@@ -321,7 +321,6 @@ const updateStatus = async (req, res) => {
       userId,
     });
 
-    // ตรวจสอบข้อมูลที่จำเป็น
     if (!orderId || !itemId || !status) {
       return res.status(400).json({
         success: false,
@@ -330,59 +329,39 @@ const updateStatus = async (req, res) => {
       });
     }
 
-    // ค้นหา order ด้วย userOrderId
-    const userOrder = await userOrderModel.findById(orderId);
-    if (!userOrder) {
+    // Update userOrder using findOneAndUpdate
+    const updatedUserOrder = await userOrderModel.findOneAndUpdate(
+      { _id: orderId, "items._id": itemId },
+      {
+        $set: {
+          "items.$.status": status,
+          "items.$.confirmedByCustomer": confirmedByCustomer || false,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedUserOrder) {
       return res.status(404).json({
         success: false,
-        message: "ไม่พบขอเดอร์ที่ระบุ",
+        message: "ไม่พบออเดอร์ที่ระบุ",
         orderId,
       });
     }
 
-    console.log("Found userOrder:", userOrder._id);
-
-    // อัพเดทสถานะใน userOrder
-    const updatedUserOrderItems = userOrder.items.map((item) => {
-      if (item._id.toString() === itemId) {
-        return {
-          ...item,
-          status: status,
-          confirmedByCustomer: confirmedByCustomer || false,
-        };
-      }
-      return item;
-    });
-
-    userOrder.items = updatedUserOrderItems;
-    await userOrder.save();
-
-    // ค้นหาและอัพเดท order ในร้านค้า
-    const shopOrder = await orderModel.findOne({
-      userOrderId: orderId,
-    });
-
-    if (shopOrder) {
-      const updatedShopItems = shopOrder.items.map((item) => {
-        if (item._id.toString() === itemId) {
-          return {
-            ...item,
-            status: status,
-            confirmedByCustomer: confirmedByCustomer || false,
-          };
-        }
-        return item;
-      });
-
-      shopOrder.items = updatedShopItems;
-      await shopOrder.save();
-    }
+    // Update shopOrder using findOneAndUpdate
+    const updatedShopOrder = await orderModel.findOneAndUpdate(
+      { userOrderId: orderId, "items._id": itemId },
+      {
+        $set: {
+          "items.$.status": status,
+          "items.$.confirmedByCustomer": confirmedByCustomer || false,
+        },
+      },
+      { new: true }
+    );
 
     console.log("Update completed successfully");
-
-    // โหลดข้อมูลล่าสุดหลังจากอัพเดท
-    const updatedUserOrder = await userOrderModel.findById(orderId);
-    const updatedShopOrder = await orderModel.findOne({ userOrderId: orderId });
 
     res.json({
       success: true,
