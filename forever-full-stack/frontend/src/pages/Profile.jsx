@@ -126,6 +126,7 @@ function ProfilePage() {
             />
           )}
         </div>
+        <h2 className="text-xl font-semibold mb-4">{user?.displayName}</h2>
         {isEditing && (
           <input
             type="file"

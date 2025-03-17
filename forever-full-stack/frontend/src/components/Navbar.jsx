@@ -114,7 +114,7 @@ const Navbar = () => {
               className="p-1 hover:bg-gray-100 rounded-full transition-colors"
               aria-label="เมนูผู้ใช้"
             >
-              <div className="relative">
+              <div className="relative flex flex-col items-center">
                 <img
                   src={user?.profileImage}
                   alt="Profile"
@@ -126,6 +126,7 @@ const Navbar = () => {
                     title="ร้านค้าที่ยืนยันแล้ว"
                   />
                 )}
+                <span className="text-xs mt-1">{user?.displayName}</span>
               </div>
             </button>
           ) : (
