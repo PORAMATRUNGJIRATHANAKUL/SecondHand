@@ -26,7 +26,7 @@ app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/review", reviewRouter);
-app.use("/api/reportproblem", reportproblemRouter);
+app.use("/api/reportProblem", reportProblemRouter);
 app.get("/", (req, res) => {
   res.send("API Working");
 });
