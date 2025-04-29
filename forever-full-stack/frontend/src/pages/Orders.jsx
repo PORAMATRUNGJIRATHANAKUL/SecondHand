@@ -42,11 +42,12 @@ const Orders = () => {
     }
   };
 
-  const updateOrderStatus = async (orderId, itemId) => {
+  const updateOrderStatus = async (orderId, itemId, size) => {
     try {
       console.log("Attempting to update order status with:", {
         orderId,
         itemId,
+        size,
       });
 
       const response = await axios.post(
@@ -54,6 +55,7 @@ const Orders = () => {
         {
           orderId: orderId,
           itemId: itemId,
+          size: size,
           status: "ได้รับสินค้าแล้ว",
           confirmedByCustomer: true,
         },
@@ -622,7 +624,7 @@ const Orders = () => {
                                     className={`w-2 h-2 rounded-full ${
                                       item.status === "ได้รับสินค้าแล้ว"
                                         ? "bg-green-500"
-                                        : item.status === "ัดส่งแล้ว"
+                                        : item.status === "จัดส่งแล้ว"
                                         ? "bg-blue-500"
                                         : "bg-yellow-500"
                                     }`}
@@ -686,12 +688,18 @@ const Orders = () => {
                       onClick={() => {
                         // ยืนยันการรับสินค้าทั้งหมดในร้าน
                         shop.items.forEach((item) => {
+                          console.log(item);
                           if (
                             item.trackingNumber &&
                             !item.confirmedByCustomer &&
-                            item.status !== "ได้รับสินค้าแล้ว"
+                            item.status !== "ได้รับสินค้าแล้ว" &&
+                            item.size
                           ) {
-                            updateOrderStatus(selectedOrder._id, item._id);
+                            updateOrderStatus(
+                              selectedOrder._id,
+                              item._id,
+                              item.size
+                            );
                           }
                         });
                       }}

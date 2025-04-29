@@ -322,6 +322,8 @@ const updateStatus = async (req, res) => {
       userId,
     });
 
+    console.log(orderId, itemId, size, status);
+
     if (!orderId || !itemId || !size || !status) {
       return res.status(400).json({
         success: false,
