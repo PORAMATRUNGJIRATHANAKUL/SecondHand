@@ -310,28 +310,29 @@ const userOrders = async (req, res) => {
 // update order status from Admin Panel
 const updateStatus = async (req, res) => {
   try {
-    const { orderId, itemId, status, confirmedByCustomer } = req.body;
+    const { orderId, itemId, size, status, confirmedByCustomer } = req.body;
     const userId = req.userId;
 
     console.log("Received update request:", {
       orderId,
       itemId,
+      size,
       status,
       confirmedByCustomer,
       userId,
     });
 
-    if (!orderId || !itemId || !status) {
+    if (!orderId || !itemId || !size || !status) {
       return res.status(400).json({
         success: false,
         message: "กรุณาระบุข้อมูลให้ครบถ้วน",
-        received: { orderId, itemId, status },
+        received: { orderId, itemId, size, status },
       });
     }
 
     // Update userOrder using findOneAndUpdate
     const updatedUserOrder = await userOrderModel.findOneAndUpdate(
-      { _id: orderId, "items._id": itemId },
+      { _id: orderId, "items._id": itemId, "items.size": size },
       {
         $set: {
           "items.$.status": status,
@@ -351,7 +352,7 @@ const updateStatus = async (req, res) => {
 
     // Update shopOrder using findOneAndUpdate
     const updatedShopOrder = await orderModel.findOneAndUpdate(
-      { userOrderId: orderId, "items._id": itemId },
+      { userOrderId: orderId, "items._id": itemId, "items.size": size },
       {
         $set: {
           "items.$.status": status,
