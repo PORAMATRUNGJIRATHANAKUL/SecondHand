@@ -16,11 +16,11 @@ const Add = () => {
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("Men");
   const [subCategory, setSubCategory] = useState("Clothing");
-  const [bestseller, setBestseller] = useState(false);
+  const [productCondition, setProductCondition] = useState("new");
+  const [conditionPercentage, setConditionPercentage] = useState("");
   const [sizes, setSizes] = useState([]);
   const [colors, setColors] = useState([]);
   const [availableSizes, setAvailableSizes] = useState([]);
-
   const [stockItems, setStockItems] = useState([]);
 
   const [shippingType, setShippingType] = useState("free");
@@ -149,10 +149,20 @@ const Add = () => {
       formData.append("price", price);
       formData.append("category", category);
       formData.append("subCategory", subCategory);
-      formData.append("bestseller", bestseller);
+      formData.append("popular", productCondition.includes("popular"));
       formData.append("sizes", JSON.stringify(sizes));
       formData.append("colors", JSON.stringify(colors));
       formData.append("stockItems", JSON.stringify(stockItems));
+      formData.append("productCondition", productCondition);
+      if (productCondition === "used" || productCondition === "used_popular") {
+        if (!conditionPercentage || conditionPercentage === "") {
+          toast.error("กรุณากรอกสภาพการใช้งานสำหรับสินค้ามือสอง");
+          return;
+        }
+        formData.append("conditionPercentage", Number(conditionPercentage));
+      } else {
+        formData.append("conditionPercentage", 100);
+      }
 
       image1 && formData.append("image1", image1);
       image2 && formData.append("image2", image2);
@@ -189,6 +199,8 @@ const Add = () => {
         setShippingType("free");
         setShippingCost("");
         setSizeGuide(false);
+        setProductCondition("new");
+        setConditionPercentage("");
       } else {
         toast.error("ไม่สามารถเพิ่มสินค้าได้");
       }
@@ -326,6 +338,59 @@ const Add = () => {
                   required
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  สภาพสินค้า
+                </label>
+                <select
+                  value={productCondition}
+                  onChange={(e) => setProductCondition(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="new">สินค้าใหม่</option>
+                  <option value="new_popular">สินค้าใหม่ (ยอดนิยม)</option>
+                  <option value="used">สินค้ามือสอง</option>
+                  <option value="used_popular">สินค้ามือสอง (ยอดนิยม)</option>
+                </select>
+              </div>
+
+              {(productCondition === "used" ||
+                productCondition === "used_popular") && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    สภาพการใช้งาน (%)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={conditionPercentage}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "") {
+                          setConditionPercentage("");
+                        } else {
+                          const numValue = parseInt(value);
+                          if (
+                            !isNaN(numValue) &&
+                            numValue >= 0 &&
+                            numValue <= 100
+                          ) {
+                            setConditionPercentage(numValue.toString());
+                          }
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0-100"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -514,19 +579,6 @@ const Add = () => {
               </button>
             )}
           </div>
-        </div>
-
-        {/* Bestseller Option */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={bestseller}
-              onChange={() => setBestseller((prev) => !prev)}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-            />
-            <span className="text-gray-700">เพิ่มในสินค้าขายดี</span>
-          </label>
         </div>
 
         {/* Add Shipping Section before the Submit Button */}

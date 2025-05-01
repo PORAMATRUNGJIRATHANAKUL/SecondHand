@@ -43,6 +43,20 @@ const calculateAverageRating = (reviews) => {
   };
 };
 
+const formatThaiDateTime = (date) => {
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Bangkok",
+  };
+  return new Date(date).toLocaleString("th-TH", options);
+};
+
 const Review = () => {
   const { shopReviews, fetchShopReviews, submitShopReview, user } =
     useContext(ShopContext);
@@ -52,6 +66,7 @@ const Review = () => {
     name: user?.name || "",
     date: new Date().toISOString(),
   });
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const ratingData = useMemo(() => {
     if (shopReviews.length === 0) return null;
@@ -66,6 +81,14 @@ const Review = () => {
 
   useEffect(() => {
     fetchShopReviews();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, []);
 
   const handleInputChange = (e) => {
@@ -185,7 +208,7 @@ const Review = () => {
             </div>
             <p className="text-gray-600 mt-2">{review.comment}</p>
             <div className="flex justify-end text-sm text-gray-500 mt-2">
-              <span>{review.date}</span>
+              <span>{formatThaiDateTime(review.date)}</span>
             </div>
           </div>
         ))}

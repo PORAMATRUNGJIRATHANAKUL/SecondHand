@@ -85,3 +85,47 @@ export const deleteReport = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+// อัพเดทรายละเอียดการแก้ไขปัญหา
+export const updateResolutionDetails = async (req, res) => {
+  try {
+    const { resolutionDetails, status } = req.body;
+    const report = await ReportProblem.findByIdAndUpdate(
+      req.params.id,
+      {
+        resolutionDetails,
+        resolvedAt: new Date(),
+        status: status || "เสร็จสิ้น",
+      },
+      { new: true }
+    );
+    if (!report) {
+      return res.status(404).json({ error: "ไม่พบรายงานนี้" });
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "บันทึกรายละเอียดการแก้ไขสำเร็จ" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// อัพเดทรายละเอียดปัญหา
+export const updateProblemDetails = async (req, res) => {
+  try {
+    const { description } = req.body;
+    const report = await ReportProblem.findByIdAndUpdate(
+      req.params.id,
+      { description },
+      { new: true }
+    );
+    if (!report) {
+      return res.status(404).json({ error: "ไม่พบรายงานนี้" });
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "อัพเดทรายละเอียดปัญหาเรียบร้อย" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};

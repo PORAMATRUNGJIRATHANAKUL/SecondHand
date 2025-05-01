@@ -1,7 +1,21 @@
-import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useContext, useEffect, useState, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import RelatedProducts from "../components/RelatedProducts";
+
+const formatThaiDateTime = (date) => {
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Bangkok",
+  };
+  return new Date(date).toLocaleString("th-TH", options);
+};
 
 const Product = () => {
   const { productId } = useParams();
@@ -16,6 +30,7 @@ const Product = () => {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const fetchProductData = async () => {
     products.map((item) => {
@@ -153,6 +168,14 @@ const Product = () => {
     getProductReviews();
   }, [productId]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return productData ? (
     <div className="border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100">
       {/*----------- Product Data-------------- */}
@@ -190,6 +213,35 @@ const Product = () => {
               <p className="text-gray-500">
                 ค่าจัดส่ง: ฿{productData.shippingCost.toLocaleString()}
               </p>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">ร้านค้า:</span>
+                <Link
+                  to={`/shop/${productData.owner?._id}`}
+                  className="text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  {productData.owner?.name || "ไม่ระบุชื่อร้าน"}
+                </Link>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">สภาพสินค้า:</span>
+                <span className="font-medium">
+                  {productData.productCondition === "new" && "สินค้าใหม่"}
+                  {productData.productCondition === "new_popular" &&
+                    "สินค้าใหม่ (ยอดนิยม)"}
+                  {productData.productCondition === "used" && "สินค้ามือสอง"}
+                  {productData.productCondition === "used_popular" &&
+                    "สินค้ามือสอง (ยอดนิยม)"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">สภาพการใช้งาน:</span>
+                <span className="font-medium">
+                  {productData.productCondition === "new" ||
+                  productData.productCondition === "new_popular"
+                    ? "100%"
+                    : `${productData.conditionPercentage}%`}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -325,7 +377,7 @@ const Product = () => {
                         {renderStars(review.rating)}
                       </div>
                       <span className="text-gray-500">
-                        {review.date.split("T")[0]}
+                        {formatThaiDateTime(review.date)}
                       </span>
                     </div>
                     <p className="text-gray-600 mt-1">{review.comment}</p>

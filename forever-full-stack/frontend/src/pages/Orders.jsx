@@ -570,147 +570,177 @@ const Orders = () => {
                     </h3>
                   </div>
 
-                  {/* Shop Items */}
-                  <div className="space-y-4">
-                    {shop.items.map((item, itemIndex) => (
-                      <div
-                        key={itemIndex}
-                        className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
-                      >
-                        <div className="flex gap-4">
-                          <img
-                            src={item.image[0]}
-                            alt={item.name}
-                            className="w-24 h-24 object-cover rounded-lg border border-gray-100"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start mb-2">
-                              <h4 className="text-base font-medium text-gray-900 mb-1">
-                                {item.name}
-                              </h4>
-                              <p className="text-lg font-semibold text-gray-900">
-                                ฿
-                                {(
-                                  item.price * item.quantity +
-                                  (item.shippingCost || 0)
-                                ).toLocaleString()}
-                              </p>
-                            </div>
+                  {/* Group items by tracking number and shipping provider */}
+                  {Object.values(
+                    shop.items.reduce((groups, item) => {
+                      const key = item.trackingNumber
+                        ? `${item.trackingNumber}-${item.shippingProvider}`
+                        : "no-tracking";
 
-                            {/* รายละเอียดสินค้า */}
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-500">จำนวน:</span>
-                                <span className="font-medium text-gray-900">
-                                  {item.quantity} ชิ้น
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-500">ไซส์:</span>
-                                <span className="font-medium text-gray-900">
-                                  {item.size}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-500">สี:</span>
-                                <div className="flex items-center gap-1">
-                                  {renderColorDisplay(item.color)}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-500">สถานะ:</span>
-                                <div className="flex items-center gap-1.5">
-                                  <div
-                                    className={`w-2 h-2 rounded-full ${
-                                      item.status === "ได้รับสินค้าแล้ว"
-                                        ? "bg-green-500"
-                                        : item.status === "จัดส่งแล้ว"
-                                        ? "bg-blue-500"
-                                        : "bg-yellow-500"
-                                    }`}
-                                  ></div>
-                                  <span className="font-medium text-gray-900">
-                                    {item.status}
-                                  </span>
-                                </div>
-                              </div>
+                      if (!groups[key]) {
+                        groups[key] = {
+                          trackingNumber: item.trackingNumber,
+                          shippingProvider: item.shippingProvider,
+                          items: [],
+                          canConfirm: false,
+                        };
+                      }
+                      groups[key].items.push(item);
+                      if (
+                        item.trackingNumber &&
+                        !item.confirmedByCustomer &&
+                        item.status !== "ได้รับสินค้าแล้ว"
+                      ) {
+                        groups[key].canConfirm = true;
+                      }
+                      return groups;
+                    }, {})
+                  ).map((group, groupIndex) => (
+                    <div key={groupIndex} className="mb-6 last:mb-0">
+                      {/* Shipping Info for the group */}
+                      {group.trackingNumber && (
+                        <div className="mb-4 p-3 bg-white rounded-lg shadow-sm">
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-gray-500">เลขพัสดุ: </span>
+                              <span className="font-medium text-gray-900">
+                                {group.trackingNumber}
+                              </span>
                             </div>
-
-                            {/* ข้อมูลการจัดส่ง */}
-                            {item.trackingNumber && (
-                              <div className="mt-3 pt-3 border-t border-gray-100">
-                                <div className="grid grid-cols-2 gap-2 text-sm">
-                                  <div>
-                                    <span className="text-gray-500">
-                                      เลขพัสดุ:{" "}
-                                    </span>
-                                    <span className="font-medium text-gray-900">
-                                      {item.trackingNumber}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-500">
-                                      ขนส่ง:{" "}
-                                    </span>
-                                    <span className="font-medium text-gray-900">
-                                      {item.shippingProvider}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+                            <div>
+                              <span className="text-gray-500">ขนส่ง: </span>
+                              <span className="font-medium text-gray-900">
+                                {group.shippingProvider}
+                              </span>
+                            </div>
                           </div>
                         </div>
+                      )}
+
+                      {/* Items in the group */}
+                      <div className="space-y-4">
+                        {group.items.map((item, itemIndex) => (
+                          <div
+                            key={itemIndex}
+                            className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                          >
+                            <div className="flex gap-4">
+                              <img
+                                src={item.image[0]}
+                                alt={item.name}
+                                className="w-24 h-24 object-cover rounded-lg border border-gray-100"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start mb-2">
+                                  <h4 className="text-base font-medium text-gray-900 mb-1">
+                                    {item.name}
+                                  </h4>
+                                  <p className="text-lg font-semibold text-gray-900">
+                                    ฿
+                                    {(
+                                      item.price * item.quantity +
+                                      (item.shippingCost || 0)
+                                    ).toLocaleString()}
+                                  </p>
+                                </div>
+
+                                {/* รายละเอียดสินค้า */}
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-500">
+                                      จำนวน:
+                                    </span>
+                                    <span className="font-medium text-gray-900">
+                                      {item.quantity} ชิ้น
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-500">ไซส์:</span>
+                                    <span className="font-medium text-gray-900">
+                                      {item.size}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-500">สี:</span>
+                                    <div className="flex items-center gap-1">
+                                      {renderColorDisplay(item.color)}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-500">
+                                      สถานะ:
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                      <div
+                                        className={`w-2 h-2 rounded-full ${
+                                          item.status === "ได้รับสินค้าแล้ว"
+                                            ? "bg-green-500"
+                                            : item.status === "จัดส่งแล้ว"
+                                            ? "bg-blue-500"
+                                            : "bg-yellow-500"
+                                        }`}
+                                      ></div>
+                                      <span className="font-medium text-gray-900">
+                                        {item.status}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Item Actions */}
+                                <div className="mt-4 flex gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setContactForm((prev) => ({
+                                        ...prev,
+                                        shopId: item.owner._id,
+                                        orderId: selectedOrder._id,
+                                        productId: item._id,
+                                      }));
+                                      setShowContactModal(true);
+                                    }}
+                                    className="flex-1 px-4 py-2 bg-neutral-300 text-black rounded-md hover:bg-gray-400 transition-colors text-sm font-medium"
+                                  >
+                                    ติดต่อร้านค้า
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      if (
+                                        item.trackingNumber &&
+                                        !item.confirmedByCustomer &&
+                                        (item.status === "จัดส่งแล้ว" ||
+                                          item.status !== "ได้รับสินค้าแล้ว") &&
+                                        item.size
+                                      ) {
+                                        updateOrderStatus(
+                                          selectedOrder._id,
+                                          item._id,
+                                          item.size
+                                        );
+                                      }
+                                    }}
+                                    className="flex-1 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    disabled={
+                                      !item.trackingNumber ||
+                                      item.confirmedByCustomer ||
+                                      item.status === "ได้รับสินค้าแล้ว" ||
+                                      !item.size
+                                    }
+                                  >
+                                    {item.confirmedByCustomer ||
+                                    item.status === "ได้รับสินค้าแล้ว"
+                                      ? "ยืนยันการรับสินค้าแล้ว"
+                                      : "ยืนยันการรับสินค้า"}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Shop Actions - ย้ายมาไว้ในโมดัล */}
-                  <div className="mt-4 border-t pt-4 flex gap-2">
-                    {/* ปุ่มติดต่อร้านค้า */}
-                    <button
-                      onClick={() => {
-                        setContactForm((prev) => ({
-                          ...prev,
-                          shopId: shop.items[0].owner._id,
-                          orderId: selectedOrder._id,
-                          productId: shop.items[0]._id,
-                        }));
-                        setShowContactModal(true);
-                      }}
-                      className="flex-1 px-4 py-2 bg-neutral-300 text-black rounded-md hover:bg-gray-400 transition-colors text-sm font-medium"
-                    >
-                      ติดต่อร้านค้า
-                    </button>
-
-                    {/* ปุ่มยืนยันการรับสินค้าสำหรับทั้งร้าน */}
-                    <button
-                      onClick={() => {
-                        // ยืนยันการรับสินค้าทั้งหมดในร้าน
-                        shop.items.forEach((item) => {
-                          console.log(item);
-                          if (
-                            item.trackingNumber &&
-                            !item.confirmedByCustomer &&
-                            item.status !== "ได้รับสินค้าแล้ว" &&
-                            item.size
-                          ) {
-                            updateOrderStatus(
-                              selectedOrder._id,
-                              item._id,
-                              item.size
-                            );
-                          }
-                        });
-                      }}
-                      className="flex-1 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
-                      disabled={!shop.canConfirm}
-                    >
-                      {shop.canConfirm
-                        ? "ยืนยันการรับสินค้าทั้งหมด"
-                        : "ยืนยันการรับสินค้าแล้ว"}
-                    </button>
-                  </div>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>

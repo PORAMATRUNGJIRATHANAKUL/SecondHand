@@ -26,8 +26,8 @@ const reviewSchema = new mongoose.Schema({
     default: [],
   },
   date: {
-    type: String,
-    default: new Date().toLocaleString(), // Default to current date and time in local format
+    type: Date,
+    default: Date.now, // Store as timestamp
   },
 });
 

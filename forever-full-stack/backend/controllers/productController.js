@@ -18,6 +18,8 @@ const addProduct = async (req, res) => {
       shippingCost,
       bestseller,
       stockItems,
+      productCondition,
+      conditionPercentage,
     } = req.body;
 
     const owner = req.userId;
@@ -71,6 +73,11 @@ const addProduct = async (req, res) => {
       shippingType,
       shippingCost,
       sizeGuide: sizeGuideUrl,
+      productCondition,
+      conditionPercentage:
+        productCondition === "used" || productCondition === "used_popular"
+          ? Number(conditionPercentage)
+          : 100,
     };
 
     const product = new productModel(productData);

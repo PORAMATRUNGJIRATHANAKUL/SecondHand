@@ -23,6 +23,7 @@ import ReportProblem from "./pages/ReportProblem";
 import Add from "./pages/Add";
 import MyShop from "./pages/MyShop";
 import Ordershopme from "./pages/Ordershopme";
+import Shop from "./pages/Shop";
 
 import { ShopContext } from "./context/ShopContext";
 
@@ -50,6 +51,7 @@ const App = () => {
           <Route path="/review" element={<Review />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/product/:productId" element={<Product />} />
+          <Route path="/shop/:shopId" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
           <Route path="/place-order" element={<PlaceOrder />} />

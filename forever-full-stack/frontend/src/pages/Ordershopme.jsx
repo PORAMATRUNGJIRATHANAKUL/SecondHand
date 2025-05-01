@@ -18,6 +18,15 @@ const Ordershopme = ({ searchQuery }) => {
   });
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [customerIssues, setCustomerIssues] = useState([]);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchAllOrders = async () => {
     if (!token) {
@@ -312,6 +321,17 @@ const Ordershopme = ({ searchQuery }) => {
                             <div>
                               <span className="text-green-500">
                                 บริษัทโอนเงินแล้ว
+                              </span>
+                              <span className="text-gray-500 text-sm ml-2">
+                                (
+                                {currentTime.toLocaleDateString("th-TH", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                                )
                               </span>
                             </div>
                           )}

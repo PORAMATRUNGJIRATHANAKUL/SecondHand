@@ -165,7 +165,14 @@ const Orders = ({ token, searchQuery }) => {
               <div>
                 <p className="text-base">ร้าน: {order.owner.name}</p>
                 <p className="text-sm text-gray-600">
-                  วันที่: {new Date(order.date).toLocaleDateString()}
+                  วันที่:{" "}
+                  {new Date(order.date).toLocaleDateString("th-TH", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </p>
               </div>
               <div className="text-right">
@@ -183,7 +190,7 @@ const Orders = ({ token, searchQuery }) => {
                   className="flex items-center gap-4 border-b pb-3"
                 >
                   <img
-                    src={item.image[0]}
+                    src={item.image}
                     alt={item.name}
                     className="w-16 h-16 object-cover rounded"
                   />

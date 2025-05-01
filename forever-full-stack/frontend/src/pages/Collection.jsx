@@ -9,6 +9,7 @@ const Collection = () => {
   const [filterProducts, setFilterProducts] = useState([]);
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
+  const [productCondition, setProductCondition] = useState("");
   const [sortType, setSortType] = useState("relevant");
 
   const applyFilter = () => {
@@ -28,6 +29,31 @@ const Collection = () => {
       productsCopy = productsCopy.filter(
         (item) => item.subCategory === subCategory
       );
+    }
+
+    if (productCondition) {
+      switch (productCondition) {
+        case "new":
+          productsCopy = productsCopy.filter(
+            (item) => item.productCondition === "new"
+          );
+          break;
+        case "new_popular":
+          productsCopy = productsCopy.filter(
+            (item) => item.productCondition === "new_popular"
+          );
+          break;
+        case "used":
+          productsCopy = productsCopy.filter(
+            (item) => item.productCondition === "used"
+          );
+          break;
+        case "used_popular":
+          productsCopy = productsCopy.filter(
+            (item) => item.productCondition === "used_popular"
+          );
+          break;
+      }
     }
 
     setFilterProducts(productsCopy);
@@ -53,7 +79,7 @@ const Collection = () => {
 
   useEffect(() => {
     applyFilter();
-  }, [category, subCategory, search, showSearch, products]);
+  }, [category, subCategory, productCondition, search, showSearch, products]);
 
   useEffect(() => {
     sortProduct();
@@ -116,6 +142,27 @@ const Collection = () => {
             </select>
           </div>
         </div>
+        {/* ตัวกรองสภาพสินค้า */}
+        <div
+          className={`border border-gray-300 p-4 rounded-md my-5 ${
+            showFilter ? "" : "hidden"
+          } sm:block`}
+        >
+          <p className="mb-3 text-sm font-medium">สภาพสินค้า</p>
+          <div className="text-sm font-light text-gray-700">
+            <select
+              className="w-full p-2 border rounded-md"
+              onChange={(e) => setProductCondition(e.target.value)}
+              value={productCondition}
+            >
+              <option value="">เลือกสภาพสินค้า</option>
+              <option value="new">สินค้าใหม่</option>
+              <option value="new_popular">สินค้าใหม่ (ยอดนิยม)</option>
+              <option value="used">สินค้ามือสอง</option>
+              <option value="used_popular">สินค้ามือสอง (ยอดนิยม)</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* ส่วนแสดงสินค้า */}
@@ -148,6 +195,8 @@ const Collection = () => {
                 ...item.owner,
                 profileImage: item.owner?.profileImage,
               }}
+              productCondition={item.productCondition}
+              conditionPercentage={item.conditionPercentage}
             />
           ))}
         </div>

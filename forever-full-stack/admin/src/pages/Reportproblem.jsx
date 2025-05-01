@@ -6,6 +6,9 @@ import { toast } from "react-toastify";
 const Reportproblem = ({ token, searchQuery }) => {
   const [list, setList] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [resolutionDetails, setResolutionDetails] = useState("");
+  const [showResolutionModal, setShowResolutionModal] = useState(false);
 
   const fetchList = async () => {
     try {
@@ -64,6 +67,30 @@ const Reportproblem = ({ token, searchQuery }) => {
     }
   };
 
+  const updateResolution = async (id) => {
+    try {
+      const response = await axios.patch(
+        backendUrl + `/api/reportproblem/${id}/resolution`,
+        {
+          resolutionDetails,
+          status: "เสร็จสิ้น",
+        },
+        { headers: { token } }
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+        setShowResolutionModal(false);
+        await fetchList();
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
   useEffect(() => {
     fetchList();
   }, []);
@@ -89,6 +116,9 @@ const Reportproblem = ({ token, searchQuery }) => {
               <th className="py-2 px-4 border-b text-left">รายละเอียด</th>
               <th className="py-2 px-4 border-b text-left">วันเวลาที่แจ้ง</th>
               <th className="py-2 px-4 border-b text-left">สถานะ</th>
+              <th className="py-2 px-4 border-b text-left">
+                รายละเอียดการแก้ไข
+              </th>
               <th className="py-2 px-4 border-b text-center">จัดการ</th>
             </tr>
           </thead>
@@ -120,6 +150,54 @@ const Reportproblem = ({ token, searchQuery }) => {
                     <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
                     <option value="เสร็จสิ้น">เสร็จสิ้น</option>
                   </select>
+                </td>
+                <td className="py-2 px-4 border-b">
+                  {item.resolutionDetails ? (
+                    <div className="max-w-xs">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm">{item.resolutionDetails}</p>
+                        <button
+                          onClick={() => {
+                            setSelectedReport(item);
+                            setResolutionDetails(item.resolutionDetails);
+                            setShowResolutionModal(true);
+                          }}
+                          className="text-blue-500 hover:text-blue-700"
+                          title="แก้ไขรายละเอียดการแก้ไข"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        แก้ไขเมื่อ:{" "}
+                        {new Date(item.resolvedAt).toLocaleString("th-TH")}
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setSelectedReport(item);
+                        setResolutionDetails("");
+                        setShowResolutionModal(true);
+                      }}
+                      className="text-blue-500 hover:text-blue-700 text-sm"
+                    >
+                      เพิ่มรายละเอียดการแก้ไข
+                    </button>
+                  )}
                 </td>
                 <td className="py-2 px-4 border-b text-center">
                   <button
@@ -158,6 +236,7 @@ const Reportproblem = ({ token, searchQuery }) => {
           </div>
         )}
       </div>
+
       {selectedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="relative">
@@ -185,6 +264,40 @@ const Reportproblem = ({ token, searchQuery }) => {
                 />
               </svg>
             </button>
+          </div>
+        </div>
+      )}
+
+      {showResolutionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-lg w-full">
+            <h2 className="text-xl font-bold mb-4">รายละเอียดการแก้ไขปัญหา</h2>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                รายละเอียดการแก้ไข
+              </label>
+              <textarea
+                value={resolutionDetails}
+                onChange={(e) => setResolutionDetails(e.target.value)}
+                className="w-full p-2 border rounded-md"
+                rows="4"
+                placeholder="กรอกรายละเอียดการแก้ไขปัญหา..."
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowResolutionModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              >
+                ยกเลิก
+              </button>
+              <button
+                onClick={() => updateResolution(selectedReport._id)}
+                className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800"
+              >
+                บันทึก
+              </button>
+            </div>
           </div>
         </div>
       )}

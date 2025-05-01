@@ -9,7 +9,26 @@ const productSchema = new mongoose.Schema({
   subCategory: { type: String, required: true },
   sizes: { type: Array, required: true },
   colors: { type: Array, required: true },
-  bestseller: { type: Boolean },
+  productCondition: {
+    type: String,
+    required: true,
+    enum: ["new", "used", "new_popular", "used_popular"],
+    default: "new",
+  },
+  conditionPercentage: {
+    type: Number,
+    required: function () {
+      return (
+        this.productCondition === "used" ||
+        this.productCondition === "used_popular"
+      );
+    },
+    min: 0,
+    max: 100,
+  },
+
+  bestseller: { type: Boolean, default: false },
+  secondHand: { type: Boolean, default: true },
   date: { type: Number, required: true },
   stockItems: { type: Array, required: true },
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "user" },

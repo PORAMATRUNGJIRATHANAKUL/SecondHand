@@ -27,6 +27,14 @@ const reportSchema = new mongoose.Schema({
     enum: ["รอรับเรื่อง", "รับเรื่องแล้ว", "กำลังดำเนินการ", "แก้ไขเสร็จสิ้น"],
     default: "รอรับเรื่อง",
   },
+  resolutionDetails: {
+    type: String,
+    default: "",
+  },
+  resolvedAt: {
+    type: Date,
+    default: null,
+  },
 });
 
 export default mongoose.model("ReportProblem", reportSchema);

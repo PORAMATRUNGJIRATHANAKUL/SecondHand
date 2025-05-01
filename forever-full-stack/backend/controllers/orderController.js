@@ -322,8 +322,6 @@ const updateStatus = async (req, res) => {
       userId,
     });
 
-    console.log(orderId, itemId, size, status);
-
     if (!orderId || !itemId || !size || !status) {
       return res.status(400).json({
         success: false,
@@ -334,7 +332,15 @@ const updateStatus = async (req, res) => {
 
     // Update userOrder using findOneAndUpdate
     const updatedUserOrder = await userOrderModel.findOneAndUpdate(
-      { _id: orderId, "items._id": itemId, "items.size": size },
+      {
+        _id: orderId,
+        items: {
+          $elemMatch: {
+            _id: itemId,
+            size: size,
+          },
+        },
+      },
       {
         $set: {
           "items.$.status": status,
@@ -354,7 +360,15 @@ const updateStatus = async (req, res) => {
 
     // Update shopOrder using findOneAndUpdate
     const updatedShopOrder = await orderModel.findOneAndUpdate(
-      { userOrderId: orderId, "items._id": itemId, "items.size": size },
+      {
+        userOrderId: orderId,
+        items: {
+          $elemMatch: {
+            _id: itemId,
+            size: size,
+          },
+        },
+      },
       {
         $set: {
           "items.$.status": status,
