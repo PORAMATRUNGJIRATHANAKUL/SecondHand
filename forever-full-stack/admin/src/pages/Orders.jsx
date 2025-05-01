@@ -190,7 +190,7 @@ const Orders = ({ token, searchQuery }) => {
                   className="flex items-center gap-4 border-b pb-3"
                 >
                   <img
-                    src={item.image}
+                    src={item.image[0]}
                     alt={item.name}
                     className="w-16 h-16 object-cover rounded"
                   />
