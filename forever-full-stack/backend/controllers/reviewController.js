@@ -1,45 +1,75 @@
 import reviewModel from "../models/reviewModel.js";
+import jwt from "jsonwebtoken";
 
 // เพิ่มรีวิวใหม่หรืออัพเดทรีวิวที่มีอยู่
 const addReview = async (req, res) => {
   try {
-    const { name, rating, comment, userId } = req.body;
+    const token = req.headers.token;
 
-    // Basic validation
-    if (!name || !rating || !comment) {
-      return res.status(400).json({
+    if (!token) {
+      return res.status(401).json({
         success: false,
-        message: "กรุณากรอกข้อมูลให้ครบถ้วน",
+        message: "กรุณาเข้าสู่ระบบก่อนรีวิว",
       });
     }
 
-    // สร้างรีวิวใหม่
-    const newReview = new reviewModel({
-      name,
-      rating: Number(rating), // Ensure rating is a number
-      comment,
-      date: new Date().toLocaleString("th-TH"), // เพิ่มการแสดงวันที่แบบไทย
-    });
-
     try {
-      await newReview.save();
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const { name, rating, comment } = req.body;
+
+      // Basic validation
+      if (!name || !rating || !comment) {
+        return res.status(400).json({
+          success: false,
+          message: "กรุณากรอกข้อมูลให้ครบถ้วน",
+        });
+      }
+
+      // Validate rating
+      if (rating < 1 || rating > 5) {
+        return res.status(400).json({
+          success: false,
+          message: "คะแนนต้องอยู่ระหว่าง 1-5",
+        });
+      }
+
+      // สร้างรีวิวใหม่
+      const newReview = new reviewModel({
+        name,
+        rating: Number(rating),
+        comment,
+        date: new Date().toISOString(),
+      });
+
+      const savedReview = await newReview.save();
+
+      if (!savedReview) {
+        throw new Error("Failed to save review");
+      }
+
       res.status(200).json({
         success: true,
         message: "เพิ่มรีวิวสำเร็จ",
-        review: newReview,
+        review: savedReview,
       });
-    } catch (saveError) {
-      console.error("Error saving review:", saveError);
-      res.status(500).json({
-        success: false,
-        message: "ไม่สามารถบันทึกรีวิวได้",
-      });
+    } catch (error) {
+      if (
+        error.name === "JsonWebTokenError" ||
+        error.name === "TokenExpiredError"
+      ) {
+        return res.status(401).json({
+          success: false,
+          message: "Not Authorized Login Again",
+        });
+      }
+      throw error;
     }
   } catch (error) {
     console.error("เกิดข้อผิดพลาดในการเพิ่มรีวิว:", error);
     res.status(500).json({
       success: false,
       message: "ไม่สามารถเพิ่มรีวิวได้",
+      error: error.message,
     });
   }
 };
