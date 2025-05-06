@@ -18,7 +18,7 @@ const reviewSchema = new mongoose.Schema({
   },
   date: {
     type: String,
-    default: new Date().toLocaleString(), // Default to current date and time in local format
+    default: () => new Date().toISOString(),
   },
 });
 
@@ -27,3 +27,4 @@ const reviewModel =
   mongoose.models.review || mongoose.model("review", reviewSchema);
 
 export default reviewModel;
+
