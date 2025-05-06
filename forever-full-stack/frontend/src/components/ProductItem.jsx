@@ -16,12 +16,12 @@ const ProductItem = ({
   return (
     <Link
       onClick={() => scrollTo(0, 0)}
-      className="text-gray-700 cursor-pointer"
+      className="text-gray-700 cursor-pointer h-full flex flex-col"
       to={`/product/${id}`}
     >
-      <div className="relative overflow-hidden">
+      <div className="relative w-full h-full overflow-hidden">
         <img
-          className="hover:scale-110 transition ease-in-out"
+          className="w-full h-full object-cover hover:scale-110 transition ease-in-out"
           src={image[0]}
           alt=""
         />
@@ -46,30 +46,32 @@ const ProductItem = ({
           </div>
         )}
       </div>
-      <p className="pt-3 pb-1 text-sm">
-        {name}
-        {(productCondition === "used" ||
-          productCondition === "used_popular") && (
-          <span className="text-gray-500 ml-1">
-            (สภาพการใช้งาน {conditionPercentage}%)
-          </span>
-        )}
-      </p>
-      <p className="text-sm font-medium">
-        {currency}
-        {price}
-      </p>
-      <div className="flex items-center gap-1 text-sm text-gray-500">
-        {owner?.profileImage ? (
-          <img
-            src={owner.profileImage}
-            alt="Profile"
-            className="w-4 h-4 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-4 h-4 rounded-full bg-gray-300"></div>
-        )}
-        <span>{owner?.name || "ไม่ระบุร้านค้า"}</span>
+      <div className="flex flex-col flex-grow mt-2">
+        <p className="text-sm line-clamp-1">
+          {name}
+          {(productCondition === "used" ||
+            productCondition === "used_popular") && (
+            <span className="text-gray-500 ml-1">
+              (สภาพการใช้งาน {conditionPercentage}%)
+            </span>
+          )}
+        </p>
+        <p className="text-sm font-medium mt-1">
+          {currency}
+          {price}
+        </p>
+        <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+          {owner?.profileImage ? (
+            <img
+              src={owner.profileImage}
+              alt="Profile"
+              className="w-4 h-4 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+          )}
+          <span className="truncate">{owner?.name || "ไม่ระบุร้านค้า"}</span>
+        </div>
       </div>
     </Link>
   );

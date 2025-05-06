@@ -185,19 +185,22 @@ const Collection = () => {
         {/* แสดงรายการสินค้า */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6">
           {filterProducts.map((item, index) => (
-            <ProductItem
-              key={index}
-              name={item.name}
-              id={item._id}
-              price={item.price}
-              image={item.image}
-              owner={{
-                ...item.owner,
-                profileImage: item.owner?.profileImage,
-              }}
-              productCondition={item.productCondition}
-              conditionPercentage={item.conditionPercentage}
-            />
+            <div key={index} className="w-full">
+              <div className="aspect-[3/4]">
+                <ProductItem
+                  name={item.name}
+                  id={item._id}
+                  price={item.price}
+                  image={item.image}
+                  owner={{
+                    ...item.owner,
+                    profileImage: item.owner?.profileImage,
+                  }}
+                  productCondition={item.productCondition}
+                  conditionPercentage={item.conditionPercentage}
+                />
+              </div>
+            </div>
           ))}
         </div>
       </div>

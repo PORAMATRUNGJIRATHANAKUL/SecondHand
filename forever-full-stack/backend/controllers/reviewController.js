@@ -5,19 +5,42 @@ const addReview = async (req, res) => {
   try {
     const { name, rating, comment, userId } = req.body;
 
+    // Basic validation
+    if (!name || !rating || !comment) {
+      return res.status(400).json({
+        success: false,
+        message: "กรุณากรอกข้อมูลให้ครบถ้วน",
+      });
+    }
+
     // สร้างรีวิวใหม่
     const newReview = new reviewModel({
       name,
-      rating,
+      rating: Number(rating), // Ensure rating is a number
       comment,
       date: new Date().toLocaleString("th-TH"), // เพิ่มการแสดงวันที่แบบไทย
     });
 
-    await newReview.save();
-    res.status(200).json(newReview);
+    try {
+      await newReview.save();
+      res.status(200).json({
+        success: true,
+        message: "เพิ่มรีวิวสำเร็จ",
+        review: newReview,
+      });
+    } catch (saveError) {
+      console.error("Error saving review:", saveError);
+      res.status(500).json({
+        success: false,
+        message: "ไม่สามารถบันทึกรีวิวได้",
+      });
+    }
   } catch (error) {
     console.error("เกิดข้อผิดพลาดในการเพิ่มรีวิว:", error);
-    res.status(500).json({ message: "ไม่สามารถเพิ่มรีวิวได้" });
+    res.status(500).json({
+      success: false,
+      message: "ไม่สามารถเพิ่มรีวิวได้",
+    });
   }
 };
 
