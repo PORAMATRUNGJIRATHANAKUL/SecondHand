@@ -96,15 +96,37 @@ const ShopContextProvider = (props) => {
       return;
     }
 
-    const newReview = {
-      ...review,
-      name: user.name,
-      date: new Date().toLocaleString(),
-    };
+    try {
+      const newReview = {
+        ...review,
+        name: user.name,
+      };
 
-    const response = await axios.post(`${backendUrl}/api/review/`, newReview);
-    setShopReviews([...shopReviews, newReview]);
-    return response.data.review;
+      const response = await axios.post(
+        `${backendUrl}/api/review/`,
+        newReview,
+        {
+          headers: { token },
+        }
+      );
+
+      if (response.data.success) {
+        await fetchShopReviews();
+        toast.success("ส่งรีวิวสำเร็จ");
+      }
+      return response.data.review;
+    } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error("กรุณาเข้าสู่ระบบใหม่");
+        setToken("");
+        localStorage.removeItem("token");
+        navigate("/login");
+      } else {
+        toast.error("ไม่สามารถส่งรีวิวได้");
+        console.error("Error submitting review:", error);
+      }
+      return null;
+    }
   };
 
   const addToCart = async ({ productId, size, color, quantity }) => {
