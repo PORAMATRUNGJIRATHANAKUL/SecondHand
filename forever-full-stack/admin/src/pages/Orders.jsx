@@ -246,7 +246,7 @@ const Orders = ({ token, searchQuery }) => {
                     className="w-full p-2 border rounded"
                   >
                     <option value={false}>รอดำเนินการโอนเงิน</option>
-                    <option value={true}>ดำเนินการโอนเงินสำเร็จ</option>
+                    <option value={true}>การโอนเงินสำเร็จ</option>
                   </select>
                 </div>
               </div>
