@@ -245,8 +245,8 @@ const Orders = ({ token, searchQuery }) => {
                     }
                     className="w-full p-2 border rounded"
                   >
-                    <option value={false}>ยังไม่โอน</option>
-                    <option value={true}>โอนแล้ว</option>
+                    <option value={false}>รอดำเนินการโอนเงิน</option>
+                    <option value={true}>ดำเนินการโอนเงินสำเร็จ</option>
                   </select>
                 </div>
               </div>
@@ -366,3 +366,4 @@ const Orders = ({ token, searchQuery }) => {
 };
 
 export default Orders;
+
