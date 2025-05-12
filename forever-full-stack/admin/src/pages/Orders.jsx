@@ -366,3 +366,4 @@ const Orders = ({ token, searchQuery }) => {
 };
 
 export default Orders;
+
