@@ -7,6 +7,19 @@ const Review = ({ token, searchQuery }) => {
   // เพิ่ม searchQuery prop
   const [list, setList] = useState([]);
 
+  // Add date formatting function
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
+
   const fetchList = async () => {
     try {
       const response = await axios.get(backendUrl + "/api/review/");
@@ -75,7 +88,7 @@ const Review = ({ token, searchQuery }) => {
                 <td className="py-2 px-4 border-b">{item.name}</td>
                 <td className="py-2 px-4 border-b">{item.rating}</td>
                 <td className="py-2 px-4 border-b">{item.comment}</td>
-                <td className="py-2 px-4 border-b">{item.date}</td>
+                <td className="py-2 px-4 border-b">{formatDate(item.date)}</td>
                 <td className="py-2 px-4 border-b text-center">
                   <button
                     onClick={() => {

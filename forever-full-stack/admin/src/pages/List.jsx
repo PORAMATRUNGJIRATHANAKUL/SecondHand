@@ -145,7 +145,7 @@ const List = ({ token, searchQuery }) => {
               />
             </div>
 
-            {/* ชื่อส้าน */}
+            {/* ชื่อร้าน */}
             <div className="col-span-2 text-gray-600">
               {item.owner?.name || "-"}
             </div>
@@ -160,8 +160,7 @@ const List = ({ token, searchQuery }) => {
 
             {/* ราคา */}
             <div className="col-span-1 text-right font-medium text-gray-800">
-              {currency}
-              {item.price.toLocaleString()}
+              ฿ {item.price.toLocaleString()}
             </div>
 
             {/* สี/ไซส์ */}

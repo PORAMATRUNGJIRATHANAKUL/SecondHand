@@ -178,7 +178,7 @@ const Qrcode = ({ searchQuery, setActiveTab }) => {
                 <p>
                   วันที่: {new Date(selectedPayment.date).toLocaleDateString()}
                 </p>
-                <p>จำนวนเงิน: ฿{selectedPayment.price.toLocaleString()}</p>
+                <p>จำนวนเงิน: ฿ {selectedPayment.price.toLocaleString()}</p>
               </div>
             </div>
           </div>

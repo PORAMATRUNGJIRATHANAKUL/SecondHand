@@ -312,7 +312,7 @@ const Orders = () => {
                               {item.name}
                             </h4>
                             <p className="text-lg font-semibold text-gray-900">
-                              ฿
+                              ฿{" "}
                               {(
                                 item.price * item.quantity +
                                 (item.shippingCost || 0)
@@ -437,7 +437,7 @@ const Orders = () => {
                   <p className="font-medium text-gray-900">
                     รวมการการสั่งซื้อ:{" "}
                     <span className="text-base">
-                      ฿
+                      ฿{" "}
                       {order.shops
                         .reduce(
                           (total, shop) =>
@@ -501,7 +501,7 @@ const Orders = () => {
                   <p>
                     รวมการสั่งซื้อ:{" "}
                     <span className="font-medium text-gray-900">
-                      ฿
+                      ฿{" "}
                       {selectedOrder.items
                         .reduce(
                           (total, item) =>
@@ -636,7 +636,7 @@ const Orders = () => {
                                     {item.name}
                                   </h4>
                                   <p className="text-lg font-semibold text-gray-900">
-                                    ฿
+                                    ฿{" "}
                                     {(
                                       item.price * item.quantity +
                                       (item.shippingCost || 0)

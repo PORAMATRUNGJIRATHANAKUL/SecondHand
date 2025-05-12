@@ -16,21 +16,23 @@ const CartTotal = () => {
         <div className="flex justify-between">
           <p>ราคาสินค้า</p>
           <p>
-            {currency} {getCartAmount().toLocaleString()}
+            {currency}
+            {getCartAmount().toLocaleString()}
           </p>
         </div>
         <hr />
         <div className="flex justify-between">
           <p>ค่าบริการ</p>
           <p>
-            {currency} {delivery_fee.toLocaleString()}
+            {currency}
+            {delivery_fee.toLocaleString()}
           </p>
         </div>
         <hr />
         <div className="flex justify-between">
           <b>ยอดรวมทั้งหมด</b>
           <b>
-            {currency}{" "}
+            {currency}
             {(getCartAmount() === 0
               ? 0
               : getCartAmount() + delivery_fee

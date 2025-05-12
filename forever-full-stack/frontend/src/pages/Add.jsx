@@ -597,7 +597,7 @@ const Add = () => {
             {shippingType === "paid" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ราคาค่าจัดส่ง (บาท)
+                  ราคาค่าจัดส่ง (฿)
                 </label>
                 <div className="relative">
                   <input
@@ -609,7 +609,7 @@ const Add = () => {
                     required
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    บาท
+                    ฿
                   </span>
                 </div>
               </div>

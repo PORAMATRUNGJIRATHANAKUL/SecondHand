@@ -296,13 +296,13 @@ const PlaceOrder = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-600">
-                        ยอดสินค้า: ฿{store.totalAmount.toLocaleString()}
+                        ยอดสินค้า: ฿ {store.totalAmount.toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-600">
-                        ค่าจัดส่ง: ฿{store.totalShipping.toLocaleString()}
+                        ค่าจัดส่ง: ฿ {store.totalShipping.toLocaleString()}
                       </p>
                       <p className="font-medium text-gray-900">
-                        รวม: ฿
+                        รวม: ฿{" "}
                         {(
                           store.totalAmount + store.totalShipping
                         ).toLocaleString()}
@@ -337,7 +337,7 @@ const PlaceOrder = () => {
                                   ราคาต่อชิ้น:
                                 </span>
                                 <span className="font-semibold text-gray-900">
-                                  ฿{product.price.toLocaleString()}
+                                  ฿ {product.price.toLocaleString()}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -416,11 +416,11 @@ const PlaceOrder = () => {
                     <div className="mt-2 space-y-2">
                       <div className="flex justify-between text-sm text-gray-600">
                         <span>ยอดสินค้า</span>
-                        <span>฿{store.totalAmount.toLocaleString()}</span>
+                        <span>฿ {store.totalAmount.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-600">
                         <span>ค่าจัดส่ง</span>
-                        <span>฿{store.totalShipping.toLocaleString()}</span>
+                        <span>฿ {store.totalShipping.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -429,7 +429,7 @@ const PlaceOrder = () => {
                   <div className="flex justify-between font-medium text-gray-900">
                     <span>ยอดรวมทั้งหมด</span>
                     <span>
-                      ฿
+                      <span> ฿ </span>
                       {Object.values(groupedByStore)
                         .reduce(
                           (total, store) =>
@@ -490,7 +490,7 @@ const PlaceOrder = () => {
                       <p className="text-center text-sm text-gray-600 mt-2">
                         สแกน QR Code เพื่อชำระเงินจำนวน{" "}
                         <span className="font-semibold">
-                          ฿
+                          ฿{" "}
                           {Object.values(groupedByStore)
                             .reduce(
                               (total, store) =>

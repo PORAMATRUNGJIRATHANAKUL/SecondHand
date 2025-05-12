@@ -208,10 +208,10 @@ const Product = () => {
             <h1 className="font-medium text-2xl mb-2">{productData.name}</h1>
             <div className="space-y-2">
               <p className="text-3xl font-medium text-gray-900">
-                ฿{productData.price.toLocaleString()}
+                ฿ {productData.price.toLocaleString()}
               </p>
               <p className="text-gray-500">
-                ค่าจัดส่ง: ฿{productData.shippingCost.toLocaleString()}
+                ค่าจัดส่ง: ฿ {productData.shippingCost.toLocaleString()}
               </p>
               <div className="flex items-center gap-2">
                 <span className="text-gray-500">ร้านค้า:</span>

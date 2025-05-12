@@ -306,7 +306,7 @@ const Ordershopme = ({ searchQuery }) => {
                             ชิ้น
                           </div>
                           <div className="text-sm font-medium">
-                            ยอดรวม: ฿
+                            ยอดรวม: ฿{" "}
                             {order.items
                               .reduce(
                                 (total, item) =>
@@ -427,7 +427,7 @@ const Ordershopme = ({ searchQuery }) => {
                                     </div>
                                   )}
                                   <p className="font-medium mt-1">
-                                    ฿
+                                    ฿{" "}
                                     {(
                                       item.price + item.shippingCost
                                     ).toLocaleString()}{" "}
@@ -599,7 +599,7 @@ const Ordershopme = ({ searchQuery }) => {
                   วันที่: {new Date(selectedOrder.date).toLocaleDateString()}
                 </p>
                 <p>
-                  จำนวนเงิน: ฿
+                  จำนวนเงิน: ฿{" "}
                   {selectedOrder.items
                     .reduce(
                       (total, item) =>
@@ -671,7 +671,7 @@ const Ordershopme = ({ searchQuery }) => {
                         </div>
                       </div>
                     )}
-                    <p className="mt-1">ราค: ฿{item.price}</p>
+                    <p className="mt-1">ราคา: ฿ {item.price}</p>
                   </div>
                 </div>
               ))}

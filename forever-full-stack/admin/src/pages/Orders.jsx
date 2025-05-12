@@ -176,7 +176,7 @@ const Orders = ({ token, searchQuery }) => {
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-lg">฿{order.amount}</p>
+                <p className="font-bold text-lg">฿ {order.amount}</p>
                 <p className="text-sm text-gray-600">
                   จำนวนรายการ: {order.items.length}
                 </p>
@@ -215,7 +215,7 @@ const Orders = ({ token, searchQuery }) => {
                       )}
                     </div>
                     <p className="text-sm mt-1">
-                      ราคา: ฿{item.price + (item.shippingCost || 0)}
+                      ราคา: ฿ {item.price + (item.shippingCost || 0)}
                     </p>
                   </div>
                 </div>
@@ -245,8 +245,8 @@ const Orders = ({ token, searchQuery }) => {
                     }
                     className="w-full p-2 border rounded"
                   >
-                    <option value={false}>ยังไม่โอน</option>
-                    <option value={true}>โอนแล้ว</option>
+                    <option value={false}>รอดำเนินการโอนเงิน</option>
+                    <option value={true}>การโอนเงินสำเร็จ</option>
                   </select>
                 </div>
               </div>
@@ -303,7 +303,7 @@ const Orders = ({ token, searchQuery }) => {
                 <p>
                   วันที่: {new Date(selectedOrder.date).toLocaleDateString()}
                 </p>
-                <p>จำนวนเงิน: ฿{selectedOrder.amount.toLocaleString()}</p>
+                <p>จำนวนเงิน: ฿ {selectedOrder.amount.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -345,7 +345,7 @@ const Orders = ({ token, searchQuery }) => {
                         </div>
                       </div>
                     )}
-                    <p className="mt-1">ราคา: ฿{item.price}</p>
+                    <p className="mt-1">ราคา: ฿ {item.price}</p>
                   </div>
                 </div>
               ))}
